@@ -221,6 +221,8 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
 #tutHole{position:fixed;z-index:69;border-radius:12px;pointer-events:none;box-shadow:0 0 0 3px #ffe08a,0 0 16px 5px rgba(255,224,138,.85),0 0 0 9999px rgba(12,8,4,.42);animation:holeGlow 1.2s ease-in-out infinite}
 @keyframes holeGlow{50%{box-shadow:0 0 0 4px #fff3b0,0 0 26px 9px rgba(255,224,138,.95),0 0 0 9999px rgba(12,8,4,.42)}}
 #tutBubble .tt{line-height:1.38}
+#tutBubble.wide{max-width:min(600px,94vw)}
+#tutBubble.compact{display:flex;align-items:center;gap:10px;padding:7px 10px;max-width:min(640px,94vw)}#tutBubble.compact .tb{margin-top:0;flex-shrink:0}#tutBubble.compact .tt{font-size:13.5px}
 @keyframes bob{50%{margin-top:-10px}}
 #buildOverlay{position:absolute;inset:0;pointer-events:none}
 /* responsivo */
@@ -2342,8 +2344,8 @@ function pileIn(x, bottom, w, h, fill, cols){
 const sortCache = {c:null, key:''};
 // layout deitado (computador) e em pé (celular na vertical)
 const SORT_L = {
-  land:{id:'land', w:192, h:108, binX:i => 6 + i * 37, binY:74, binW:32, binH:32, table:[6, 10, 180, 56], floor:70, cols:4, x0:28, dx:42, y0:36, y1:63},
-  port:{id:'port', w:120, h:150, binX:i => 2 + i * 23.5, binY:114, binW:22, binH:32, table:[4, 30, 112, 74], floor:108, cols:3, x0:22, dx:38, y0:52, y1:100},
+  land:{id:'land', w:192, h:108, binX:i => 6 + i * 37, binY:74, binW:32, binH:32, table:[6, 10, 180, 56], floor:70, cols:4, x0:28, dx:42, y0:43, y1:64},
+  port:{id:'port', w:120, h:150, binX:i => 2 + i * 23.5, binY:114, binW:22, binH:32, table:[4, 30, 112, 74], floor:108, cols:3, x0:22, dx:38, y0:58, y1:102},
 };
 let SL = SORT_L.land;
 const BIN_X = i => SL.binX(i);
@@ -2845,7 +2847,7 @@ function inCart(p, pad){
 function showItemTip(it, p){
   const tip = $('itemTip');
   if (!it) { tip.classList.add('hidden'); return; }
-  tip.textContent = it.kind === 'rej' || it.m === 'rej' ? `${it.name} · não reciclável` : `${it.name}${it.pack ? ' (embalagem)' : ''} · ${fmtKg(it.kg)}`;
+  tip.textContent = it.kind === 'rej' || it.m === 'rej' ? `${it.name} · não reciclável` : `${it.name}${it.pack && !it.name.includes('embalagem') ? ' (embalagem)' : ''} · ${fmtKg(it.kg)}`;
   const w = G_mode === 'sort' ? SL.w : SW, h = G_mode === 'sort' ? SL.h : SH;
   tip.style.left = (p.x / w * 100) + '%'; tip.style.top = (p.y / h * 100) + '%';
   tip.classList.remove('hidden');
@@ -3017,9 +3019,10 @@ function startSort(){
   AU.sfx('sort');
   transition(() => { setSceneMode('sort'); updateSortHud(); setSortMsg(vols.length ? 'Abrindo os volumes...' : ''); });
 }
+function tutInSort(){ return !S.tut.done && (TUT[S.tut.step] || {}).id === 'sortgame'; }
 function setSortMsg(html, bad){
   const m = $('sortMsg');
-  if (!html) { m.classList.add('hidden'); return; }
+  if (!html || tutInSort()) { m.classList.add('hidden'); return; }
   m.innerHTML = html; m.classList.toggle('bad', !!bad); m.classList.remove('hidden');
   if (sortG) sortG.msgT = bad ? 5 : 3.5;
 }
@@ -3089,6 +3092,7 @@ function dropInBin(it, bi){
     sortG.errors.push(msg); AU.sfx('rej'); setSortMsg('Ops! ' + msg + ' Este item virou rejeito.', true);
     floatText('✘ virou rejeito', bx, BIN_Y - 12, 'bad', 'sort');
   }
+  sortG.tutErr = right ? null : `${it.name}: a lixeira certa é a <b>${it.m === 'rej' ? 'cinza' : BINS.find(x => x.id === BIN_OF[it.m]).cor}</b> (${it.m === 'rej' ? 'rejeito' : MAT_TIPO[it.m]}).`;
   sortG.flash[bi] = {a:0.6, ok:right};
   spawnFx('sort', bx, BIN_Y + 2, 'dust', 4);
   if (sortG.sel === it) sortG.sel = null;
@@ -3619,17 +3623,33 @@ function itemRect(it, dims){
   return {l:a.x, t:a.y, r:b.x, b:b.y};
 }
 const tc = k => (S.st[k] || 0) - ((S.tut.base || {})[k] || 0); // contadores desde o início do tutorial
+function smallRect(x, y, w, h, dims){ const a = canvasPtToPage(x, y, dims), b = canvasPtToPage(x + w, y + h, dims); return {l:a.x, t:a.y, r:b.x, b:b.y}; }
+function cartPageRect(){ const c = trip.cartRect; return smallRect(c.x, c.y - 4, c.w, c.h + 4, true); }
+function binsPageRect(){ return smallRect(BIN_X(0) - 3, SL.binY - 10, BIN_X(BINS.length - 1) + SL.binW + 6 - BIN_X(0), SL.binH + 10, 'sort'); }
 function streetGuide(prefix){
-  if (!trip) return null;
-  const it = trip.items.find(i => i.state === 'ground' && i.kind === 'vol' && i.kg <= trip.cap - trip.cartKg);
-  if (it && trip.cartKg < trip.cap * 0.9) return {txt:(prefix || '') + (has('luvas_coleta') ? 'Toque num volume reciclável (saco, caixa ou pilha) para jogá-lo no carrinho.' : '<b>Arraste</b> um volume reciclável (saco, caixa ou pilha) até o <b>carrinho</b>.'), it, dims:true};
+  if (!trip || trip.ended) return null;
+  const dragTxt = has('luvas_coleta') ? 'Toque num volume reciclável (saco, caixa ou pilha) para jogá-lo no carrinho.' : '<b>Arraste</b> o volume destacado (saco, caixa ou pilha) até o <b>carrinho</b>.';
+  // enquanto arrasta, o passo continua: o destaque vai para o carrinho
+  if (trip.drag) return {txt:(prefix || '') + 'Isso! Agora <b>solte o volume no carrinho</b>.', rect:cartPageRect(), avoid:[itemRect(trip.drag.it, true)]};
+  let it = tutState.target;
+  if (!it || it.state !== 'ground' || !trip.items.includes(it) || it.kg > trip.cap - trip.cartKg) {
+    it = tutState.target = trip.items.find(i => i.state === 'ground' && i.kind === 'vol' && i.kg <= trip.cap - trip.cartKg);
+  }
+  if (it && trip.cartKg < trip.cap * 0.9) return {txt:(prefix || '') + dragTxt, it, dims:true, avoid:[cartPageRect()]};
   return {txt:'Carrinho bom! Toque em <b>Voltar à base</b>.', el:$('btnBack')};
 }
 function sortGuide(){
-  if (!sortG || sortG.intro.t < 1) return null;
-  const it = sortG.sel && sortG.sel.state === 'table' ? sortG.sel : sortG.items.find(i => i.state === 'table');
+  if (!sortG || sortG.ended || sortG.intro.t < 1) return null;
+  // na mesa o balão é compacto e não pode cobrir nenhum item nem as lixeiras
+  const items = sortG.items.filter(i => i.state === 'table' || i.state === 'drag').map(i => itemRect(i, 'sort'));
+  const held = sortG.drag ? sortG.drag.it : sortG.sel && sortG.sel.state === 'table' ? sortG.sel : null;
+  if (held) return {txt:`${sortG.drag ? 'Solte' : 'Agora toque'} <b>${held.name}</b> na lixeira da cor certa.`, rect:binsPageRect(), avoid:items, compact:1};
+  let it = tutState.target;
+  if (!it || it.state !== 'table' || !sortG.items.includes(it)) it = tutState.target = sortG.items.find(i => i.state === 'table');
   if (!it) return null;
-  return {txt:'Arraste cada item para a lixeira da cor certa: <b class="c-azul">azul</b> papel, <b class="c-verm">vermelha</b> plástico, <b class="c-amar">amarela</b> metal, <b class="c-verde">verde</b> vidro e <b class="c-cinza">cinza</b> rejeito. As embalagens também se separam! Também dá para tocar no item e depois na lixeira.', it, dims:'sort'};
+  const txt = sortG.tutErr ? `Quase! ${sortG.tutErr} Agora tente o próximo item.`
+    : sortG.ok + sortG.err === 0 ? 'Arraste o item destacado até a lixeira da cor certa. As embalagens também se separam!' : 'Muito bem! Agora o próximo item.';
+  return {txt, it, dims:'sort', avoid:[binsPageRect(), ...items], compact:1};
 }
 // como ganhar dinheiro agora, conforme o que o jogador tem em mãos
 function earnGuide(reason){
@@ -3658,7 +3678,7 @@ const TUT = [
      if (G_mode !== 'street') return null;
      const it = trip.items.find(i => i.state === 'ground' && i.kind === 'rej');
      return {txt:'Pegue só os <b>recicláveis</b>. O <b>rejeito</b> (resto de comida, fralda, isopor sujo, guardanapo usado, bituca...) fica para a coleta comum: no carrinho, ele só ocupa espaço.', it, dims:true};
-   }, done:s => G_mode !== 'street' || performance.now() - s.t0 > 7000},
+   }, done:() => G_mode !== 'street'},
   {id:'fill', view:() => G_mode === 'street' ? (trip.cartKg >= trip.cap * 0.6 || trip.left < 8 ? {txt:'Toque em <b>Voltar à base</b> quando quiser. Se o tempo acabar, você volta sozinho(a).', el:$('btnBack')} : streetGuide('Isso! Continue. ')) : null,
    done:() => tc('trips') > 0 && G_mode === 'base' && !modalOpen()},
   {id:'sort', view:() => earnGuide(sum(S.mixed) > 0.5 || G_mode !== 'base' ? '' : 'Você voltou sem material reciclável. '), done:() => G_mode === 'sort' || tc('sortRounds') > 0},
@@ -3703,22 +3723,31 @@ function restartTutorial(){
   if (G_mode === 'base') selectTab('coop');
   toast('🎓 Tutorial', 'Vamos recomeçar o passo a passo!', 'fact', 3000);
 }
-// o balão fica ao lado, acima ou abaixo do alvo, nunca por cima dele
-function placeBubble(bub, r){
-  const vw = window.innerWidth, vh = window.innerHeight, bw = bub.offsetWidth, bh = bub.offsetHeight, m = 14, pad = 6;
-  const clampX = x => Math.max(pad, Math.min(vw - bw - pad, x)), clampY = y => Math.max(pad, Math.min(vh - bh - pad, y));
-  let pos = null;
+// o balão nunca cobre o alvo nem o destino (carrinho, lixeiras); na rua e na mesa ele prefere a parte de cima do cenário
+function placeBubble(bub, r, avoid){
+  const vw = window.innerWidth, vh = window.innerHeight, bw = bub.offsetWidth, bh = bub.offsetHeight, m = 12, pad = 6;
+  const clampX = x => Math.max(pad, Math.min(vw - bw - pad, x));
+  const hit = (a, b) => !(a.r <= b.l || a.l >= b.r || a.b <= b.t || a.t >= b.b);
+  const box = p => ({l:p.x - 4, t:p.y - 4, r:p.x + bw + 4, b:p.y + bh + 4});
+  const fits = p => p.y >= pad && p.y + bh <= vh - pad && !avoid.some(a => hit(box(p), a));
+  const cands = [];
+  if (G_mode !== 'base') {
+    const c = cv.getBoundingClientRect(), hud = (G_mode === 'sort' ? $('sortHud') : $('streetHud')).getBoundingClientRect();
+    cands.push({x:c.left + (c.width - bw) / 2, y:hud.bottom + 4});     // dentro do cenário, logo abaixo da barra
+    cands.push({x:c.left + (c.width - bw) / 2, y:c.top - bh - m});     // acima do cenário
+    cands.push({x:c.left + (c.width - bw) / 2, y:c.bottom + m});       // abaixo do cenário
+  }
   if (r) {
     const cx = (r.l + r.r) / 2, cy = (r.t + r.b) / 2;
-    const cands = [
-      {x:clampX(cx - bw / 2), y:r.b + m, ok:r.b + m + bh <= vh - pad},
-      {x:clampX(cx - bw / 2), y:r.t - m - bh, ok:r.t - m - bh >= pad},
-      {x:r.r + m, y:clampY(cy - bh / 2), ok:r.r + m + bw <= vw - pad},
-      {x:r.l - m - bw, y:clampY(cy - bh / 2), ok:r.l - m - bw >= pad},
-    ];
-    pos = cands.find(c => c.ok);
-    if (!pos) pos = {x:clampX(cx - bw / 2), y:r.t > vh - r.b ? pad : vh - bh - pad};
-  } else pos = {x:clampX(vw / 2 - bw / 2), y:vh - bh - 12};
+    cands.push({x:cx - bw / 2, y:r.b + m}, {x:cx - bw / 2, y:r.t - m - bh}, {x:r.r + m, y:cy - bh / 2}, {x:r.l - m - bw, y:cy - bh / 2});
+  }
+  cands.push({x:(vw - bw) / 2, y:pad}, {x:(vw - bw) / 2, y:vh - bh - pad});
+  cands.forEach(p => p.x = clampX(p.x));
+  let pos = cands.find(fits);
+  if (!pos) { // último recurso: o lugar que menos encosta nas áreas proibidas
+    const over = p => avoid.reduce((s, a) => { const b = box(p); return s + Math.max(0, Math.min(a.r, b.r) - Math.max(a.l, b.l)) * Math.max(0, Math.min(a.b, b.b) - Math.max(a.t, b.t)); }, 0);
+    pos = cands.map(p => ({x:p.x, y:Math.max(pad, Math.min(vh - bh - pad, p.y))})).sort((a, b) => over(a) - over(b))[0];
+  }
   bub.style.left = pos.x + 'px'; bub.style.top = pos.y + 'px';
 }
 function updateTutorial(){
@@ -3728,11 +3757,15 @@ function updateTutorial(){
   const step = TUT[S.tut.step];
   if (!step) { S.tut.done = true; toast('🎓 Tutorial concluído!', 'Agora é com você. Bom trabalho!', 'good', 5000); return hide(); }
   if (tutState.idx !== S.tut.step) tutState = {idx:S.tut.step, t0:performance.now()};
+  bub.classList.toggle('wide', G_mode !== 'base');
   if (step.done(tutState)) { S.tut.step++; return; }
   if (step.back) { const b = step.back(); if (b) { S.tut.step = TUT_IDX(b); return; } }
   const v = step.view && step.view();
   if (!v || !v.txt) return hide();
-  let r = v.it ? itemRect(v.it, v.dims) : v.el ? elRect(v.el) : null;
+  let r = v.rect || (v.it ? itemRect(v.it, v.dims) : v.el ? elRect(v.el) : null);
+  // áreas que o jogador precisa ver em cada cenário
+  const scene = G_mode === 'street' && trip ? [cartPageRect()] : G_mode === 'sort' && sortG && sortG.intro.t >= 1 ? [binsPageRect(), ...sortG.items.filter(i => i.state === 'table').map(i => itemRect(i, 'sort'))] : [];
+  v.avoid = [...(v.avoid || []), ...scene];
   // leva o alvo para dentro da tela (painel, loja, celular)
   if (v.el && r && (r.t < 40 || r.b > window.innerHeight - 10) && tutState.scrolled !== v.el) { tutState.scrolled = v.el; v.el.scrollIntoView({block:'center', behavior:'smooth'}); }
   if (bub.dataset.step !== step.id) {
@@ -3741,14 +3774,16 @@ function updateTutorial(){
     $('tutSkip').onclick = () => { S.tut.done = true; S.tut.step = TUT.length; hide(); toast(null, 'Tutorial pulado. Dá para recomeçar em <b>Como jogar</b> (botão ?).', '', 4000); };
     if (step.ok) $('tutOk').onclick = () => { S.tut.step++; };
   }
+  bub.classList.toggle('compact', !!v.compact);
   if (bub.dataset.txt !== v.txt) { bub.dataset.txt = v.txt; bub.querySelector('.tt').innerHTML = v.txt; }
   bub.classList.remove('hidden');
   if (r) {
     const p = 6;
     hole.style.left = (r.l - p) + 'px'; hole.style.top = (r.t - p) + 'px'; hole.style.width = (r.r - r.l + p * 2) + 'px'; hole.style.height = (r.b - r.t + p * 2) + 'px';
     hole.classList.remove('hidden');
-    placeBubble(bub, {l:r.l - p, t:r.t - p, r:r.r + p, b:r.b + p});
-  } else { hole.classList.add('hidden'); placeBubble(bub, null); }
+    const hr = {l:r.l - p, t:r.t - p, r:r.r + p, b:r.b + p};
+    placeBubble(bub, hr, [hr, ...(v.avoid || [])]);
+  } else { hole.classList.add('hidden'); placeBubble(bub, null, v.avoid || []); }
 }
 
 // =====================================================================
