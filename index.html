@@ -1,0 +1,2715 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#3b2a1e">
+<title>Cooperativa: da carroça à central de reciclagem</title>
+<style>
+:root{
+  --bg:#2b2119; --bg2:#3b2a1e; --paper:#f6ecd6; --paper2:#efe0bf; --ink:#3a2a1c; --ink2:#6b5440;
+  --green:#3f8f3a; --green2:#62b356; --red:#c2412d; --yellow:#e8b631; --blue:#3a7fc4; --line:#d6c29a;
+  --shadow:0 3px 0 rgba(0,0,0,.25);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif;font-size:15px;overscroll-behavior:none}
+body{display:flex;flex-direction:column;min-height:100%}
+button{font:inherit;cursor:pointer;border:none;border-radius:8px;touch-action:manipulation}
+button:disabled{cursor:not-allowed;opacity:.5}
+.hidden{display:none!important}
+/* ---------- topo */
+#top{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);color:var(--paper);border-bottom:3px solid #1d150f;position:sticky;top:0;z-index:30;flex-wrap:wrap}
+#logo{font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:6px;font-size:15px}
+#logo .rc{display:inline-block;width:22px;height:22px;border-radius:6px;background:var(--green);text-align:center;line-height:22px}
+#money{font-weight:800;font-size:18px;color:#ffe08a;font-variant-numeric:tabular-nums}
+#rate{font-size:12px;color:#d9c7a3}
+#phaseChip{background:#5a4230;border-radius:20px;padding:3px 10px;font-size:12px;white-space:nowrap}
+#top .sp{flex:1}
+.ibtn{background:#5a4230;color:var(--paper);width:34px;height:34px;font-size:17px;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+.ibtn.off{opacity:.45;text-decoration:line-through}
+/* ---------- layout */
+#app{flex:1;display:flex;gap:10px;padding:10px;align-items:flex-start;max-width:1500px;width:100%;margin:0 auto}
+#stage{flex:1;min-width:0;position:sticky;top:58px}
+#sceneWrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;border:3px solid #1d150f;box-shadow:0 6px 0 rgba(0,0,0,.3)}
+#cv{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+#sceneWrap.street #cv{touch-action:none;cursor:grab}
+#sceneWrap.street.dragging #cv{cursor:grabbing}
+#fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .35s}
+#fade.on{opacity:1}
+#floaters{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.floater{position:absolute;transform:translate(-50%,-50%);font-weight:800;font-size:clamp(12px,2.2vw,18px);color:#fff;text-shadow:0 2px 0 #000,0 0 4px #000;animation:floatUp 1.2s ease-out forwards;white-space:nowrap}
+.floater.bad{color:#ff9a8a}.floater.money{color:#ffe08a}.floater.kg{color:#bff0b0}
+@keyframes floatUp{0%{opacity:0;margin-top:0}15%{opacity:1}100%{opacity:0;margin-top:-50px}}
+.hot{position:absolute;transform:translate(-50%,-50%);background:rgba(255,248,230,.92);color:var(--ink);border:2px solid #3a2a1c;border-radius:10px;padding:4px 9px;font-weight:800;font-size:clamp(11px,1.8vw,15px);box-shadow:0 3px 0 rgba(0,0,0,.35);display:flex;align-items:center;gap:5px;white-space:nowrap}
+.hot small{font-weight:600;font-size:.8em;color:var(--ink2)}
+.hot.pulse{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.08)}}
+.badge{position:absolute;transform:translate(-50%,-50%);background:rgba(30,20,12,.8);color:#fff;font-size:clamp(9px,1.4vw,12px);font-weight:700;padding:1px 5px;border-radius:6px;pointer-events:none}
+/* rua HUD */
+#streetHud{position:absolute;left:0;right:0;top:0;display:flex;gap:6px;padding:6px;align-items:center;pointer-events:none}
+#streetHud>*{pointer-events:auto}
+#timer{background:rgba(30,20,12,.85);color:#fff;font-weight:800;border-radius:8px;padding:4px 10px;font-size:clamp(14px,2.6vw,22px);font-variant-numeric:tabular-nums}
+#timer.warn{background:var(--red);animation:pulse2 .5s infinite}
+@keyframes pulse2{50%{transform:scale(1.1)}}
+#cartBox{flex:1;background:rgba(30,20,12,.85);border-radius:8px;padding:4px 8px;color:#fff;font-size:clamp(11px,1.8vw,14px);max-width:330px}
+#cartBar{height:8px;background:#5a4a3a;border-radius:5px;overflow:hidden;margin-top:3px}
+#cartFill{height:100%;background:var(--green2);width:0;transition:width .2s}
+#cartFill.full{background:var(--yellow)}
+#routeName{color:#fff;background:rgba(30,20,12,.7);border-radius:8px;padding:4px 8px;font-size:12px}
+#btnBack{margin-left:auto;background:var(--yellow);color:var(--ink);font-weight:800;padding:7px 12px;box-shadow:var(--shadow)}
+#itemTip{position:absolute;transform:translate(-50%,-130%);background:rgba(30,20,12,.9);color:#fff;font-size:12px;padding:2px 7px;border-radius:6px;pointer-events:none;white-space:nowrap}
+/* barra de ações */
+#actionBar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.big{flex:1;min-width:120px;padding:12px 10px;font-weight:800;font-size:16px;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.35);border-radius:10px}
+.big:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.b-go{background:var(--blue)}.b-sort{background:#8a5a2b}.b-sell{background:var(--green)}
+.big small{display:block;font-weight:600;font-size:11px;opacity:.9}
+#tipBox{margin-top:10px;background:rgba(246,236,214,.08);border:1px dashed #6b5440;color:#e8d8b8;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;gap:8px;align-items:flex-start}
+#tipBox b{color:#ffe08a}
+/* ---------- painel */
+#panel{width:400px;flex-shrink:0;background:var(--paper);border-radius:12px;border:3px solid #1d150f;box-shadow:0 6px 0 rgba(0,0,0,.3);overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 80px)}
+#tabs{display:flex;background:var(--paper2);border-bottom:2px solid var(--line)}
+.tab{flex:1;background:none;padding:10px 4px;font-weight:700;color:var(--ink2);position:relative;border-radius:0;font-size:14px}
+.tab.on{background:var(--paper);color:var(--ink);box-shadow:inset 0 -3px 0 var(--green)}
+.dot{position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid var(--paper)}
+#tabBody{overflow-y:auto;padding:12px;flex:1;-webkit-overflow-scrolling:touch}
+h3{margin:4px 0 8px;font-size:16px}
+h4{margin:12px 0 6px;font-size:14px;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px}
+.card{background:#fffaf0;border:2px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}
+.pbar{height:12px;background:#e3d3b0;border-radius:7px;overflow:hidden;border:1px solid #c9b48a}
+.pbar>div{height:100%;background:linear-gradient(90deg,var(--green),var(--green2));transition:width .3s}
+.pbar.warn>div{background:linear-gradient(90deg,#d9822b,#e8b631)}
+.pbar.full>div{background:linear-gradient(90deg,#b8321f,#d9532e)}
+.req{display:flex;gap:6px;font-size:13px;padding:3px 0;align-items:flex-start}
+.req .ok{color:var(--green);font-weight:800}.req .no{color:var(--red);font-weight:800}
+.req span.v{margin-left:auto;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.btn{background:var(--green);color:#fff;font-weight:700;padding:8px 12px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.btn.alt{background:#8a6a4a}.btn.red{background:var(--red)}.btn.blue{background:var(--blue)}.btn.yellow{background:var(--yellow);color:var(--ink)}
+.btn.wide{width:100%;margin-top:8px;padding:10px}
+.stockRow{margin-bottom:10px}
+.stockHead{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:3px}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.chip{font-size:11px;background:#f1e5c9;border-radius:10px;padding:2px 7px;display:flex;align-items:center;gap:4px}
+.chip i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.row{display:flex;gap:6px;align-items:center}
+.warnTxt{color:var(--red);font-size:12px;font-weight:700;margin-top:3px}
+.muted{color:var(--ink2);font-size:12px}
+table.prices{width:100%;border-collapse:collapse;font-size:12px}
+table.prices td,table.prices th{padding:3px 4px;border-bottom:1px solid #eadcb9;text-align:right}
+table.prices td:first-child,table.prices th:first-child{text-align:left}
+/* loja */
+#cats{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.cat{background:var(--paper2);color:var(--ink2);font-weight:700;font-size:12px;padding:6px 9px;position:relative;border:2px solid transparent}
+.cat.on{background:#fff;border-color:var(--green);color:var(--ink)}
+.cat .dot{top:-3px;right:-3px}
+.item{display:flex;gap:10px}
+.item .ic{width:40px;height:40px;flex-shrink:0;background:#f1e5c9;border-radius:8px;image-rendering:pixelated}
+.item .info{flex:1;min-width:0}
+.item .nm{font-weight:800;font-size:14px}
+.item .ds{font-size:12px;color:var(--ink2);margin:2px 0 6px}
+.item .cnt{font-size:11px;background:#e8dcc0;border-radius:8px;padding:1px 6px;margin-left:4px;font-weight:700;color:var(--ink2)}
+.buyRow{display:flex;gap:4px;flex-wrap:wrap}
+.buyRow .btn{padding:6px 7px;font-size:12px;flex:1;min-width:60px;line-height:1.15}
+.buyRow .btn small{display:block;font-weight:600;font-size:10.5px;opacity:.95}
+.item.locked{opacity:.75}.item.locked .ic{filter:grayscale(1) brightness(.8)}
+.lockMsg{font-size:12px;color:#8a4a2a;font-weight:700}
+.limitMsg{font-size:12px;color:#8a5a00;font-weight:700;background:#fff1c9;border-radius:6px;padding:4px 6px}
+.item.mystery .nm{letter-spacing:3px}
+details.done{margin-top:10px}
+details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6px 0}
+.doneItem{font-size:12px;padding:3px 0;color:var(--ink2);border-bottom:1px dashed #e3d3b0}
+.roleRow{display:flex;gap:8px;align-items:flex-start}
+.roleRow .rn{font-weight:800}
+.roleRow .cnt2{margin-left:auto;font-weight:800;font-size:15px;white-space:nowrap}
+.moveBtns{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.moveBtns .btn{font-size:11px;padding:4px 7px}
+/* conquistas */
+.achGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ach{background:#fffaf0;border:2px solid var(--line);border-radius:10px;padding:8px;font-size:12px}
+.ach.on{border-color:#e8b631;background:#fff6d8}
+.ach .an{font-weight:800;font-size:13px;margin-bottom:2px}
+.ach.off{opacity:.7}
+/* toasts */
+#toasts{position:fixed;right:10px;top:60px;z-index:60;display:flex;flex-direction:column;gap:6px;width:min(340px,calc(100vw - 20px));pointer-events:none}
+.toast{background:var(--paper);border:3px solid #1d150f;border-radius:10px;padding:8px 10px;font-size:13px;box-shadow:0 4px 0 rgba(0,0,0,.3);animation:tin .3s ease-out;pointer-events:auto}
+.toast b{display:block;font-size:14px;margin-bottom:1px}
+.toast.good{border-color:var(--green)}.toast.bad{border-color:var(--red)}.toast.ach{border-color:#e8b631;background:#fff6d8}.toast.fact{border-color:var(--blue);background:#eaf3fb}
+.toast.out{animation:tout .3s forwards}
+@keyframes tin{from{transform:translateX(30px);opacity:0}}
+@keyframes tout{to{transform:translateX(30px);opacity:0}}
+/* modal */
+#modalBg{position:fixed;inset:0;background:rgba(15,10,5,.6);z-index:80;display:flex;align-items:center;justify-content:center;padding:14px}
+#modal{background:var(--paper);border:3px solid #1d150f;border-radius:14px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;padding:16px;box-shadow:0 8px 0 rgba(0,0,0,.35);animation:pop .25s ease-out}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+#modal h2{margin:0 0 8px;font-size:20px}
+#modal p{margin:6px 0;line-height:1.4}
+#modal ul{margin:6px 0;padding-left:20px;line-height:1.5}
+.mBtns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.mBtns .btn{flex:1;padding:11px}
+.routeCard{display:flex;gap:10px;align-items:center;padding:10px;border:2px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fffaf0;width:100%;text-align:left;color:var(--ink)}
+.routeCard:not(:disabled):hover{border-color:var(--blue)}
+.routeCard .rnm{font-weight:800}
+.routeCard canvas{width:72px;height:40px;border-radius:6px;image-rendering:pixelated;flex-shrink:0}
+.sumTable{width:100%;border-collapse:collapse;margin:6px 0}
+.sumTable td{padding:4px;border-bottom:1px solid #eadcb9}.sumTable td:last-child{text-align:right;font-weight:700}
+.roleChoice{display:block;width:100%;text-align:left;background:#fffaf0;border:2px solid var(--line);padding:10px;margin-bottom:8px;color:var(--ink)}
+.roleChoice:not(:disabled):hover{border-color:var(--green)}
+/* tutorial */
+#tutBubble{position:fixed;z-index:70;max-width:300px;background:#fffbe8;border:3px solid #e8b631;border-radius:12px;padding:10px 12px;font-size:14px;box-shadow:0 6px 0 rgba(0,0,0,.3);line-height:1.35}
+#tutBubble .tb{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
+#tutBubble .tb button{font-size:12px;padding:5px 9px}
+#tutArrow{position:fixed;z-index:71;font-size:34px;pointer-events:none;color:#e8b631;text-shadow:0 2px 0 #000;animation:bob .7s infinite;transform:translate(-50%,-100%)}
+@keyframes bob{50%{margin-top:-10px}}
+#buildOverlay{position:absolute;inset:0;pointer-events:none}
+/* responsivo */
+@media (max-width:900px){
+  #app{flex-direction:column;padding:8px;gap:8px}
+  #stage{position:relative;top:0;width:100%}
+  #panel{width:100%;max-height:none}
+  #tabBody{overflow:visible}
+  #logo .txt{display:none}
+  #top{flex-wrap:nowrap;gap:6px;padding:6px 8px}
+  .ibtn{width:30px;height:30px;font-size:15px}
+  #phaseChip{max-width:34vw;overflow:hidden;text-overflow:ellipsis}
+  #toasts{top:auto;bottom:10px;right:8px}
+  .toast{font-size:12px;padding:6px 8px}
+  body.inStreet #panel,body.inStreet #tipBox{display:none}
+  .big{min-width:90px;font-size:15px;padding:10px 6px}
+}
+@media (max-width:420px){ .achGrid{grid-template-columns:1fr} #money{font-size:16px} }
+</style>
+</head>
+<body>
+<header id="top">
+  <div id="logo"><span class="rc">♻</span><span class="txt">Cooperativa</span></div>
+  <div><div id="money">R$ 0,00</div><div id="rate">+R$ 0,00/s</div></div>
+  <div id="phaseChip">Fase 1</div>
+  <div class="sp"></div>
+  <button class="ibtn" id="btnMusic" title="Música" aria-label="Ligar ou desligar música">♪</button>
+  <button class="ibtn" id="btnSfx" title="Efeitos sonoros" aria-label="Ligar ou desligar efeitos">🔊</button>
+  <button class="ibtn" id="btnHelp" title="Como jogar" aria-label="Como jogar">?</button>
+</header>
+<div id="app">
+  <section id="stage">
+    <div id="sceneWrap">
+      <canvas id="cv"></canvas>
+      <div id="hots"></div>
+      <div id="floaters"></div>
+      <div id="streetHud" class="hidden">
+        <div id="timer">0:45</div>
+        <div id="cartBox"><span id="cartTxt">0 / 25 kg</span><div id="cartBar"><div id="cartFill"></div></div></div>
+        <button id="btnBack">Voltar à base</button>
+      </div>
+      <div id="itemTip" class="hidden"></div>
+      <div id="fade"></div>
+    </div>
+    <div id="actionBar">
+      <button class="big b-go" id="btnGo">🛒 Ir para a rua<small id="goSub">Rua do bairro</small></button>
+      <button class="big b-sort" id="btnSort">✋ Triar<small id="sortSub">0 kg misturado</small></button>
+      <button class="big b-sell" id="btnSell">⚖ Vender<small id="sellSub">R$ 0,00</small></button>
+    </div>
+    <div id="tipBox"><span>💡</span><div id="tipTxt"></div></div>
+  </section>
+  <aside id="panel">
+    <nav id="tabs">
+      <button class="tab on" data-tab="coop" id="tab-coop">Cooperativa</button>
+      <button class="tab" data-tab="loja" id="tab-loja">Loja<span class="dot hidden" id="dotLoja"></span></button>
+      <button class="tab" data-tab="ach" id="tab-ach">Conquistas</button>
+      <button class="tab" data-tab="mais" id="tab-mais">Mais</button>
+    </nav>
+    <div id="tabBody"></div>
+  </aside>
+</div>
+<div id="toasts"></div>
+<div id="modalBg" class="hidden"><div id="modal"></div></div>
+<div id="tutBubble" class="hidden"></div>
+<div id="tutArrow" class="hidden">▼</div>
+<script>
+/*LOGIC-START*/
+'use strict';
+// =====================================================================
+// CONFIGURAÇÃO
+// =====================================================================
+const MATS = {
+  papelao:  {n:'Papelão',         c:'#b8864b', atr:0.40, ind:0.60, w:[2,4],     bale:1},
+  pet:      {n:'Garrafa PET',     c:'#62c0ea', atr:1.60, ind:2.40, w:[1,2],     bale:1, pellet:1},
+  lata:     {n:'Latinha',         c:'#c9ccd4', atr:4.50, ind:6.50, w:[0.5,1.2], bale:1, item:'mat_lata'},
+  plastico: {n:'Plástico duro',   c:'#e2574c', atr:1.20, ind:1.80, w:[1,2.5],   bale:1, pellet:1, item:'mat_plastico'},
+  vidro:    {n:'Vidro',           c:'#6fc27a', atr:0.15, ind:0.25, w:[2,4],     item:'mat_vidro'},
+  sucata:   {n:'Sucata de metal', c:'#8f7462', atr:0.80, ind:1.20, w:[2,5],     bale:1, item:'mat_sucata'},
+  oleo:     {n:'Óleo de cozinha', c:'#e8c24a', atr:1.20, ind:1.80, w:[1,2],     item:'mat_oleo'},
+  eletro:   {n:'Eletrônicos',     c:'#5a6080', atr:2.50, ind:4.00, w:[2,4],     item:'mat_eletro'},
+};
+const MAT_IDS = Object.keys(MATS);
+// participação (em kg) de cada material na coleta automática
+const AUTO_MIX = {papelao:38, pet:18, lata:6, plastico:12, vidro:12, sucata:7, oleo:3, eletro:4};
+const BALE_KG = 100;   // 1 fardo = 100 kg
+const PELLET_MULT = 3; // grãos valem 3x
+const BALE_MULT = 1.3; // fardos valem 30% a mais
+const MIXED_FACTOR = 0.3; // misturado vale 30% da média
+
+const REJ = [
+  {n:'Resto de comida',        why:'Resto de comida é orgânico: vai para a compostagem, não para a reciclagem.'},
+  {n:'Fralda usada',           why:'Fralda usada mistura materiais e está contaminada. É rejeito.'},
+  {n:'Isopor sujo',            why:'Isopor sujo de comida é muito difícil de limpar e reciclar.'},
+  {n:'Papel higiênico usado',  why:'Papel higiênico e guardanapo usados não podem ser reciclados.'},
+  {n:'Caixa de pizza engordurada', why:'Papelão engordurado contamina o lote de papel limpo.'},
+  {n:'Bituca de cigarro',      why:'Bituca de cigarro é rejeito e contamina os outros materiais.'},
+];
+
+const ROUTES = [
+  {id:'bairro', n:'Rua do bairro', item:null, ph:1, items:22, rej:0.18, wm:1,
+   mix:{papelao:5, pet:4, lata:2, plastico:2, vidro:2, sucata:1, oleo:1, eletro:0.5},
+   d:'Casas e calçadas do bairro. Papelão e garrafas PET.'},
+  {id:'feira', n:'Feira livre', item:'rota_feira', ph:2, items:28, rej:0.30, wm:1.1,
+   mix:{papelao:5, pet:3, lata:5, plastico:3, vidro:1, sucata:0.5, oleo:0.5},
+   d:'Barracas e caixotes. Muita latinha e papelão, mas muito resto de comida.'},
+  {id:'centro', n:'Centro comercial', item:'rota_centro', ph:3, items:30, rej:0.12, wm:1.2,
+   mix:{papelao:9, pet:2, lata:2, plastico:5, vidro:1, sucata:1, eletro:1.5},
+   d:'Lojas e calçadão. Muito papelão das caixas e plástico duro.'},
+  {id:'cond', n:'Condomínios parceiros', item:'rota_cond', ph:5, items:30, rej:0.05, wm:1.35,
+   mix:{papelao:4, pet:3, lata:4, plastico:3, vidro:5, oleo:2, eletro:1},
+   d:'Moradores que já separam o lixo. Material limpo e quase nenhum rejeito.'},
+  {id:'pev', n:'Pontos de Entrega Voluntária', item:null, ph:6, items:34, rej:0.02, wm:1.6,
+   mix:{papelao:4, pet:4, lata:3, plastico:4, vidro:4, sucata:2, oleo:3, eletro:3},
+   d:'Contêineres da coleta seletiva. Todos os tipos, inclusive óleo e eletrônicos.'},
+];
+
+const PHASES = [
+  {name:'Catador(a) sozinho(a)', max:1, cost:0, reqs:[],
+   msg:''},
+  {name:'Ponto de acúmulo', max:3, cost:60, costName:'Limpar o terreno', reqs:[['trips',3]],
+   msg:'Você limpou o terreno! Agora dá para cobrir o material com uma lona, guardar em bags, ter uma balança e chamar os primeiros colegas.',
+   libera:['Lona, bags e balança','Primeiros colegas (até 2)','Rota da feira livre','Latinhas']},
+  {name:'Grupo informal', max:6, cost:400, costName:'Construir o barracão de madeira', reqs:[['working',3],['recycled',300]],
+   msg:'O grupo levantou um barracão de madeira. Agora vocês trabalham juntos e fazem a triagem no chão, sobre lonas.',
+   libera:['Barracão de madeira','Triagem no chão (lonas)','Primeiros EPIs: luvas','Rota do centro comercial','Plástico duro']},
+  {name:'Associação', max:10, cost:2500, costName:'Organizar a associação', reqs:[['working',5],['item','luvas_epi'],['recycled',1000]],
+   msg:'O grupo virou uma associação! Tem mesa de triagem, banheiro, baias para separar os materiais e mais equipamentos de proteção.',
+   libera:['Mesas de triagem','Baias','Banheiro','Botas, uniforme e óculos','Triciclos','Vidro']},
+  {name:'Cooperativa formalizada', max:15, cost:12000, costName:'Formalização (CNPJ, estatuto e assembleia)', reqs:[['coop',7],['epiFull']],
+   msg:'Com CNPJ, estatuto e assembleia, a cooperativa é oficial! O galpão de alvenaria está de pé e agora vocês vendem direto para a indústria, sem atravessador.',
+   libera:['Venda direta à indústria','Galpão de alvenaria','Condomínios parceiros','Capacitação','Sucata de metal']},
+  {name:'Parceria com a prefeitura', max:25, cost:50000, costName:'Contrato de coleta seletiva', reqs:[['coop',12],['recycled',5000]],
+   msg:'A prefeitura contratou a cooperativa para a coleta seletiva! Ela paga pelo serviço, e os Pontos de Entrega Voluntária trazem material todos os dias.',
+   libera:['Pagamento da prefeitura','Caminhão de coleta','Pontos de Entrega Voluntária','Educação ambiental','Óleo de cozinha']},
+  {name:'Estrutura profissional', max:40, cost:200000, costName:'Obra da estrutura profissional', reqs:[['coop',20],['recycled',15000]],
+   msg:'Chegaram a prensa, a esteira e a empilhadeira. E também vestiário, refeitório e creche para os filhos dos cooperados.',
+   libera:['Prensa enfardadeira','Função Prensa e beneficiamento','Esteira e empilhadeira','Vestiário, refeitório e creche','Eletrônicos']},
+  {name:'Beneficiamento', max:60, cost:800000, costName:'Licença de beneficiamento', reqs:[['coop',35],['item','refeitorio'],['item','creche'],['recycled',40000],['bales',50]],
+   msg:'A cooperativa agora beneficia o plástico: moedor, lavadora e extrusora transformam PET e plástico duro em grãos, que valem muito mais.',
+   libera:['Linha de grãos de plástico','Contratos de logística reversa']},
+  {name:'Indústria sustentável', max:80, cost:3000000, costName:'Projeto de indústria sustentável', reqs:[['coop',50],['pellets',5000]],
+   msg:'A cooperativa virou uma indústria sustentável: separador automático, painéis solares, cisterna e espaço para crescer no terreno vizinho.',
+   libera:['Separador automático','Painéis solares','Cisterna','Terreno vizinho']},
+  {name:'Referência regional', max:120, cost:12000000, costName:'Rede regional de cooperativas', reqs:[['coop',70],['recycled',300000],['logistica',3]],
+   msg:'Vocês são referência na região! A cooperativa lidera uma rede, tem grandes contratos e um centro de educação ambiental. Da carrocinha à central de reciclagem: que caminhada!',
+   libera:['Rede de cooperativas','Centro de educação ambiental']},
+];
+const INFRA = [1, 2, 3.5, 6, 10, 16, 22, 30, 40, 55];
+
+const CATS = [
+  {id:'rua', n:'Rua e coleta'},
+  {id:'estrutura', n:'Estrutura'},
+  {id:'pessoas', n:'Pessoas'},
+  {id:'seguranca', n:'Segurança e bem-estar'},
+  {id:'materiais', n:'Materiais'},
+  {id:'negocios', n:'Negócios'},
+];
+
+const L = (...a) => a; // limites por fase (fase 1..10)
+const ITEMS = [
+  // ---------- RUA E COLETA
+  {id:'carrinho2', cat:'rua', n:'Carrinho maior', d:'Seu carrinho passa a levar 40 kg.', cost:15, ph:1, uniq:1, ic:'cart'},
+  {id:'luvas_coleta', cat:'rua', n:'Luvas de coleta', d:'Com as mãos protegidas, é só tocar no material para jogá-lo no carrinho.', cost:25, ph:1, uniq:1, ic:'glove'},
+  {id:'tempo', cat:'rua', n:'Mais tempo na rua', d:'+5 segundos em cada saída.', cost:30, ph:1, max:8, ic:'clock'},
+  {id:'carroca_propria', cat:'rua', n:'Carroça própria', d:'Você troca o carrinho por uma carroça: 70 kg por saída.', cost:90, ph:2, uniq:1, req:['carrinho2'], ic:'cart'},
+  {id:'rota_feira', cat:'rua', n:'Rota: Feira livre', d:'Muita latinha e papelão, mas também muito resto de comida.', cost:70, ph:2, uniq:1, ic:'route'},
+  {id:'conhecimento', cat:'rua', n:'Conhecimento das rotas', d:'+15% de material em cada saída.', cost:60, ph:2, max:5, ic:'map'},
+  {id:'ajudante', cat:'rua', n:'Ajudante na rua', d:'Um ajudante recolhe material junto com você nas saídas.', cost:80, ph:2, max:5, ic:'person'},
+  {id:'carroca', cat:'rua', n:'Carroça para coletor', d:'1 vaga de coleta. O coletor sai sozinho e traz material misturado para a base.', cost:50, ph:2, lim:L(0,1,2,4,6,8,10,12,15,20), ic:'cart'},
+  {id:'rota_centro', cat:'rua', n:'Rota: Centro comercial', d:'Lojas com muito papelão e plástico duro, e pouco rejeito.', cost:500, ph:3, uniq:1, ic:'route'},
+  {id:'triciclo_proprio', cat:'rua', n:'Triciclo próprio', d:'Você passa a sair de triciclo: 120 kg por saída.', cost:1200, ph:4, uniq:1, req:['carroca_propria'], ic:'bike'},
+  {id:'triciclo', cat:'rua', n:'Triciclo para coletor', d:'1 vaga de coleta. Carrega o dobro de uma carroça.', cost:1500, ph:4, lim:L(0,0,0,1,3,5,8,10,12,15), ic:'bike'},
+  {id:'rota_cond', cat:'rua', n:'Rota: Condomínios parceiros', d:'Moradores que separam o lixo: material limpo e quase sem rejeito.', cost:6000, ph:5, uniq:1, ic:'route'},
+  {id:'caminhao', cat:'rua', n:'Caminhão de coleta', d:'2 vagas de coleta e muita carga. Nas suas saídas, você também usa o caminhão (400 kg).', cost:90000, ph:6, lim:L(0,0,0,0,0,1,2,3,4,6), ic:'truck'},
+  // ---------- ESTRUTURA
+  {id:'lona', cat:'estrutura', n:'Lona de cobertura', d:'Protege o material da chuva. +60 kg de espaço para material misturado.', cost:30, ph:2, uniq:1, ic:'tarp'},
+  {id:'bag', cat:'estrutura', n:'Bag', d:'+50 kg de espaço para material separado.', cost:15, ph:2, lim:L(0,3,6,8,10,12,15,15,20,25), ic:'bag'},
+  {id:'balanca', cat:'estrutura', n:'Balança', d:'1 vaga de venda. Pesar direito garante um preço justo.', cost:40, ph:2, lim:L(0,1,1,2,2,3,4,5,6,8), ic:'scale'},
+  {id:'lona_triagem', cat:'estrutura', n:'Lona de triagem no chão', d:'2 vagas de triagem. Trabalho pesado, agachado no chão.', cost:120, ph:3, lim:L(0,0,2,2,0,0,0,0,0,0), ic:'tarp'},
+  {id:'banheiro', cat:'estrutura', n:'Banheiro', d:'Dignidade básica para quem trabalha. +5% de produtividade.', cost:500, ph:4, uniq:1, ic:'house'},
+  {id:'mesa', cat:'estrutura', n:'Mesa de triagem', d:'4 vagas de triagem, com o material na altura certa.', cost:700, ph:4, lim:L(0,0,0,2,3,4,6,8,10,14), ic:'table'},
+  {id:'baia', cat:'estrutura', n:'Baia', d:'+300 kg de espaço para separado e +150 kg para misturado.', cost:900, ph:4, lim:L(0,0,0,4,8,12,16,20,30,40), ic:'bay'},
+  {id:'galpao', cat:'estrutura', n:'Ampliação do galpão', d:'+3 t de espaço para separado e +1,5 t para misturado.', cost:15000, ph:5, lim:L(0,0,0,0,1,2,3,4,6,8), ic:'house'},
+  {id:'prensa', cat:'estrutura', n:'Prensa enfardadeira', d:'1 vaga de Prensa. Fardos valem 30% a mais e ocupam metade do espaço.', cost:120000, ph:7, lim:L(0,0,0,0,0,0,2,3,4,6), ic:'press'},
+  {id:'esteira', cat:'estrutura', n:'Esteira de triagem', d:'8 vagas de triagem, bem mais rápidas que a mesa.', cost:150000, ph:7, lim:L(0,0,0,0,0,0,1,2,3,4), ic:'belt'},
+  {id:'empilhadeira', cat:'estrutura', n:'Empilhadeira', d:'+20% na velocidade de venda e da prensa.', cost:90000, ph:7, lim:L(0,0,0,0,0,0,1,2,3,4), ic:'fork'},
+  {id:'separador', cat:'estrutura', n:'Separador automático', d:'Faz a triagem sozinho, sem ocupar vagas.', cost:1500000, ph:9, lim:L(0,0,0,0,0,0,0,0,2,4), ic:'machine'},
+  {id:'painel', cat:'estrutura', n:'Painel solar', d:'Energia limpa e conta de luz menor: +3% de produtividade.', cost:200000, ph:9, lim:L(0,0,0,0,0,0,0,0,10,20), ic:'sun'},
+  {id:'cisterna', cat:'estrutura', n:'Cisterna de água da chuva', d:'Reaproveita a chuva para lavar o plástico: +20% na linha de grãos.', cost:800000, ph:9, uniq:1, ic:'drop'},
+  {id:'terreno', cat:'estrutura', n:'Terreno vizinho', d:'Compra o terreno ao lado: +20 t de espaço para separado e +10 t para misturado.', cost:2500000, ph:9, uniq:1, ic:'map'},
+  // ---------- SEGURANÇA E BEM-ESTAR
+  {id:'luvas_epi', cat:'seguranca', n:'EPI: Luvas', d:'Luvas para todos na triagem. +5% de produtividade. Entra no kit de cada novo cooperado.', cost:120, ph:3, uniq:1, kit:8, ic:'glove'},
+  {id:'botas', cat:'seguranca', n:'EPI: Botas', d:'Botas com biqueira contra cortes e pancadas. +5% de produtividade.', cost:500, ph:4, uniq:1, kit:25, ic:'boot'},
+  {id:'uniforme', cat:'seguranca', n:'EPI: Uniforme', d:'Uniforme resistente e com faixa refletiva. +5% de produtividade.', cost:800, ph:4, uniq:1, kit:30, ic:'shirt'},
+  {id:'oculos', cat:'seguranca', n:'EPI: Óculos de proteção', d:'Protege os olhos de poeira e estilhaços. +5% de produtividade.', cost:1000, ph:4, uniq:1, kit:12, ic:'goggle'},
+  {id:'capacitacao', cat:'seguranca', n:'Capacitação', d:'Cursos de triagem, segurança e gestão. +5% de produtividade por nível.', cost:3000, ph:5, max:15, ic:'book'},
+  {id:'protetor', cat:'seguranca', n:'EPI: Protetor auricular', d:'A prensa e a esteira fazem barulho. +5% de produtividade.', cost:10000, ph:7, uniq:1, kit:15, ic:'ear'},
+  {id:'vestiario', cat:'seguranca', n:'Vestiário', d:'Lugar para tomar banho e trocar de roupa. +8% de produtividade.', cost:30000, ph:7, uniq:1, ic:'house'},
+  {id:'refeitorio', cat:'seguranca', n:'Refeitório', d:'Comida boa e um lugar digno para comer. +10% de produtividade.', cost:45000, ph:7, uniq:1, ic:'food'},
+  {id:'creche', cat:'seguranca', n:'Creche', d:'Os filhos dos cooperados ficam cuidados perto dos pais. +10% de produtividade.', cost:70000, ph:7, uniq:1, ic:'kid'},
+  // ---------- MATERIAIS
+  {id:'mat_lata', cat:'materiais', n:'Latinhas de alumínio', d:'Compradores de alumínio aceitam seu material. O alumínio é o que vale mais por kg.', cost:60, ph:2, uniq:1, mat:'lata', ic:'can'},
+  {id:'mat_plastico', cat:'materiais', n:'Plástico duro', d:'Baldes, potes e cadeiras quebradas agora são aceitos.', cost:300, ph:3, uniq:1, mat:'plastico', ic:'bucket'},
+  {id:'mat_vidro', cat:'materiais', n:'Vidro', d:'Garrafas e potes de vidro. Pesado e barato, mas infinitamente reciclável.', cost:1200, ph:4, uniq:1, mat:'vidro', ic:'bottle'},
+  {id:'mat_sucata', cat:'materiais', n:'Sucata de metal', d:'Ferro, panelas velhas e peças de metal.', cost:5000, ph:5, uniq:1, mat:'sucata', ic:'gear'},
+  {id:'mat_oleo', cat:'materiais', n:'Óleo de cozinha usado', d:'Recolhido em garrafas, vira sabão e biodiesel.', cost:15000, ph:6, uniq:1, mat:'oleo', ic:'drop'},
+  {id:'mat_eletro', cat:'materiais', n:'Eletrônicos', d:'Lixo eletrônico com destino correto para metais e peças.', cost:60000, ph:7, uniq:1, mat:'eletro', ic:'chip'},
+  // ---------- NEGÓCIOS
+  {id:'mural', cat:'negocios', n:'Educação ambiental na comunidade', d:'Oficinas e mutirões no bairro: +10% na coleta e menos rejeito.', cost:25000, ph:6, uniq:1, ic:'book'},
+  {id:'linha_graos', cat:'negocios', n:'Linha de grãos (moedor, lavadora e extrusora)', d:'2 vagas de Prensa e beneficiamento. Transforma PET e plástico duro em grãos, que valem 3x mais.', cost:450000, ph:8, lim:L(0,0,0,0,0,0,0,2,3,5), ic:'machine'},
+  {id:'logistica', cat:'negocios', n:'Contrato de logística reversa', d:'Uma grande empresa paga para a cooperativa recolher suas embalagens: renda fixa e muito material.', cost:1200000, ph:8, lim:L(0,0,0,0,0,0,0,1,3,3), ic:'doc'},
+  {id:'rede', cat:'negocios', n:'Rede de cooperativas', d:'Vender em conjunto com outras cooperativas: +25% em todas as vendas.', cost:15000000, ph:10, uniq:1, ic:'net'},
+  {id:'centro_edu', cat:'negocios', n:'Centro de educação ambiental', d:'Escolas visitam a cooperativa: +10% de produtividade e menos rejeito.', cost:10000000, ph:10, uniq:1, ic:'house'},
+];
+const ITEM = {}; ITEMS.forEach(it => ITEM[it.id] = it);
+
+const ROLES = {
+  coleta:  {n:'Coleta',  d:'Sai com carroça, triciclo ou caminhão e traz material misturado.', ph:2, vagaTxt:'1 por carroça, 1 por triciclo, 2 por caminhão'},
+  triagem: {n:'Triagem', d:'Separa o material por tipo e descarta o rejeito.', ph:3, vagaTxt:'2 por lona, 4 por mesa, 8 por esteira'},
+  venda:   {n:'Venda',   d:'Pesa e vende o material separado, os fardos e os grãos.', ph:2, vagaTxt:'1 por balança'},
+  prensa:  {n:'Prensa e beneficiamento', d:'Opera a prensa (fardos) e a linha de grãos de plástico.', ph:7, vagaTxt:'1 por prensa, 2 por linha de grãos'},
+};
+const ROLE_IDS = Object.keys(ROLES);
+
+const ACHS = [
+  {id:'saida1', n:'Primeira saída', d:'Faça sua primeira saída para a rua.'},
+  {id:'cheio', n:'Carrinho cheio', d:'Encha o carrinho até o limite numa saída.'},
+  {id:'limpa', n:'Saída limpa', d:'Volte com pelo menos 10 kg e nenhum rejeito.'},
+  {id:'venda1', n:'Primeira venda', d:'Venda material pela primeira vez.'},
+  {id:'colega', n:'Primeiro colega', d:'Admita o primeiro cooperado.'},
+  {id:'t1', n:'1 tonelada', d:'Recicle 1.000 kg de material.'},
+  {id:'chuva', n:'Material protegido', d:'Passe por uma chuva forte com o material coberto.'},
+  {id:'cnpj', n:'CNPJ na mão', d:'Formalize a cooperativa (fase 5).'},
+  {id:'semAtrav', n:'Sem atravessador', d:'Faça a primeira venda direto para a indústria.'},
+  {id:'t10', n:'10 toneladas', d:'Recicle 10.000 kg de material.'},
+  {id:'coop10', n:'10 cooperados', d:'Tenha 10 cooperados trabalhando.'},
+  {id:'prefeitura', n:'Contrato com a prefeitura', d:'Feche o contrato de coleta seletiva (fase 6).'},
+  {id:'rotas', n:'Conhece a cidade', d:'Libere todas as rotas.'},
+  {id:'epi', n:'Todos com EPI', d:'Tenha luvas, botas, uniforme, óculos e protetor auricular para todos.'},
+  {id:'fardo1', n:'Primeiro fardo', d:'Produza o primeiro fardo na prensa.'},
+  {id:'mats', n:'Tudo se recicla', d:'Libere todos os tipos de material.'},
+  {id:'t100', n:'100 toneladas', d:'Recicle 100.000 kg de material.'},
+  {id:'grao1', n:'Primeiros grãos', d:'Produza o primeiro kg de grãos de plástico.'},
+  {id:'coop50', n:'50 cooperados', d:'Tenha 50 cooperados trabalhando.'},
+  {id:'milhao', n:'R$ 1 milhão', d:'Ganhe R$ 1.000.000 no total.'},
+  {id:'fase10', n:'Referência regional', d:'Chegue à fase 10.'},
+];
+const ACH_BONUS = 0.02;
+
+const EVENTS = [
+  {id:'lata2', good:1, w:3, dur:60, t:'Preço da latinha subiu!', d:'O alumínio vale o dobro por 60 segundos. Hora de vender latinha!'},
+  {id:'feira2', good:1, w:2, dur:120, t:'Dia de feira!', d:'A rota da feira livre tem o dobro de material por 2 minutos.'},
+  {id:'doacao', good:1, w:3, t:'Doação!', d:''},
+  {id:'escola', good:1, w:2, t:'Visita de escola', d:''},
+  {id:'mutirao', good:1, w:2, dur:45, t:'Mutirão de triagem!', d:'A comunidade veio ajudar: a triagem fica 2x mais rápida por 45 segundos.'},
+  {id:'chuva', good:0, w:1, t:'Chuva forte', d:''},
+  {id:'preco', good:0, w:1, dur:60, t:'Preço do papelão caiu', d:'O atravessador está pagando 20% menos pelo papelão por 60 segundos.'},
+  {id:'pneu', good:0, w:1, dur:30, t:'Pneu furado', d:'Uma carroça furou o pneu: os coletores de carroça param por 30 segundos.'},
+];
+
+const FACTS = [
+  'A latinha de alumínio pode ser reciclada infinitas vezes, sem perder qualidade.',
+  'O Brasil recicla quase todas as latinhas de alumínio que consome: um dos maiores índices do mundo.',
+  'Reciclar alumínio gasta cerca de 95% menos energia do que produzi-lo a partir do minério.',
+  'Catador de material reciclável é uma profissão reconhecida na Classificação Brasileira de Ocupações (CBO) desde 2002.',
+  'A Política Nacional de Resíduos Sólidos (Lei 12.305/2010) prevê a participação das cooperativas de catadores na coleta seletiva.',
+  'Grande parte do material que chega à indústria da reciclagem no Brasil passa pelas mãos de catadores e catadoras.',
+  'O vidro pode ser reciclado infinitas vezes, sempre virando vidro novo.',
+  'O papelão pode ser reciclado várias vezes. A cada ciclo, as fibras do papel ficam um pouco mais curtas.',
+  'Garrafas PET recicladas viram fibras para roupas, cordas, vassouras e novas embalagens.',
+  'Rejeito é o que não dá para reciclar nem reaproveitar. O destino correto é o aterro sanitário.',
+  'Um litro de óleo de cozinha jogado no ralo pode contaminar milhares de litros de água. Guarde numa garrafa e entregue para a reciclagem!',
+  'Separar o lixo em casa, seco de um lado e úmido do outro, facilita muito o trabalho dos catadores.',
+  'Embalagem limpa e seca vale mais: uma enxaguada rápida antes de descartar ajuda a reciclagem.',
+  'Lixo eletrônico tem metais valiosos, mas também substâncias tóxicas. Precisa de um destino correto.',
+  'Numa cooperativa, as decisões são tomadas em assembleia e o resultado do trabalho é dividido entre os cooperados.',
+  'Logística reversa: fabricantes e comerciantes têm responsabilidade pelo retorno das embalagens depois do uso.',
+  'Equipamentos de proteção, como luvas e botas, evitam cortes e doenças no trabalho com resíduos.',
+];
+
+// =====================================================================
+// ESTADO
+// =====================================================================
+const HOOK = {toast(){}, sfx(){}, ach(){}, event(){}, tip(){}};
+let S = null;
+function newState(){
+  return {
+    v:1, money:0, phase:1, items:{}, roles:{coleta:0, triagem:0, venda:0, prensa:0},
+    mixed:{}, sep:{}, bale:{}, pellet:{},
+    st:{trips:0, streetKg:0, rejStreet:0, autoKg:0, sorted:0, rejOut:0, recycled:0, earned:0, baleKg:0, pelletKg:0, sales:0, hires:0},
+    ach:{}, flags:{}, ev:[], nextEv:200, nextFact:70, factIdx:0,
+    tut:{step:0, done:false}, tips:{}, set:{music:true, sfx:true},
+    t:0, lastSave:Date.now(), route:'bairro',
+  };
+}
+
+// =====================================================================
+// CONSULTAS
+// =====================================================================
+const nI = id => (S.items[id] || 0);
+const has = id => nI(id) > 0;
+function sum(o){ let t = 0; for (const k in o) t += o[k]; return t; }
+function infra(){ return INFRA[S.phase - 1]; }
+function achCount(){ return Object.keys(S.ach).length; }
+function prod(){
+  let b = 1;
+  ['luvas_epi','botas','uniforme','oculos','protetor'].forEach(e => { if (has(e)) b += 0.05; });
+  if (has('banheiro')) b += 0.05;
+  if (has('vestiario')) b += 0.08;
+  if (has('refeitorio')) b += 0.10;
+  if (has('creche')) b += 0.10;
+  if (has('centro_edu')) b += 0.10;
+  b += 0.05 * nI('capacitacao');
+  b += 0.03 * nI('painel');
+  b += ACH_BONUS * achCount();
+  return b;
+}
+function caps(){
+  let mixed = 40, sep = 30;
+  if (has('lona')) mixed += 60;
+  if (S.phase >= 3) { mixed += 150; sep += 100; }        // barracão
+  if (S.phase >= 5) { mixed += 1000; sep += 2000; }      // galpão de alvenaria
+  if (S.phase >= 7) { mixed += 3000; sep += 6000; }      // estrutura profissional
+  mixed += 150 * nI('baia') + 1500 * nI('galpao') + (has('terreno') ? 10000 : 0);
+  sep += 50 * nI('bag') + 300 * nI('baia') + 3000 * nI('galpao') + (has('terreno') ? 20000 : 0);
+  return {mixed, sep};
+}
+function sepUsed(){ return sum(S.sep) + 0.5 * (sum(S.bale) + sum(S.pellet)); }
+function vagas(){
+  return {
+    coleta: nI('carroca') + nI('triciclo') + 2 * nI('caminhao'),
+    triagem: 2 * nI('lona_triagem') + 4 * nI('mesa') + 8 * nI('esteira'),
+    venda: nI('balanca'),
+    prensa: S.phase >= 7 ? nI('prensa') + 2 * nI('linha_graos') : 0,
+  };
+}
+function coopCount(){ return sum(S.roles); }
+function maxCoop(){ return PHASES[S.phase - 1].max - 1; }
+function roleOpen(r){ return S.phase >= ROLES[r].ph; }
+function matOn(m){ const it = MATS[m].item; return !it || has(it); }
+function evOn(id){ return S.ev.some(e => e.id === id); }
+function formal(){ return S.phase >= 5; }
+function routeOn(r){ return r.item ? has(r.item) : S.phase >= r.ph; }
+function kitCost(){ return ITEMS.filter(it => it.kit && has(it.id)).reduce((a, it) => a + it.kit, 0); }
+function hireCost(){ return Math.ceil(40 * Math.pow(1.075, coopCount())) + kitCost(); }
+function playerCap(){
+  if (has('caminhao')) return 400;
+  if (has('triciclo_proprio')) return 120;
+  if (has('carroca_propria')) return 70;
+  if (has('carrinho2')) return 40;
+  return 25;
+}
+function tripTime(){ return 45 + 5 * nI('tempo'); }
+function saleMult(){ return (has('rede') ? 1.25 : 1) * (1 + 0.05 * nI('logistica')); }
+function price(m, form){
+  const M = MATS[m];
+  let p = formal() ? M.ind : M.atr;
+  if (form === 'bale') p *= BALE_MULT;
+  if (form === 'pellet') p *= PELLET_MULT;
+  if (m === 'lata' && evOn('lata2')) p *= 2;
+  if (m === 'papelao' && evOn('preco')) p *= 0.8;
+  return p * saleMult();
+}
+function mixedValue(){
+  let v = 0;
+  for (const m in S.mixed) if (m !== 'rej') v += S.mixed[m] * MATS[m].atr;
+  return v * MIXED_FACTOR;
+}
+function itemLimit(it){
+  if (it.uniq) return 1;
+  if (it.max) return it.max;
+  if (it.lim) return it.lim[S.phase - 1];
+  return Infinity;
+}
+function itemMaxEver(it){ return it.uniq ? 1 : it.max ? it.max : it.lim ? Math.max(...it.lim) : Infinity; }
+function itemCost(it, k){ return Math.ceil(it.cost * Math.pow(1.15, k == null ? nI(it.id) : k)); }
+function costFor(it, q){ let c = 0; const k = nI(it.id); for (let i = 0; i < q; i++) c += itemCost(it, k + i); return c; }
+function remainingQty(it){ return Math.max(0, itemLimit(it) - nI(it.id)); }
+function maxAffordable(it){
+  const rem = remainingQty(it); let c = 0, q = 0; const k = nI(it.id);
+  while (q < rem) { const nc = itemCost(it, k + q); if (c + nc > S.money) break; c += nc; q++; }
+  return q;
+}
+function reqMissing(it){ return (it.req || []).filter(r => !has(r)); }
+// status: done | limit | avail | locked | hidden
+function itemStatus(it){
+  const k = nI(it.id);
+  if (k >= itemMaxEver(it)) return 'done';
+  if (it.ph > S.phase + 1) return 'hidden';
+  if (it.ph > S.phase || reqMissing(it).length) return 'locked';
+  if (k >= itemLimit(it)) return 'limit';
+  return 'avail';
+}
+
+function rates(){
+  const p = prod(), I = infra();
+  let c = S.roles.coleta, col = 0;
+  const a1 = Math.min(c, 2 * nI('caminhao')); col += a1 * 3; c -= a1;
+  const a2 = Math.min(c, nI('triciclo')); col += a2 * 0.9; c -= a2;
+  const a3 = Math.min(c, nI('carroca')); if (!evOn('pneu')) col += a3 * 0.4;
+  col *= p * I * (has('mural') ? 1.1 : 1);
+  const extra = (S.phase >= 6 ? 3 * I : 0) + nI('logistica') * 25 * I;
+  let t = S.roles.triagem, tri = 0;
+  const b1 = Math.min(t, 8 * nI('esteira')); tri += b1 * 1.5; t -= b1;
+  const b2 = Math.min(t, 4 * nI('mesa')); tri += b2 * 0.6; t -= b2;
+  const b3 = Math.min(t, 2 * nI('lona_triagem')); tri += b3 * 0.3;
+  tri = tri * p * I + nI('separador') * 20 * I;
+  if (evOn('mutirao')) tri *= 2;
+  const emp = 1 + 0.2 * nI('empilhadeira');
+  const ven = Math.min(S.roles.venda, nI('balanca')) * 3 * p * I * emp;
+  let pr = S.phase >= 7 ? S.roles.prensa : 0;
+  const g = Math.min(pr, 2 * nI('linha_graos')); pr -= g;
+  const pp = Math.min(pr, nI('prensa'));
+  const gra = g * 2 * p * I * (has('cisterna') ? 1.2 : 1);
+  const pre = pp * 3.5 * p * I * emp;
+  const money = (S.phase >= 6 ? 30 : 0) + nI('logistica') * 400;
+  return {col, extra, tri, ven, gra, pre, money};
+}
+function rejFrac(){ return has('centro_edu') ? 0.05 : has('mural') ? 0.08 : 0.12; }
+
+// =====================================================================
+// MOVIMENTO DE MATERIAL
+// =====================================================================
+function autoWeights(){
+  const w = {}; let T = 0;
+  MAT_IDS.forEach(m => { if (matOn(m)) { w[m] = AUTO_MIX[m]; T += w[m]; } });
+  for (const m in w) w[m] /= T;
+  return w;
+}
+function addMixed(kg, rf){
+  const w = autoWeights();
+  for (const m in w) S.mixed[m] = (S.mixed[m] || 0) + kg * (1 - rf) * w[m];
+  S.mixed.rej = (S.mixed.rej || 0) + kg * rf;
+}
+// remove kg proporcionalmente das chaves indicadas
+function takeProp(store, keys, kg){
+  let tot = 0; keys.forEach(k => tot += (store[k] || 0));
+  const out = {};
+  if (tot <= 1e-9 || kg <= 0) return out;
+  const f = Math.min(1, kg / tot);
+  keys.forEach(k => { const v = (store[k] || 0) * f; if (v > 0) { out[k] = v; store[k] -= v; if (store[k] < 1e-6) delete store[k]; } });
+  return out;
+}
+function sortKg(amount){
+  const tot = sum(S.mixed); if (tot <= 1e-6) return 0;
+  amount = Math.min(amount, tot);
+  const matShare = (tot - (S.mixed.rej || 0)) / tot;
+  const space = caps().sep - sepUsed();
+  if (amount * matShare > space) { if (space <= 0.01) { S._blkTri = true; return 0; } amount = space / Math.max(matShare, 1e-6); S._blkTri = true; }
+  const out = takeProp(S.mixed, Object.keys(S.mixed), amount);
+  for (const k in out) {
+    if (k === 'rej') S.st.rejOut += out[k];
+    else S.sep[k] = (S.sep[k] || 0) + out[k];
+  }
+  S.st.sorted += amount;
+  return amount;
+}
+function sellStore(store, form, kg){
+  const out = takeProp(store, Object.keys(store), kg);
+  let money = 0, w = 0;
+  for (const m in out) { money += out[m] * price(m, form); w += out[m]; }
+  return {money, w};
+}
+function addMoney(v){ S.money += v; S.st.earned += v; }
+function registerSale(r){
+  if (r.w <= 0) return;
+  addMoney(r.money); S.st.recycled += r.w; S.st.sales++;
+  if (formal()) S.flags.semAtrav = 1;
+}
+function sellAuto(kg){
+  let left = kg, total = {money:0, w:0};
+  for (const [store, form] of [[S.pellet,'pellet'], [S.bale,'bale'], [S.sep,'sep']]) {
+    if (left <= 0) break;
+    const r = sellStore(store, form, left); left -= r.w; total.money += r.money; total.w += r.w;
+  }
+  registerSale(total);
+  return total;
+}
+function sellAllManual(){
+  const total = {money:0, w:0};
+  for (const [store, form] of [[S.pellet,'pellet'], [S.bale,'bale'], [S.sep,'sep']]) {
+    const r = sellStore(store, form, Infinity); total.money += r.money; total.w += r.w;
+  }
+  registerSale(total);
+  return total;
+}
+function sellMixed(){
+  const v = mixedValue(); let w = 0;
+  for (const m in S.mixed) if (m !== 'rej') w += S.mixed[m];
+  const rej = S.mixed.rej || 0;
+  S.mixed = {};
+  S.st.rejOut += rej;
+  registerSale({money:v, w});
+  return {money:v, w, rej};
+}
+function manualSortAmount(){ return 3 * infra() * prod(); }
+function makeBales(kg){
+  const keys = MAT_IDS.filter(m => MATS[m].bale && !(MATS[m].pellet && S.roles.prensa > 0 && nI('linha_graos') > 0));
+  const out = takeProp(S.sep, keys, kg); let w = 0;
+  for (const m in out) { S.bale[m] = (S.bale[m] || 0) + out[m]; w += out[m]; }
+  S.st.baleKg += w;
+}
+function makePellets(kg){
+  const out = takeProp(S.sep, ['pet','plastico'], kg); let w = 0;
+  for (const m in out) { S.pellet[m] = (S.pellet[m] || 0) + out[m]; w += out[m]; }
+  S.st.pelletKg += w;
+}
+
+// =====================================================================
+// SIMULAÇÃO
+// =====================================================================
+function tick(dt, offline){
+  S.t += dt;
+  if (S.ev.length) S.ev = S.ev.filter(e => e.until > S.t);
+  const r = rates(), cap = caps();
+  S._blkCol = false; S._blkTri = false;
+  const inflow = (r.col + r.extra) * dt;
+  if (inflow > 0) {
+    const space = cap.mixed - sum(S.mixed);
+    if (space <= 0) S._blkCol = true;
+    else {
+      const a = Math.min(inflow, space); if (a < inflow) S._blkCol = true;
+      const fc = r.col / (r.col + r.extra);
+      addMixed(a * fc, rejFrac()); addMixed(a * (1 - fc), 0.03);
+      S.st.autoKg += a;
+    }
+  }
+  if (r.tri > 0) sortKg(r.tri * dt);
+  if (r.gra > 0) makePellets(r.gra * dt);
+  if (r.pre > 0) makeBales(r.pre * dt);
+  if (r.ven > 0) sellAuto(r.ven * dt);
+  if (r.money > 0) addMoney(r.money * dt);
+  if (!offline) {
+    checkAch();
+    if (S.tut.done && S.phase >= 2) {
+      S.nextEv -= dt;
+      if (S.nextEv <= 0) { S.nextEv = 120 + Math.random() * 120; fireEvent(); }
+    }
+  }
+}
+
+// =====================================================================
+// AÇÕES
+// =====================================================================
+function buy(id, q){
+  const it = ITEM[id]; if (itemStatus(it) !== 'avail') return 0;
+  q = Math.min(q, remainingQty(it));
+  let bought = 0;
+  while (bought < q) {
+    const c = itemCost(it);
+    if (S.money < c) break;
+    S.money -= c; S.items[id] = nI(id) + 1; bought++;
+  }
+  return bought;
+}
+function freeVaga(r){ return vagas()[r] - S.roles[r]; }
+function canHire(){ return S.phase >= 2 && coopCount() < maxCoop(); }
+function hire(role){
+  if (!canHire() || !roleOpen(role) || freeVaga(role) <= 0) return false;
+  const c = hireCost(); if (S.money < c) return false;
+  S.money -= c; S.roles[role]++; S.st.hires++;
+  return true;
+}
+function moveRole(from, to){
+  if (S.roles[from] <= 0 || !roleOpen(to) || freeVaga(to) <= 0) return false;
+  S.roles[from]--; S.roles[to]++; return true;
+}
+function epiFull(){ return ['luvas_epi','botas','uniforme','oculos'].every(has); }
+function reqList(){
+  const P = PHASES[S.phase]; if (!P) return [];
+  const out = [];
+  P.reqs.forEach(([t, v]) => {
+    let label, cur, need = v;
+    if (t === 'trips') { label = `Fazer ${v} saídas para a rua`; cur = S.st.trips; }
+    else if (t === 'working') { label = `${v} pessoas trabalhando (com você)`; cur = 1 + coopCount(); }
+    else if (t === 'coop') { label = `${v} cooperados`; cur = coopCount(); }
+    else if (t === 'recycled') { label = `Reciclar ${fmtKg(v)}`; cur = S.st.recycled; }
+    else if (t === 'item') { label = `Ter: ${ITEM[v].n.replace('EPI: ','EPI ')}`; cur = has(v) ? 1 : 0; need = 1; }
+    else if (t === 'epiFull') { label = 'EPI completo para todos (luvas, botas, uniforme e óculos)'; cur = ['luvas_epi','botas','uniforme','oculos'].filter(has).length; need = 4; }
+    else if (t === 'bales') { label = `Produzir ${v} fardos`; cur = Math.floor(S.st.baleKg / BALE_KG); }
+    else if (t === 'pellets') { label = `Produzir ${fmtKg(v)} de grãos`; cur = S.st.pelletKg; }
+    else if (t === 'logistica') { label = `${v} contratos de logística reversa`; cur = nI('logistica'); }
+    out.push({label, cur, need, ok: cur >= need, money:false});
+  });
+  out.push({label:`${P.costName}: ${fmtMoney(P.cost)}`, cur:S.money, need:P.cost, ok:S.money >= P.cost, money:true});
+  return out;
+}
+function phaseProgress(){
+  const l = reqList(); if (!l.length) return 1;
+  return l.reduce((a, r) => a + Math.min(1, r.cur / r.need), 0) / l.length;
+}
+function canAdvance(){ return S.phase < 10 && reqList().every(r => r.ok); }
+function advance(){
+  if (!canAdvance()) return null;
+  S.money -= PHASES[S.phase].cost; S.phase++;
+  const info = {phase:S.phase, converted:0};
+  if (S.phase === 5 && nI('lona_triagem') > 0) {
+    info.converted = nI('lona_triagem');
+    S.items.mesa = nI('mesa') + info.converted; S.items.lona_triagem = 0;
+  }
+  return info;
+}
+
+// =====================================================================
+// CONQUISTAS E EVENTOS
+// =====================================================================
+function achCond(id){
+  const st = S.st;
+  switch (id) {
+    case 'saida1': return st.trips >= 1;
+    case 'cheio': return !!S.flags.cheio;
+    case 'limpa': return !!S.flags.limpa;
+    case 'venda1': return st.sales >= 1;
+    case 'colega': return st.hires >= 1;
+    case 't1': return st.recycled >= 1000;
+    case 't10': return st.recycled >= 10000;
+    case 't100': return st.recycled >= 100000;
+    case 'chuva': return !!S.flags.chuva;
+    case 'cnpj': return S.phase >= 5;
+    case 'semAtrav': return !!S.flags.semAtrav;
+    case 'coop10': return coopCount() >= 10;
+    case 'coop50': return coopCount() >= 50;
+    case 'prefeitura': return S.phase >= 6;
+    case 'rotas': return ROUTES.every(routeOn);
+    case 'epi': return epiFull() && has('protetor');
+    case 'fardo1': return st.baleKg >= BALE_KG;
+    case 'mats': return MAT_IDS.every(matOn);
+    case 'grao1': return st.pelletKg >= 1;
+    case 'milhao': return st.earned >= 1e6;
+    case 'fase10': return S.phase >= 10;
+  }
+  return false;
+}
+function checkAch(){
+  ACHS.forEach(a => { if (!S.ach[a.id] && achCond(a.id)) { S.ach[a.id] = Date.now(); HOOK.ach(a); } });
+}
+function eventOk(e){
+  switch (e.id) {
+    case 'lata2': return matOn('lata');
+    case 'feira2': return has('rota_feira');
+    case 'escola': return S.phase >= 3;
+    case 'mutirao': return S.roles.triagem > 0;
+    case 'chuva': return sum(S.mixed) > 5;
+    case 'preco': return S.phase < 5;
+    case 'pneu': return S.roles.coleta > 0 && nI('carroca') > 0 && !has('caminhao');
+  }
+  return true;
+}
+function fireEvent(forceId){
+  const pool = EVENTS.filter(e => forceId ? e.id === forceId : eventOk(e));
+  if (!pool.length) return;
+  let W = pool.reduce((a, e) => a + e.w, 0), x = Math.random() * W, e = pool[0];
+  for (const p of pool) { x -= p.w; if (x <= 0) { e = p; break; } }
+  const ev = {id:e.id, t:e.t, d:e.d, good:e.good};
+  const r = rates();
+  if (e.id === 'doacao') {
+    const kg = Math.max(15, Math.round((r.col + r.extra) * 40));
+    addMixed(kg, 0.05); ev.d = `Um comércio do bairro doou ${fmtKg(kg)} de material para a cooperativa.`;
+  } else if (e.id === 'escola') {
+    const v = Math.max(40, Math.round(incomeEstimate() * 25));
+    addMoney(v); ev.d = `Uma escola visitou a cooperativa para aprender sobre reciclagem e deixou uma doação de ${fmtMoney(v)}.`;
+  } else if (e.id === 'chuva') {
+    if (has('lona') || S.phase >= 5) { S.flags.chuva = 1; ev.good = 1; ev.d = S.phase >= 5 ? 'Choveu forte, mas o material estava protegido dentro do galpão!' : 'Choveu forte, mas a lona protegeu todo o material!'; }
+    else {
+      const lost = (S.mixed.papelao || 0) * 0.15;
+      if (S.mixed.papelao) S.mixed.papelao -= lost;
+      ev.d = `Sem cobertura, ${fmtKg(lost)} de papelão molhou e estragou. Uma lona evita isso.`;
+    }
+  }
+  if (e.dur) S.ev.push({id:e.id, until:S.t + e.dur, t:e.t});
+  HOOK.event(ev);
+}
+let _incHist = [];
+function incomeEstimate(){ // R$/s aproximado da automação
+  const r = rates();
+  const sellKg = Math.min(r.ven, Math.max(r.tri, r.ven * 0.5));
+  let avg = 0, T = 0; const w = autoWeights();
+  for (const m in w) { avg += w[m] * price(m, 'sep'); T += w[m]; }
+  return sellKg * (T ? avg / T : 0) + r.money;
+}
+
+// =====================================================================
+// FORMATAÇÃO
+// =====================================================================
+function fmtNum(v, d){
+  return v.toLocaleString('pt-BR', {minimumFractionDigits:d || 0, maximumFractionDigits:d || 0});
+}
+function fmtMoney(v){
+  if (v >= 1e9) return 'R$ ' + fmtNum(v / 1e9, 2) + ' bi';
+  if (v >= 1e6) return 'R$ ' + fmtNum(v / 1e6, 2) + ' mi';
+  if (v >= 1e5) return 'R$ ' + fmtNum(Math.floor(v));
+  return 'R$ ' + fmtNum(v, 2);
+}
+function fmtKg(v){
+  if (v >= 1e6) return fmtNum(v / 1e6, 2) + ' mil t';
+  if (v >= 1000) return fmtNum(v / 1000, v >= 1e5 ? 0 : 1) + ' t';
+  return fmtNum(v, v < 10 && v % 1 ? 1 : 0) + ' kg';
+}
+
+// =====================================================================
+// SALVAR / CARREGAR / OFFLINE
+// =====================================================================
+const SAVE_KEY = 'cooperativa-idle-v1';
+function save(){
+  if (typeof localStorage === 'undefined') return;
+  S.lastSave = Date.now();
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {}
+}
+function load(){
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) {}
+  const base = newState();
+  if (d && d.v === 1) {
+    for (const k in base) if (d[k] === undefined) d[k] = base[k];
+    for (const k in base.st) if (d.st[k] === undefined) d.st[k] = 0;
+    for (const k in base.roles) if (d.roles[k] === undefined) d.roles[k] = 0;
+    S = d; return true;
+  }
+  S = base; return false;
+}
+function offlineProgress(){
+  const el = Math.min(7200, Math.max(0, (Date.now() - (S.lastSave || Date.now())) / 1000));
+  if (el < 30) return null;
+  const before = {money:S.money, auto:S.st.autoKg, sorted:S.st.sorted, rec:S.st.recycled};
+  const steps = Math.floor(el);
+  for (let i = 0; i < steps; i++) tick(1, true);
+  return {secs:el, money:S.money - before.money, col:S.st.autoKg - before.auto,
+          sorted:S.st.sorted - before.sorted, sold:S.st.recycled - before.rec};
+}
+/*LOGIC-END*/
+
+// =====================================================================
+// SOM (Web Audio, tudo gerado no código)
+// =====================================================================
+const AU = {
+  ctx:null, master:null, sfxGain:null, musGain:null, noiseBuf:null,
+  mode:'base', nextNote:0, step:0, timer:null,
+  init(){
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    this.ctx = new AC();
+    this.master = this.ctx.createGain(); this.master.gain.value = 0.8; this.master.connect(this.ctx.destination);
+    this.sfxGain = this.ctx.createGain(); this.sfxGain.gain.value = S.set.sfx ? 0.5 : 0; this.sfxGain.connect(this.master);
+    this.musGain = this.ctx.createGain(); this.musGain.gain.value = S.set.music ? 0.16 : 0; this.musGain.connect(this.master);
+    const len = this.ctx.sampleRate * 0.5; this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = this.noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    this.nextNote = this.ctx.currentTime + 0.1;
+    this.timer = setInterval(() => this.schedule(), 100);
+  },
+  setVolumes(){
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.sfxGain.gain.setTargetAtTime(S.set.sfx ? 0.5 : 0, t, 0.05);
+    this.musGain.gain.setTargetAtTime(S.set.music ? 0.16 : 0, t, 0.3);
+  },
+  tone(f, t0, dur, type, vol, dest, f2){
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = type || 'square'; o.frequency.setValueAtTime(f, t0);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol || 0.3, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(dest || this.sfxGain); o.start(t0); o.stop(t0 + dur + 0.05);
+  },
+  noise(t0, dur, vol, freq, dest, q){
+    const c = this.ctx, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = this.noiseBuf; f.type = 'bandpass'; f.frequency.value = freq || 2000; f.Q.value = q || 1;
+    g.gain.setValueAtTime(vol || 0.2, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    s.connect(f); f.connect(g); g.connect(dest || this.sfxGain); s.start(t0); s.stop(t0 + dur + 0.05);
+  },
+  sfx(name){
+    if (!this.ctx || !S.set.sfx) return;
+    const t = this.ctx.currentTime;
+    switch (name) {
+      case 'pick': this.tone(520, t, 0.08, 'square', 0.18, null, 880); this.tone(880, t + 0.06, 0.07, 'triangle', 0.15); break;
+      case 'grab': this.tone(300, t, 0.05, 'triangle', 0.12, null, 420); break;
+      case 'drop': this.tone(260, t, 0.08, 'triangle', 0.12, null, 180); break;
+      case 'rej': this.tone(160, t, 0.25, 'sawtooth', 0.16, null, 90); this.tone(120, t + 0.12, 0.2, 'square', 0.1); break;
+      case 'full': this.tone(330, t, 0.1, 'square', 0.15); this.tone(262, t + 0.1, 0.2, 'square', 0.15); break;
+      case 'tick': this.tone(1200, t, 0.03, 'square', 0.08); break;
+      case 'end': [660, 523, 440, 330].forEach((f, i) => this.tone(f, t + i * 0.13, 0.18, 'square', 0.16)); break;
+      case 'sort': this.noise(t, 0.12, 0.25, 900, null, 0.7); this.noise(t + 0.08, 0.1, 0.18, 1800); break;
+      case 'sell': this.tone(988, t, 0.1, 'square', 0.15); this.tone(1319, t + 0.08, 0.25, 'square', 0.15); break;
+      case 'buy': [523, 659, 784, 1047].forEach((f, i) => this.tone(f, t + i * 0.06, 0.14, 'triangle', 0.2)); this.noise(t + 0.22, 0.15, 0.1, 6000); break;
+      case 'deny': this.tone(200, t, 0.12, 'square', 0.12); this.tone(150, t + 0.1, 0.15, 'square', 0.12); break;
+      case 'event': [784, 988, 1175].forEach((f, i) => this.tone(f, t + i * 0.1, 0.25, 'sine', 0.2)); break;
+      case 'bad': this.tone(392, t, 0.2, 'triangle', 0.2); this.tone(311, t + 0.18, 0.35, 'triangle', 0.2); break;
+      case 'ach': [784, 988, 1175, 1568].forEach((f, i) => this.tone(f, t + i * 0.07, 0.3, 'triangle', 0.18)); this.tone(2093, t + 0.3, 0.4, 'sine', 0.1); break;
+      case 'hammer': for (let i = 0; i < 6; i++) { this.noise(t + i * 0.35, 0.08, 0.35, 700, null, 2); this.tone(180, t + i * 0.35, 0.06, 'square', 0.1); } break;
+      case 'phase': {
+        const mel = [[523,0],[659,.15],[784,.3],[1047,.45],[784,.7],[1047,.85]];
+        mel.forEach(([f, d]) => { this.tone(f, t + d, 0.3, 'square', 0.14); this.tone(f / 2, t + d, 0.3, 'triangle', 0.14); });
+        [523, 659, 784, 1047].forEach(f => this.tone(f, t + 1.05, 1.1, 'triangle', 0.12));
+        for (let i = 0; i < 8; i++) this.noise(t + 1.05 + i * 0.06, 0.05, 0.08, 5000 + i * 300);
+        break;
+      }
+      case 'go': this.tone(392, t, 0.1, 'triangle', 0.18); this.tone(587, t + 0.1, 0.18, 'triangle', 0.18); break;
+      case 'click': this.tone(700, t, 0.03, 'triangle', 0.1); break;
+    }
+  },
+  // ----- música: progressão C - Am - F - G, pentatônica
+  setMode(m){ this.mode = m; },
+  schedule(){
+    if (!this.ctx) return;
+    const street = this.mode === 'street';
+    const bpm = street ? 116 : 76, spb = 60 / bpm / 2; // colcheias
+    while (this.nextNote < this.ctx.currentTime + 0.3) {
+      if (S.set.music) this.playStep(this.step, this.nextNote, street, spb);
+      this.nextNote += spb; this.step = (this.step + 1) % 64;
+    }
+  },
+  playStep(s, t, street, spb){
+    const chords = [[48,52,55],[45,48,52],[41,45,48],[43,47,50]];
+    const bar = Math.floor(s / 16) % 4, pos = s % 16, ch = chords[bar];
+    const mf = n => 440 * Math.pow(2, (n - 69) / 12);
+    const D = this.musGain;
+    if (pos === 0) ch.forEach(n => this.tone(mf(n + 12), t, spb * 15, 'triangle', 0.05, D));
+    if (pos % (street ? 4 : 8) === 0) this.tone(mf(ch[0] - 12), t, spb * (street ? 3 : 7), street ? 'square' : 'triangle', street ? 0.05 : 0.09, D);
+    if (street && pos % 4 === 2) this.tone(mf(ch[2] - 12), t, spb * 1.5, 'square', 0.035, D);
+    const scale = [60,62,64,67,69,72,74,76];
+    const seed = (s * 7 + bar * 13) % 11;
+    if (street) {
+      if (pos % 2 === 0 && seed < 7) this.tone(mf(scale[(seed + bar * 2) % 8] + 12), t, spb * 0.9, 'square', 0.035, D);
+      if (pos % 2 === 1) this.noise(t, 0.04, 0.05, 8000, D, 0.5);
+      if (pos % 8 === 4) this.noise(t, 0.1, 0.09, 1500, D, 0.8);
+    } else {
+      if (pos % 4 === 0 && seed < 6) this.tone(mf(scale[(seed + bar) % 8] + 12), t, spb * 3.5, 'sine', 0.07, D);
+    }
+  },
+};
+
+// =====================================================================
+// DESENHO (pixel art gerada no código)
+// =====================================================================
+const W = 384, H = 216, RES = 3;          // base: 384x216 lógicos
+const SW = 192, SH = 108;                  // rua: 192x108 (pixels 2x maiores, bons para o toque)
+const cv = document.getElementById('cv');
+cv.width = W * RES; cv.height = H * RES;
+const ctx = cv.getContext('2d');
+let CX = ctx; // contexto atual de desenho
+function rect(x, y, w, h, c){ CX.fillStyle = c; CX.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+function px(x, y, c){ rect(x, y, 1, 1, c); }
+function rng(seed){ let s = (seed * 9301 + 49297) % 233280 || 1; return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
+function mkCanvas(w, h){ const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+
+// ---------- sprites de string
+function mkSprite(rows, pal){
+  const h = rows.length, w = Math.max(...rows.map(r => r.length));
+  const c = mkCanvas(w, h), g = c.getContext('2d');
+  rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const ch = r[x]; if (ch !== '.' && pal[ch]) { g.fillStyle = pal[ch]; g.fillRect(x, y, 1, 1); } } });
+  return c;
+}
+const SPR = {
+  papelao: mkSprite([
+    '..........',
+    '.bbbbbbbbb',
+    '.bBbbbbbBb',
+    '.bbbtttbbb',
+    '.BBBBBBBBB',
+    '.bbbbbbbbb',
+    '.bbbbbbbbb',
+    '.bBbbbbbBb',
+    '.bbbbbbbbb',
+  ], {b:'#c79058', B:'#8f6235', t:'#ead9a2'}),
+  pet: mkSprite([
+    '..........',
+    '..........',
+    '.cccccc...',
+    'cWCllCCcck',
+    'cCCllCCcck',
+    'cCCCCCCcc.',
+    '.cccccc...',
+  ], {c:'#a8e0f6', C:'#62b8e0', W:'#ffffff', l:'#2a6fa8', k:'#2a9d3a'}),
+  lata: mkSprite([
+    '...SSSS...',
+    '..sWssssS.',
+    '..srrrrrs.',
+    '..sWrrrrs.',
+    '..sRRRRRs.',
+    '..sWrrrrs.',
+    '..sssssss.',
+    '...SSSSS..',
+  ], {s:'#dfe2e6', S:'#9aa0a8', r:'#d23a2a', R:'#8e1b1b', W:'#ffffff'}),
+  plastico: mkSprite([
+    '.hhhhhhhh.',
+    'h........h',
+    'rrrrrrrrrr',
+    '.rWrrrrrr.',
+    '.rWrrrrRr.',
+    '..rrrrRr..',
+    '..rrrrrr..',
+  ], {h:'#444', r:'#e0574a', R:'#a83226', W:'#ff9c8f'}),
+  vidro: mkSprite([
+    '..........',
+    '..gggggg..',
+    'ggGGGGGGgnn',
+    'gGWGGGGGgnn',
+    'ggGGGGGGgnn',
+    '..gggggg..',
+  ], {g:'#3e9b4a', G:'#6fc27a', W:'#d7f5dc', n:'#2c7a37'}),
+  sucata: mkSprite([
+    '..m.mm.m..',
+    '.mmmmmmmm.',
+    'mmMMmmMMmm',
+    '.mmM..Mmm.',
+    'mmM....Mmm',
+    '.mmM..Mmm.',
+    'mmMMmmMMmm',
+    '.mmmmmmmm.',
+    '..m.mm.m..',
+  ], {m:'#9b7b62', M:'#6e5241'}),
+  oleo: mkSprite([
+    '..........',
+    '.oooooo...',
+    'oOOwwOOook',
+    'oOOwwOOook',
+    'oOOOOOOoo.',
+    '.oooooo...',
+  ], {o:'#f2cd55', O:'#d6a51e', w:'#fff7d6', k:'#c0392b'}),
+  eletro: mkSprite([
+    'eeeeeeeeee',
+    'eDDDDDDeEe',
+    'eDdddddeoe',
+    'eDdddddeEe',
+    'eDDDDDDeoe',
+    'eeeeeeeeee',
+    '.e......e.',
+  ], {e:'#4e5470', D:'#2a2d3e', d:'#6fa3c9', o:'#e8b631', E:'#7b82a3'}),
+  rej0: mkSprite([ // resto de comida
+    '..........',
+    '...y......',
+    '..yYy.gg..',
+    '.yYy.gGGg.',
+    '.bbbbgGg..',
+    'bBbbbrbb..',
+    '.bbrrbbb..',
+  ], {y:'#f0d24a', Y:'#c9a521', g:'#6a9a3a', G:'#476b25', b:'#8a6a3a', B:'#5c4422', r:'#b5492f'}),
+  rej1: mkSprite([ // fralda
+    '..........',
+    '.wwwwwwww.',
+    'bwwwwwwwwb',
+    '.wwyyyyww.',
+    '..wyYYyw..',
+    '..wwwwww..',
+  ], {w:'#f4f1ea', b:'#6aa6d8', y:'#e8d27a', Y:'#c9ab3c'}),
+  rej2: mkSprite([ // isopor sujo
+    '..........',
+    'wwwwwwwwww',
+    'wrrRwwrwww',
+    'wwrrrwwwRw',
+    'wwwwwwwwww',
+    '.gggggggg.',
+  ], {w:'#f6f6f2', r:'#c8402e', R:'#8c2a1c', g:'#bdbdb5'}),
+  rej3: mkSprite([ // papel higiênico usado
+    '..........',
+    '...www....',
+    '..wWwwww..',
+    '.wwwwWww..',
+    '..wwwyw...',
+    '...www....',
+  ], {w:'#f8f8f4', W:'#d6d6cf', y:'#c8b58a'}),
+  rej4: mkSprite([ // caixa de pizza engordurada
+    '..........',
+    '.bbbbbbbbb',
+    '.bBbbddbbb',
+    '.bbdddbbbb',
+    '.BBBBdBBBB',
+    '.bbbbbbddb',
+    '.bddbbbbbb',
+    '.bbbbbbbbb',
+  ], {b:'#c79058', B:'#8f6235', d:'#6b4a2a'}),
+  rej5: mkSprite([ // bituca
+    '..........',
+    '..........',
+    '.wwwwoo...',
+    '.wwwwoo...',
+    '..........',
+  ], {w:'#f2efe6', o:'#d98a3a'}),
+};
+const MAT_SPR = m => SPR[m];
+
+// ---------- pessoas
+const SKINS = ['#f1c9a5', '#d9a273', '#b97a4c', '#8d5a36', '#6b4226', '#e0b48c'];
+const HAIRS = ['#2a1d14', '#4a2f1d', '#111', '#7a4a22', '#bfbfbf', '#3a2a1a'];
+const SHIRTS = ['#d8553f', '#e8b631', '#3a7fc4', '#7a4fa0', '#e07ab0', '#4fa06a', '#f0f0e8', '#c9763a'];
+function personLook(i){
+  const r = rng(i * 37 + 11);
+  return {skin:SKINS[Math.floor(r() * 6)], hair:HAIRS[Math.floor(r() * 6)], shirt:SHIRTS[Math.floor(r() * 8)],
+          pants:['#3b4a6b', '#4a3b2b', '#2b2b2b', '#5a6a3a'][Math.floor(r() * 4)], long:r() < 0.45, cap:r() < 0.25};
+}
+function curEpi(){
+  return {gloves:has('luvas_epi'), boots:has('botas'), uniform:has('uniforme'), goggles:has('oculos'), ear:has('protetor')};
+}
+function drawPerson(x, y, look, pose, t, epi, flip){
+  x = Math.round(x); y = Math.round(y);
+  epi = epi || {};
+  const shirt = epi.uniform ? '#2f7d4a' : look.shirt;
+  const pants = epi.uniform ? '#2d4a63' : look.pants;
+  const hand = epi.gloves ? '#e8a531' : look.skin;
+  const foot = epi.boots ? '#1e1e1e' : '#6b4a2a';
+  let off = 0, l1 = 0, l2 = 0;
+  if (pose === 'walk') { const f = Math.floor(t * 8) % 4; l1 = f === 1 ? -1 : 0; l2 = f === 3 ? -1 : 0; off = (f % 2) ? -1 : 0; }
+  if (pose === 'bend') off = 3;
+  // sombra
+  CX.globalAlpha = 0.25; rect(x - 4, y, 9, 1, '#000'); CX.globalAlpha = 1;
+  // pernas
+  if (pose === 'bend') {
+    rect(x - 3, y - 3, 3, 2, pants); rect(x + 1, y - 3, 3, 2, pants);
+    rect(x - 3, y - 1, 2, 1, foot); rect(x + 2, y - 1, 2, 1, foot);
+  } else {
+    rect(x - 2, y - 5 + l1, 2, 4, pants); rect(x + 1, y - 5 + l2, 2, 4, pants);
+    rect(x - 2, y - 1 + l1, 2, 1, foot); rect(x + 1, y - 1 + l2, 2, 1, foot);
+  }
+  const ty = y - 10 + off;
+  rect(x - 3, ty, 6, 5, shirt);
+  if (epi.uniform) rect(x - 3, ty + 3, 6, 1, '#e8e05a');
+  // braços
+  if (pose === 'work') {
+    const a = Math.floor(t * 4 + x) % 2;
+    rect(x - 4, ty + (a ? 0 : 1), 1, 3, shirt); rect(x - 4, ty + (a ? 3 : 4), 1, 1, hand);
+    rect(x + 3, ty + (a ? 1 : 0), 1, 3, shirt); rect(x + 3, ty + (a ? 4 : 3), 1, 1, hand);
+  } else if (pose === 'push') {
+    rect(flip ? x - 5 : x + 3, ty + 2, 2, 1, shirt); rect(flip ? x - 6 : x + 5, ty + 2, 1, 1, hand);
+  } else if (pose === 'bend') {
+    const a = Math.floor(t * 3 + x) % 2;
+    rect(x - 4, ty + 2, 1, 3, shirt); rect(x - 4, ty + 5 - a, 1, 1, hand);
+    rect(x + 3, ty + 2, 1, 3, shirt); rect(x + 3, ty + 5 - (1 - a), 1, 1, hand);
+  } else {
+    rect(x - 4, ty, 1, 4, shirt); rect(x - 4, ty + 4, 1, 1, hand);
+    rect(x + 3, ty, 1, 4, shirt); rect(x + 3, ty + 4, 1, 1, hand);
+  }
+  // cabeça
+  const hy = ty - 4;
+  rect(x - 2, hy, 4, 4, look.skin);
+  rect(x - 2, hy - 1, 4, 2, look.hair);
+  if (look.long) rect(flip ? x + 1 : x - 3, hy, 1, 4, look.hair);
+  px(flip ? x - 1 : x + 1, hy + 2, '#222');
+  if (look.cap && !epi.uniform) { rect(x - 2, hy - 1, 4, 1, '#c0392b'); rect(flip ? x - 3 : x + 2, hy, 2, 1, '#c0392b'); }
+  if (epi.goggles) rect(x - 2, hy + 1, 4, 1, '#9fd8ff');
+  if (epi.ear) { rect(x - 3, hy + 1, 1, 2, '#e04a2a'); rect(x + 2, hy + 1, 1, 2, '#e04a2a'); }
+}
+
+// ---------- veículos
+function drawCarrinho(x, y, fill, cols){ // carrinho de mão (base)
+  rect(x, y - 7, 12, 5, '#7b8a94'); rect(x, y - 7, 12, 1, '#a3b1ba');
+  rect(x + 12, y - 8, 4, 1, '#5a4a3a');
+  if (fill > 0) for (let i = 0; i < Math.min(10, fill * 10); i++) rect(x + 1 + (i * 3) % 10, y - 9 - Math.floor(i / 4), 3, 2, cols[i % cols.length]);
+  rect(x + 1, y - 2, 3, 3, '#2a2a2a'); px(x + 2, y - 1, '#888');
+  rect(x + 9, y - 2, 2, 2, '#5a4a3a');
+}
+function drawCarroca(x, y, fill, cols, flip){
+  const d = flip ? -1 : 1;
+  rect(x - 8, y - 9, 16, 6, '#8b5a2b'); rect(x - 8, y - 9, 16, 1, '#b07a42'); rect(x - 8, y - 6, 16, 1, '#6b4220');
+  if (fill > 0) { const r = rng(7); for (let i = 0; i < 8; i++) rect(x - 7 + Math.floor(r() * 13), y - 12 + Math.floor(r() * 3), 3, 3, cols[i % cols.length]); }
+  rect(x + d * 8 - (flip ? 6 : 0), y - 7, 6, 1, '#6b4220');
+  rect(x - 3, y - 4, 5, 5, '#3a3a3a'); rect(x - 2, y - 3, 3, 3, '#777'); px(x - 1, y - 2, '#3a3a3a');
+}
+function drawTriciclo(x, y, fill, cols, flip){
+  const d = flip ? -1 : 1;
+  rect(x - 9, y - 10, 12, 6, '#2f6fae'); rect(x - 9, y - 10, 12, 1, '#5b9bd5');
+  if (fill > 0) { const r = rng(9); for (let i = 0; i < 8; i++) rect(x - 8 + Math.floor(r() * 9), y - 13 + Math.floor(r() * 3), 3, 3, cols[i % cols.length]); }
+  rect(x + 3 * d, y - 7, 6 * d, 1, '#333'); rect(x + 8 * d, y - 11, 1, 5, '#333');
+  for (const wx of [x - 7, x - 1, x + 9 * d]) { rect(wx - 2, y - 4, 4, 4, '#222'); px(wx - 1, y - 3, '#999'); }
+}
+function drawTruck(x, y, color, flip, load){
+  // caminhão ~44x24, (x,y) = canto inferior esquerdo
+  const c = color || '#2f7d4a';
+  if (!flip) {
+    rect(x, y - 20, 30, 15, '#7d8a8f'); rect(x, y - 20, 30, 2, '#9aa7ab');
+    for (let i = 0; i < 5; i++) rect(x + 3 + i * 6, y - 17, 1, 11, '#6b777b');
+    if (load) { rect(x + 2, y - 23, 26, 3, '#c79058'); rect(x + 8, y - 25, 12, 2, '#62b8e0'); }
+    rect(x + 31, y - 16, 12, 11, c); rect(x + 33, y - 14, 7, 5, '#bfe3f2'); rect(x + 41, y - 9, 2, 2, '#ffe08a');
+    rect(x, y - 6, 43, 2, '#333');
+    for (const wx of [x + 6, x + 14, x + 36]) { rect(wx - 3, y - 5, 6, 5, '#1a1a1a'); rect(wx - 1, y - 3, 2, 2, '#888'); }
+    rect(x + 4, y - 14, 22, 4, '#f0f0e8'); rect(x + 6, y - 13, 3, 2, '#3f8f3a');
+  } else {
+    rect(x + 13, y - 20, 30, 15, '#7d8a8f'); rect(x + 13, y - 20, 30, 2, '#9aa7ab');
+    for (let i = 0; i < 5; i++) rect(x + 16 + i * 6, y - 17, 1, 11, '#6b777b');
+    if (load) { rect(x + 15, y - 23, 26, 3, '#c79058'); rect(x + 22, y - 25, 12, 2, '#62b8e0'); }
+    rect(x, y - 16, 12, 11, c); rect(x + 3, y - 14, 7, 5, '#bfe3f2'); rect(x, y - 9, 2, 2, '#ffe08a');
+    rect(x, y - 6, 43, 2, '#333');
+    for (const wx of [x + 7, x + 29, x + 37]) { rect(wx - 3, y - 5, 6, 5, '#1a1a1a'); rect(wx - 1, y - 3, 2, 2, '#888'); }
+    rect(x + 17, y - 14, 22, 4, '#f0f0e8'); rect(x + 34, y - 13, 3, 2, '#3f8f3a');
+  }
+}
+function drawPickup(x, y){ // camionete do atravessador
+  rect(x, y - 12, 20, 7, '#6d8a3e'); rect(x, y - 12, 20, 1, '#8fae5c');
+  rect(x + 20, y - 16, 10, 11, '#6d8a3e'); rect(x + 22, y - 14, 6, 4, '#bfe3f2');
+  rect(x + 2, y - 15, 16, 3, '#c79058');
+  rect(x, y - 6, 30, 2, '#333');
+  for (const wx of [x + 6, x + 24]) { rect(wx - 3, y - 5, 6, 5, '#1a1a1a'); rect(wx - 1, y - 3, 2, 2, '#888'); }
+  // balança de gancho
+  rect(x - 6, y - 26, 1, 14, '#5a4a3a'); rect(x - 10, y - 26, 9, 1, '#5a4a3a');
+  rect(x - 12, y - 25, 3, 4, '#c9ccd4'); rect(x - 11, y - 21, 1, 3, '#555');
+}
+function drawForklift(x, y, t){
+  const lift = Math.floor((Math.sin(t) + 1) * 3);
+  rect(x, y - 10, 10, 7, '#e8b631'); rect(x + 2, y - 15, 1, 5, '#333'); rect(x + 7, y - 15, 1, 5, '#333'); rect(x + 2, y - 15, 6, 1, '#333');
+  rect(x + 10, y - 16, 1, 14, '#555'); rect(x + 11, y - 3 - lift, 5, 1, '#555');
+  rect(x + 11, y - 8 - lift, 5, 5, '#b8864b');
+  rect(x + 1, y - 4, 4, 4, '#222'); rect(x + 7, y - 4, 3, 3, '#222');
+}
+
+// ---------- montes e estoques
+function compColors(store){
+  const out = []; let T = 0; for (const k in store) T += store[k];
+  if (T <= 0) return ['#b8864b'];
+  for (const k in store) { const n = Math.round(store[k] / T * 12); const col = k === 'rej' ? '#6b6b4a' : MATS[k].c; for (let i = 0; i < n; i++) out.push(col); }
+  return out.length ? out : ['#b8864b'];
+}
+function drawPile(cx, by, size, cols, seed){
+  // monte em forma de cúpula; size 0..1
+  if (size <= 0.001) return;
+  const w = 10 + size * 60, h = 4 + size * 26;
+  const r = rng(seed || 3);
+  for (let i = 0; i < w * h * 0.35; i++) {
+    const a = r() * 2 - 1, b = r();
+    const xx = cx + a * w / 2, yy = by - b * h * Math.sqrt(1 - a * a);
+    rect(xx, yy, 2 + (r() < 0.3 ? 1 : 0), 2, cols[Math.floor(r() * cols.length)]);
+  }
+  CX.globalAlpha = 0.2; rect(cx - w / 2, by, w, 2, '#000'); CX.globalAlpha = 1;
+}
+function drawBag(x, y, fill, col){ // big bag 12x13
+  rect(x, y - 13, 12, 13, '#efeee6'); rect(x, y - 13, 12, 1, '#ffffff'); rect(x + 11, y - 13, 1, 13, '#cfcdc2');
+  rect(x + 1, y - 15, 2, 2, '#cfcdc2'); rect(x + 9, y - 15, 2, 2, '#cfcdc2');
+  const f = Math.round(Math.min(1, fill) * 10);
+  if (f > 0) { rect(x + 1, y - 13, 10, 2, col); if (f > 5) rect(x + 2, y - 15, 8, 2, col); }
+}
+function drawBale(x, y, col){ // fardo 10x7
+  rect(x, y - 7, 10, 7, col); rect(x, y - 7, 10, 1, 'rgba(255,255,255,.35)');
+  rect(x + 3, y - 7, 1, 7, '#333'); rect(x + 7, y - 7, 1, 7, '#333');
+  rect(x + 1, y - 5, 1, 1, 'rgba(0,0,0,.25)'); rect(x + 5, y - 3, 1, 1, 'rgba(0,0,0,.25)');
+}
+
+// =====================================================================
+// CENA DA BASE
+// =====================================================================
+const bgCache = {sig:'', c:null};
+function baseSig(){
+  return [S.phase, ...['lona','bag','balanca','lona_triagem','banheiro','mesa','baia','galpao','prensa','esteira','empilhadeira',
+    'separador','painel','cisterna','terreno','vestiario','refeitorio','creche','mural','linha_graos','centro_edu','rede','caminhao','logistica'].map(nI)].join(',');
+}
+function drawSky(){
+  const g = CX.createLinearGradient(0, 0, 0, 80);
+  g.addColorStop(0, '#7fc4e4'); g.addColorStop(1, '#d4ecef');
+  CX.fillStyle = g; CX.fillRect(0, 0, W, 80);
+  rect(330, 12, 12, 12, '#fff3b0'); rect(332, 10, 8, 16, '#fff3b0'); rect(328, 14, 16, 8, '#fff3b0');
+  // cidade ao fundo
+  const r = rng(42); let x = 0;
+  while (x < W) {
+    const w = 14 + Math.floor(r() * 22), h = 14 + Math.floor(r() * 36);
+    rect(x, 76 - h, w, h, '#b6c7cf');
+    for (let yy = 76 - h + 3; yy < 72; yy += 5) for (let xx = x + 2; xx < x + w - 2; xx += 4) if (r() < 0.6) rect(xx, yy, 2, 2, '#d5e2e7');
+    x += w + 1 + Math.floor(r() * 4);
+  }
+  // morro e árvores ao fundo
+  for (let i = 0; i < W; i += 2) rect(i, 70 + Math.sin(i * 0.05) * 3, 2, 10, '#8fb67a');
+}
+function drawGround(){
+  const ph = S.phase;
+  rect(0, 78, W, H - 78, ph === 1 ? '#a8885a' : '#b99566');
+  const r = rng(5);
+  for (let i = 0; i < 260; i++) rect(r() * W, 80 + r() * 136, 2, 1, ph === 1 ? '#97784c' : '#a6845a');
+  if (ph >= 4) { rect(96, 116, 210, 64, '#bdb6a6'); for (let x = 96; x < 306; x += 21) rect(x, 116, 1, 64, '#aaa293'); for (let y = 116; y < 180; y += 16) rect(96, y, 210, 1, '#aaa293'); }
+  if (ph >= 5) { rect(0, 180, W, 36, '#a9a397'); for (let x = 0; x < W; x += 24) rect(x, 180, 1, 36, '#989284'); rect(0, 180, W, 1, '#8f897c'); }
+  if (ph >= 7) { rect(0, 116, 96, 64, '#bdb6a6'); rect(306, 116, 78, 64, '#bdb6a6'); }
+}
+function drawFence(){
+  const ph = S.phase;
+  if (ph < 5) {
+    // cerca de madeira / arame
+    for (let x = 2; x < W; x += 9) { rect(x, 70, 2, 14, ph === 1 ? '#7a5a3a' : '#8b6a45'); if (ph === 1 && x % 27 === 2) rect(x, 70, 2, 4, '#a8885a'); }
+    rect(0, 74, W, 1, '#6b5a4a'); rect(0, 79, W, 1, '#6b5a4a');
+  } else {
+    rect(0, 68, W, 16, '#d8cdb8'); rect(0, 68, W, 2, '#efe6d2'); rect(0, 82, W, 2, '#b8ab90');
+    if (has('mural')) {
+      // mural de educação ambiental no muro
+      const cols = ['#3f8f3a', '#3a7fc4', '#e8b631', '#d8553f'];
+      for (let i = 0; i < 4; i++) { rect(8 + i * 20, 70, 16, 12, cols[i]); rect(12 + i * 20, 73, 8, 6, '#fff'); }
+      rect(14, 74, 4, 4, '#3f8f3a'); rect(36, 74, 3, 4, '#3a7fc4'); rect(54, 74, 4, 3, '#e8b631'); rect(75, 74, 3, 4, '#d8553f');
+    }
+  }
+}
+function drawWeeds(){
+  const r = rng(11);
+  for (let i = 0; i < 70; i++) {
+    const x = r() * W, y = 84 + r() * 128;
+    if (x > 90 && x < 300 && y > 120 && y < 175 && r() < 0.6) continue;
+    const c = r() < 0.5 ? '#5f9a3e' : '#4c7f33';
+    rect(x, y - 4, 1, 4, c); rect(x - 2, y - 3, 1, 3, c); rect(x + 2, y - 3, 1, 3, c); rect(x - 1, y - 6, 1, 3, '#76b04e');
+  }
+  // entulho
+  const rubble = [[60, 100], [250, 96], [210, 200], [340, 150], [30, 196]];
+  rubble.forEach(([x, y], k) => {
+    const rr = rng(k + 20);
+    for (let i = 0; i < 14; i++) rect(x + rr() * 18 - 9, y - rr() * 7, 3 + rr() * 3, 2 + rr() * 2, ['#9b8e80', '#b5a99a', '#8a6a4a', '#c06a4a'][Math.floor(rr() * 4)]);
+  });
+  // pneu velho
+  rect(300, 104, 10, 4, '#2a2a2a'); rect(303, 105, 4, 2, '#555');
+}
+function drawBarracao(){
+  // barracão de madeira (fases 3-4)
+  const x = 112, y = 50, w = 150, h = 66;
+  rect(x - 6, y, w + 12, 6, '#7a4f2a'); rect(x - 6, y + 6, w + 12, 2, '#5c3a1e');
+  for (let i = 0; i < w + 12; i += 8) rect(x - 6 + i, y, 1, 6, '#6b4422');
+  rect(x, y + 8, w, h - 8, '#5a3d24');
+  for (let i = 0; i < w; i += 6) rect(x + i, y + 8, 5, h - 8, i % 12 ? '#9b6a3a' : '#8c5d31');
+  rect(x + 20, y + 22, w - 40, h - 22, '#3a2818');
+  rect(x + 2, y + 8, 3, h - 8, '#4a301a'); rect(x + w - 5, y + 8, 3, h - 8, '#4a301a');
+  if (S.phase >= 4) { rect(x + w / 2 - 22, y + 11, 44, 9, '#f0e6cc'); CX.fillStyle = '#3a2a1c'; CX.font = 'bold 6px monospace'; CX.textAlign = 'center'; CX.fillText('ASSOCIAÇÃO', x + w / 2, y + 18); }
+}
+function drawGalpao(){
+  const x = 92, y = 26, w = 214, h = 92;
+  const big = S.phase >= 7;
+  // telhado metálico
+  CX.fillStyle = '#8a969b'; CX.beginPath(); CX.moveTo(x - 8, y + 16); CX.lineTo(x + w / 2, y); CX.lineTo(x + w + 8, y + 16); CX.closePath(); CX.fill();
+  rect(x - 8, y + 16, w + 16, 4, '#6d787c');
+  for (let i = 0; i < w + 16; i += 6) rect(x - 8 + i, y + 16, 1, 4, '#5d676b');
+  // painéis solares
+  const np = Math.min(nI('painel'), 10);
+  for (let i = 0; i < np; i++) {
+    const px0 = x + 18 + i * 18, py0 = y + 13 - Math.max(0, 8 - Math.abs((px0 + 7) - (x + w / 2)) * 0.15);
+    rect(px0, py0 - 2, 14, 5, '#1d3557'); rect(px0 + 1, py0 - 1, 12, 3, '#2f5f9a'); rect(px0 + 7, py0 - 2, 1, 5, '#7fa6d6');
+  }
+  // paredes
+  rect(x, y + 20, w, h - 20, '#d9cbb0');
+  for (let yy = y + 24; yy < y + h; yy += 5) for (let xx = x + ((yy / 5) % 2 ? 0 : 5); xx < x + w; xx += 10) rect(xx, yy, 1, 1, '#c4b597');
+  // vão aberto (interior)
+  rect(x + 10, y + 34, w - 20, h - 34, '#5d5145');
+  rect(x + 10, y + 34, w - 20, 3, '#463c33');
+  for (let i = 0; i < 4; i++) rect(x + 10 + i * (w - 20) / 3 - 1, y + 34, 3, h - 34, '#a99c84');
+  // placa
+  rect(x + w / 2 - 50, y + 22, 100, 10, '#2f7d4a'); rect(x + w / 2 - 50, y + 22, 100, 1, '#4fa06a');
+  CX.fillStyle = '#fff'; CX.font = 'bold 7px monospace'; CX.textAlign = 'center';
+  CX.fillText(S.phase >= 10 ? 'CENTRAL DE RECICLAGEM' : 'COOPERATIVA RECICLA', x + w / 2, y + 30);
+  CX.fillStyle = '#d9cbb0'; CX.font = '5px monospace'; CX.fillText('CNPJ', x + 18, y + 30);
+  if (big) { // 2º andar / escritório
+    rect(x + w - 50, y + 20, 40, 14, '#efe6d2'); for (let i = 0; i < 4; i++) rect(x + w - 46 + i * 9, y + 23, 6, 6, '#8fc6e0');
+  }
+}
+function drawSmallBuilding(x, y, w, h, wall, roof, label, deco){
+  rect(x - 2, y - 3, w + 4, 4, roof); rect(x, y + 1, w, h - 1, wall);
+  rect(x + w / 2 - 3, y + h - 9, 6, 9, '#6b4a2a'); px(x + w / 2 + 1, y + h - 5, '#e8b631');
+  if (deco) deco(x, y, w, h);
+  if (label) { CX.fillStyle = '#3a2a1c'; CX.font = 'bold 5px monospace'; CX.textAlign = 'center'; CX.fillText(label, x + w / 2, y + 7); }
+}
+function drawLeftBuildings(){
+  const slots = [];
+  if (has('banheiro')) slots.push(['WC', '#e9e4d8', '#3a7fc4']);
+  if (has('vestiario')) slots.push(['VEST.', '#e2d8c0', '#8a6a4a']);
+  if (has('refeitorio')) slots.push(['REFEIT.', '#f1ddb5', '#c0392b']);
+  if (has('creche')) slots.push(['CRECHE', '#f7d6e0', '#e07ab0']);
+  slots.forEach(([lb, wall, roof], i) => {
+    const x = 4 + i * 22, y = 78;
+    drawSmallBuilding(x, y, 20, 24, wall, roof, lb, (xx, yy) => { rect(xx + 3, yy + 10, 4, 4, '#8fc6e0'); rect(xx + 13, yy + 10, 4, 4, '#8fc6e0'); });
+  });
+  if (has('creche')) { // parquinho
+    rect(4, 106, 1, 6, '#c0392b'); rect(4, 106, 10, 1, '#c0392b'); rect(13, 106, 1, 6, '#c0392b'); rect(8, 107, 1, 3, '#555'); rect(7, 110, 3, 1, '#e8b631');
+  }
+}
+function drawRightLot(){
+  // terreno vizinho (x 308..384)
+  if (!has('terreno')) {
+    if (S.phase >= 9) { CX.globalAlpha = 0.9; rect(312, 90, 70, 26, '#8faf6a'); CX.globalAlpha = 1; for (let i = 0; i < 10; i++) rect(314 + i * 7, 104, 1, 6, '#4c7f33'); rect(318, 94, 44, 8, '#fff'); CX.fillStyle = '#c0392b'; CX.font = 'bold 5px monospace'; CX.textAlign = 'center'; CX.fillText('VENDE-SE', 340, 100); }
+    return;
+  }
+  const x = 310, y = 40, w = 72, h = 76;
+  rect(x - 4, y, w + 8, 5, '#6d787c'); rect(x, y + 5, w, h - 5, '#e3d7bd');
+  rect(x + 6, y + 22, w - 12, h - 22, '#5d5145');
+  if (has('centro_edu')) {
+    rect(x + 4, y + 8, w - 8, 10, '#3a7fc4'); CX.fillStyle = '#fff'; CX.font = 'bold 5px monospace'; CX.textAlign = 'center'; CX.fillText('EDUCAÇÃO AMBIENTAL', x + w / 2, y + 15);
+    rect(x + 10, y + 24, 12, 10, '#8fc6e0'); rect(x + 50, y + 24, 12, 10, '#8fc6e0');
+  } else { for (let i = 0; i < 3; i++) rect(x + 10 + i * 22, y - 3, 16, 4, '#2f5f9a'); }
+  if (has('cisterna')) { rect(x - 14, 92, 12, 22, '#3a7fc4'); rect(x - 14, 92, 12, 2, '#5b9bd5'); rect(x - 12, 96, 8, 1, '#5b9bd5'); }
+}
+function drawTree(x, y, s){
+  rect(x - 2, y - 18 * s, 4, 18 * s, '#6b4a2a'); rect(x - 1, y - 18 * s, 1, 18 * s, '#85603a');
+  const r = rng(x);
+  for (let i = 0; i < 26; i++) { const a = r() * Math.PI * 2, d = r() * 11 * s; rect(x + Math.cos(a) * d * 1.3 - 4, y - 26 * s + Math.sin(a) * d * 0.8 - 3, 8, 6, ['#4f8a3c', '#5fa04a', '#3f7a30'][i % 3]); }
+  CX.globalAlpha = 0.18; rect(x - 16 * s, y - 1, 32 * s, 3, '#000'); CX.globalAlpha = 1;
+}
+function buildBaseBg(){
+  const sig = baseSig();
+  if (bgCache.sig === sig && bgCache.c) return bgCache.c;
+  const c = bgCache.c || mkCanvas(W * RES, H * RES);
+  const g = c.getContext('2d'); g.setTransform(RES, 0, 0, RES, 0, 0); g.imageSmoothingEnabled = false;
+  const old = CX; CX = g;
+  g.clearRect(0, 0, W, H);
+  drawSky(); drawGround(); drawFence();
+  if (S.phase === 1) drawWeeds();
+  if (S.phase >= 3 && S.phase <= 4) drawBarracao();
+  if (S.phase >= 5) drawGalpao();
+  if (!has('terreno')) drawTree(354, 112, 1.2);
+  if (S.phase <= 4) drawTree(372, 200, 1);
+  if (S.phase >= 2 && S.phase <= 4) {
+    // tambor d'água, banquinho e vasinho de planta
+    rect(270, 92, 10, 14, '#3a7fc4'); rect(270, 92, 10, 2, '#5b9bd5'); rect(270, 99, 10, 1, '#2c5f9e');
+    rect(250, 102, 14, 3, '#8b5a2b'); rect(251, 105, 2, 3, '#5c3a1e'); rect(261, 105, 2, 3, '#5c3a1e');
+    rect(284, 100, 6, 6, '#b5492f'); rect(285, 96, 4, 4, '#5fa04a'); px(287, 95, '#e07ab0');
+  }
+  drawLeftBuildings(); drawRightLot();
+  if (!has('cisterna') && S.phase >= 9 && has('terreno')) {}
+  // baias (fase 4+)
+  const nb = Math.min(nI('baia'), 6);
+  for (let i = 0; i < nb; i++) { const x = 6 + i * 22, y = 210; rect(x, y - 16, 20, 16, '#9c968a'); rect(x + 2, y - 14, 16, 12, '#7a7468'); }
+  CX = old;
+  bgCache.sig = sig; bgCache.c = c;
+  return c;
+}
+
+// --------- animação de cena da base
+const ZONES = {
+  sort:{x:150, y:118}, sell:{x:306, y:118}, press:{x:232, y:116},
+  pile:{x:52, y:166},
+};
+let cloudT = 0;
+function drawClouds(t){
+  for (let i = 0; i < 4; i++) {
+    const x = ((t * (2 + i) + i * 110) % (W + 60)) - 40, y = 10 + i * 9;
+    rect(x, y, 26, 5, '#ffffff'); rect(x + 5, y - 3, 14, 4, '#ffffff'); rect(x + 2, y + 5, 22, 1, '#e4f1f5');
+  }
+}
+function drawBaseDynamic(t){
+  const ph = S.phase, epi = curEpi();
+  // nuvens por cima do céu já cacheado
+  drawClouds(t);
+  // lona de cobertura sobre o monte
+  const lona = has('lona') && ph < 5;
+  // monte de material misturado
+  const capM = caps().mixed, mixT = sum(S.mixed);
+  const msize = Math.min(1, Math.sqrt(mixT / Math.max(60, capM * 0.9)));
+  if (lona) { for (const x of [10, 94]) rect(x, 108, 2, 66, '#6b4a2a'); }
+  drawPile(52, 172, mixT > 0.2 ? Math.max(0.08, msize) : 0, compColors(S.mixed), 3);
+  if (lona) {
+    rect(4, 104, 96, 6, '#3d7cc9'); rect(4, 109, 96, 1, '#2c5f9e');
+    for (let i = 4; i < 100; i += 12) rect(i, 104, 6, 6, '#4a8ad6');
+  }
+  // ---- triagem
+  const nl = nI('lona_triagem'), nm = nI('mesa'), ne = nI('esteira'), nsep = nI('separador');
+  const triSpots = [];
+  if (ne > 0) {
+    rect(104, 128, 92, 8, '#3a3a3a'); rect(104, 128, 92, 2, '#555');
+    const off = Math.floor(t * 12) % 8; for (let x = 104 + off; x < 196; x += 8) rect(x, 130, 3, 4, '#4a4a4a');
+    const r = rng(Math.floor(t * 12 / 8)); for (let i = 0; i < 10; i++) rect(104 + ((i * 11 + Math.floor(t * 12)) % 90), 127, 3, 2, compColors(S.mixed)[i % 6] || '#c79058');
+    rect(104, 136, 2, 6, '#555'); rect(194, 136, 2, 6, '#555');
+    for (let i = 0; i < 5; i++) triSpots.push([110 + i * 18, 126, 'work']);
+    for (let i = 0; i < 5; i++) triSpots.push([110 + i * 18, 150, 'work']);
+  }
+  const mesaPos = [[112, 156], [152, 156], [112, 142], [152, 142]];
+  if (ne === 0) {
+    for (let i = 0; i < Math.min(nm, 4); i++) {
+      const [x, y] = mesaPos[i];
+      rect(x, y - 6, 30, 4, '#8b5a2b'); rect(x, y - 6, 30, 1, '#b07a42'); rect(x + 2, y - 2, 2, 4, '#5c3a1e'); rect(x + 26, y - 2, 2, 4, '#5c3a1e');
+      const r = rng(i + 50); for (let k = 0; k < 6; k++) rect(x + 3 + r() * 22, y - 8, 3, 2, compColors(S.mixed)[k % 6] || '#c79058');
+      triSpots.push([x + 8, y - 4, 'work'], [x + 22, y - 4, 'work']);
+    }
+  } else {
+    for (let i = 0; i < Math.min(nm, 2); i++) { const x = 112 + i * 40, y = 168; rect(x, y - 6, 30, 4, '#8b5a2b'); rect(x + 2, y - 2, 2, 4, '#5c3a1e'); rect(x + 26, y - 2, 2, 4, '#5c3a1e'); triSpots.push([x + 15, y + 4, 'work']); }
+  }
+  if (nm === 0 && ne === 0) {
+    for (let i = 0; i < Math.min(nl, 2); i++) {
+      const x = 108 + i * 42, y = 150;
+      rect(x, y, 36, 14, '#3d7cc9'); rect(x, y, 36, 1, '#5b9bd5');
+      const r = rng(i + 70); for (let k = 0; k < 10; k++) rect(x + 2 + r() * 32, y + 2 + r() * 10, 3, 2, compColors(S.mixed)[k % 6] || '#c79058');
+      triSpots.push([x + 8, y + 2, 'bend'], [x + 26, y + 2, 'bend']);
+    }
+  }
+  if (nsep > 0) {
+    const x = 196, y = 92; // separador automático no fundo
+    for (let i = 0; i < Math.min(nsep, 2); i++) {
+      rect(x - 90 + i * 34, y, 30, 22, '#4a6b8a'); rect(x - 88 + i * 34, y + 3, 26, 6, '#2f4a63');
+      rect(x - 86 + i * 34, y + 4, 4, 4, Math.floor(t * 3 + i) % 2 ? '#62e06a' : '#2f7d4a');
+      rect(x - 76 + i * 34, y + 12, 16, 2, '#8fa3b5');
+    }
+  }
+  // ---- prensa e linha de grãos
+  const pressSpots = [];
+  const npr = Math.min(nI('prensa'), 2);
+  for (let i = 0; i < npr; i++) {
+    const x = 204 + i * 26, y = 160;
+    rect(x, y - 30, 18, 30, '#c0392b'); rect(x, y - 30, 18, 2, '#e05a4a'); rect(x + 2, y - 26, 14, 14, '#8e2a1e');
+    const pz = Math.floor((Math.sin(t * 2 + i) + 1) * 4);
+    rect(x + 4, y - 26 + pz, 10, 3, '#bbb'); rect(x + 8, y - 34, 2, 8 + pz, '#999');
+    rect(x + 3, y - 10, 12, 6, '#b8864b');
+    pressSpots.push([x + 22, y, 'work']);
+  }
+  if (nI('linha_graos') > 0) {
+    const x = 204, y = 124;
+    rect(x, y - 16, 14, 16, '#7a8a94'); rect(x + 3, y - 20, 8, 4, '#5a6a74'); // moedor
+    rect(x + 16, y - 14, 16, 14, '#3a7fc4'); rect(x + 18, y - 10, 12, 6, '#8fc6e0'); // lavadora
+    const b = Math.floor(t * 6) % 3; rect(x + 20 + b * 3, y - 9, 2, 2, '#fff');
+    rect(x + 34, y - 10, 26, 8, '#5a5a5a'); rect(x + 34, y - 12, 6, 2, '#e8b631'); // extrusora
+    rect(x + 60, y - 6, 6, 6, '#efeee6'); for (let k = 0; k < 3; k++) px(x + 61 + k * 2, y - 5, '#62b8e0');
+    pressSpots.push([x + 10, y + 12, 'work'], [x + 44, y + 12, 'work']);
+  }
+  // ---- venda: balança / atravessador
+  const sellSpots = [];
+  if (has('balanca')) {
+    const nb = Math.min(nI('balanca'), 3);
+    for (let i = 0; i < nb; i++) {
+      const x = 286 + i * 10 - (nb - 1) * 6, y = 160 - i * 8;
+      rect(x, y - 3, 20, 3, '#6d7a80'); rect(x, y - 3, 20, 1, '#9aa7ab'); rect(x + 18, y - 16, 2, 13, '#555');
+      rect(x + 14, y - 22, 8, 6, '#2a2a2a'); rect(x + 15, y - 21, 6, 3, '#62e06a');
+      sellSpots.push([x + 8, y - 3, 'stand']);
+    }
+  } else if (ph === 1 || !has('balanca')) {
+    drawPickup(300, 164);
+  }
+  // sacos e bags
+  const nbag = Math.min(nI('bag'), 8), sepT = sum(S.sep), capS = caps().sep;
+  const sepCols = compColors(S.sep);
+  for (let i = 0; i < nbag; i++) {
+    const x = 196 + (i % 4) * 14, y = i < 4 ? 196 : 210;
+    drawBag(x, y, Math.min(1, sepT / Math.max(1, capS) * nbag - i + 0.3), sepCols[i % sepCols.length]);
+  }
+  if (nbag === 0 && sepT > 0.5) drawPile(232, 200, Math.min(0.5, Math.sqrt(sepT / 80)), sepCols, 8);
+  // baias com material
+  const nbaia = Math.min(nI('baia'), 6);
+  const ms = MAT_IDS.filter(m => (S.sep[m] || 0) > 0.5);
+  for (let i = 0; i < nbaia; i++) {
+    const m = ms[i % Math.max(1, ms.length)];
+    if (m) { const f = Math.min(1, (S.sep[m] || 0) / 300); if (f > 0) rect(8 + i * 22, 208 - 12 * f, 16, 12 * f, MATS[m].c); }
+  }
+  // fardos
+  const baleT = sum(S.bale), nbl = Math.min(14, Math.ceil(baleT / BALE_KG));
+  const baleCols = compColors(S.bale);
+  for (let i = 0; i < nbl; i++) drawBale(322 + (i % 5) * 11 - (i >= 10 ? 0 : 0), 200 - Math.floor(i / 5) * 7, baleCols[i % baleCols.length]);
+  // grãos em big bags
+  const pelT = sum(S.pellet), npl = Math.min(4, Math.ceil(pelT / 500));
+  for (let i = 0; i < npl; i++) { drawBag(262 + i * 13, 214, 1, i % 2 ? '#e0574a' : '#62b8e0'); }
+  // empilhadeira
+  for (let i = 0; i < Math.min(nI('empilhadeira'), 2); i++) drawForklift(268 + Math.sin(t * 0.6 + i * 2) * 20 + i * 30, 188 + i * 10, t * 2 + i);
+  // ---- veículos parados
+  const ncam = Math.min(nI('caminhao'), 2);
+  // ---- pessoas
+  let drawn = 0;
+  const MAXP = 14;
+  const looks = (i) => personLook(i);
+  // jogador(a)
+  if (G_mode === 'base') {
+    const pl = {skin:'#c58c5c', hair:'#2a1d14', shirt:'#e8b631', pants:'#3b4a6b', long:true, cap:false};
+    const pe = ph >= 2 ? {gloves:has('luvas_coleta') || epi.gloves, boots:epi.boots, uniform:epi.uniform, goggles:epi.goggles, ear:false} : {gloves:has('luvas_coleta')};
+    const cartCols = compColors(S.mixed);
+    if (has('caminhao')) drawTruck(4, 214, '#2f7d4a', false, false);
+    else if (has('triciclo_proprio')) drawTriciclo(90, 192, 0, cartCols, false);
+    else if (has('carroca_propria')) drawCarroca(88, 192, 0, cartCols, false);
+    else drawCarrinho(ph <= 2 ? 108 : 80, 192, 0, cartCols);
+    drawPerson(ph <= 2 ? 92 : 102, ph <= 2 ? 172 : 192, pl, ph <= 2 && mixT > 0 ? 'bend' : 'stand', t, pe, false);
+    drawn++;
+  }
+  let pid = 0;
+  const putRole = (n, spots, pose) => {
+    const k = Math.min(n, spots.length, MAXP - drawn);
+    for (let i = 0; i < k; i++) { const s = spots[i]; drawPerson(s[0], s[1], looks(pid++), s[2] || pose, t + i * 0.37, epi, i % 2 === 1); }
+    drawn += k;
+    return k;
+  };
+  const shown = {};
+  shown.triagem = putRole(S.roles.triagem, triSpots, 'work');
+  shown.prensa = putRole(S.roles.prensa, pressSpots, 'work');
+  shown.venda = putRole(S.roles.venda, sellSpots, 'stand');
+  // coletores em movimento
+  const nCol = S.roles.coleta;
+  const colShown = Math.min(nCol, 3, MAXP - drawn);
+  for (let i = 0; i < colShown; i++) {
+    const per = 22, tt = (t + i * per / Math.max(1, colShown)) % per;
+    const veh = i < 2 * ncam && i < 2 ? 'truck' : (i < 2 * ncam + nI('triciclo') ? 'tri' : 'car');
+    let x, flip, fill;
+    if (tt < 8) { x = -30 + tt / 8 * 110; flip = false; fill = 1; }
+    else if (tt < 11) { x = 80; flip = false; fill = 1 - (tt - 8) / 3; }
+    else if (tt < 19) { x = 80 - (tt - 11) / 8 * 120; flip = true; fill = 0; }
+    else continue;
+    const yy = 206 - i * 5;
+    const cols = compColors(S.mixed);
+    if (S._blkCol && tt > 8 && tt < 11) fill = 1;
+    if (veh === 'truck') { drawTruck(x - 10, yy + 4, '#2f7d4a', flip, fill > 0.3); }
+    else {
+      drawPerson(flip ? x + 10 : x - 10, yy, looks(100 + i), 'walk', t, epi, flip);
+      if (veh === 'tri') drawTriciclo(x, yy, fill, cols, flip); else drawCarroca(x, yy, fill, cols, flip);
+    }
+  }
+  drawn += colShown;
+  shown.coleta = colShown;
+  // crianças na creche
+  if (has('creche')) { drawPerson(24 + Math.sin(t * 0.7) * 8, 114, {skin:'#d9a273', hair:'#111', shirt:'#e07ab0', pants:'#3b4a6b'}, 'walk', t, {}, Math.floor(t) % 4 < 2); }
+  // chuva
+  if (rainUntil > performance.now()) {
+    CX.globalAlpha = 0.5; const r = rng(Math.floor(t * 20));
+    for (let i = 0; i < 120; i++) rect(r() * W, (r() * H + t * 300) % H, 1, 4, '#cfe3f2');
+    CX.globalAlpha = 1;
+  }
+  return shown;
+}
+let rainUntil = 0;
+
+// ---------- obra (mudança de fase)
+let buildAnim = null;
+function drawBuild(t){
+  if (!buildAnim) return;
+  const p = (performance.now() - buildAnim.t0) / buildAnim.dur;
+  if (p >= 1) { const cb = buildAnim.cb; buildAnim = null; cb && cb(); return; }
+  // andaimes
+  CX.globalAlpha = 0.95;
+  for (let x = 96; x <= 300; x += 16) rect(x, 30, 2, 90, '#b07a42');
+  for (let y = 40; y <= 116; y += 14) rect(96, y, 206, 2, '#b07a42');
+  for (let x = 96; x < 300; x += 32) for (let y = 40; y < 110; y += 28) { CX.beginPath(); CX.strokeStyle = '#8b5a2b'; CX.lineWidth = 1; CX.moveTo(x, y); CX.lineTo(x + 16, y + 14); CX.stroke(); }
+  // guindaste
+  rect(320, 10, 4, 110, '#e8b631'); rect(230, 10, 120, 3, '#e8b631'); rect(240, 13, 1, 30 + Math.sin(t * 2) * 10, '#333'); rect(236, 43 + Math.sin(t * 2) * 10, 9, 6, '#9b8e80');
+  CX.globalAlpha = 1;
+  // pedreiros
+  for (let i = 0; i < 5; i++) drawPerson(110 + i * 40, 52 + (i % 3) * 28, personLook(200 + i), 'work', t * 2 + i, {boots:1, gloves:1}, i % 2);
+  // poeira
+  const r = rng(Math.floor(t * 8));
+  CX.globalAlpha = 0.5;
+  for (let i = 0; i < 40; i++) { const s = 2 + r() * 6; rect(90 + r() * 220, 60 + r() * 120, s, s, '#e8dcc0'); }
+  CX.globalAlpha = 1;
+  if (p > 0.85) { CX.globalAlpha = (p - 0.85) / 0.15; rect(0, 0, W, H, '#fffbe8'); CX.globalAlpha = 1; }
+}
+
+// =====================================================================
+// CENA DA RUA
+// =====================================================================
+const streetCache = {};
+function drawStreetBg(route){
+  if (streetCache[route.id]) return streetCache[route.id];
+  const c = mkCanvas(SW * 6, SH * 6), g = c.getContext('2d');
+  g.setTransform(6, 0, 0, 6, 0, 0); g.imageSmoothingEnabled = false;
+  const old = CX; CX = g;
+  const r = rng(route.id.length * 31 + 7);
+  // céu
+  const grd = g.createLinearGradient(0, 0, 0, 50); grd.addColorStop(0, '#86c8e6'); grd.addColorStop(1, '#d4ecef'); g.fillStyle = grd; g.fillRect(0, 0, SW, 52);
+  for (let i = 0; i < 3; i++) { rect(20 + i * 70, 6 + i * 4, 18, 3, '#fff'); rect(24 + i * 70, 4 + i * 4, 9, 2, '#fff'); }
+  if (route.id === 'bairro') {
+    let x = 0; const cols = ['#e8c07a', '#d98a6a', '#9fc4a0', '#e3d7bd', '#b8d0e8', '#f0b8a0'];
+    while (x < SW) {
+      const w = 26 + Math.floor(r() * 12), h = 18 + Math.floor(r() * 10), cl = cols[Math.floor(r() * cols.length)];
+      rect(x, 50 - h, w, h, cl);
+      g.fillStyle = '#a0472f'; g.beginPath(); g.moveTo(x - 2, 50 - h); g.lineTo(x + w / 2, 50 - h - 8); g.lineTo(x + w + 2, 50 - h); g.fill();
+      rect(x + 3, 50 - h + 5, 6, 5, '#8fc6e0'); rect(x + w - 9, 50 - h + 5, 6, 5, '#8fc6e0'); rect(x + w / 2 - 3, 42, 6, 8, '#6b4a2a');
+      x += w + 2;
+    }
+    for (let x2 = 0; x2 < SW; x2 += 4) rect(x2, 46, 2, 4, '#c9c0a8');
+    rect(150, 18, 2, 34, '#555'); rect(144, 18, 10, 1, '#555');
+    // árvore
+    rect(100, 30, 3, 20, '#6b4a2a'); rect(92, 20, 19, 12, '#4f8a3c'); rect(95, 16, 13, 6, '#5fa04a');
+  } else if (route.id === 'feira') {
+    rect(0, 30, SW, 22, '#c9b89a');
+    const cols = ['#d8553f', '#3a7fc4', '#e8b631', '#3f8f3a', '#e07ab0'];
+    for (let i = 0; i < 6; i++) {
+      const x = 2 + i * 32, cl = cols[i % 5];
+      for (let k = 0; k < 28; k += 4) rect(x + k, 22, 4, 6, k % 8 ? '#fff' : cl);
+      rect(x, 28, 28, 2, cl); rect(x + 1, 30, 1, 20, '#6b4a2a'); rect(x + 26, 30, 1, 20, '#6b4a2a');
+      rect(x + 2, 40, 24, 8, '#a8703a');
+      for (let k = 0; k < 8; k++) rect(x + 3 + k * 3, 37, 2, 3, ['#e0574a', '#f0d24a', '#6fc27a', '#f08a3a'][(i + k) % 4]);
+    }
+  } else if (route.id === 'centro') {
+    let x = 0; const cols = ['#c9b8d8', '#e3d7bd', '#b8d0e8', '#f0d0a0', '#cfd8dc'];
+    while (x < SW) {
+      const w = 30 + Math.floor(r() * 10), h = 34 + Math.floor(r() * 14);
+      rect(x, 50 - h, w, h, cols[Math.floor(r() * cols.length)]);
+      for (let yy = 50 - h + 4; yy < 34; yy += 6) for (let xx = x + 3; xx < x + w - 4; xx += 6) rect(xx, yy, 4, 4, '#8fc6e0');
+      rect(x + 2, 36, w - 4, 4, ['#d8553f', '#3a7fc4', '#3f8f3a', '#e8b631'][Math.floor(r() * 4)]);
+      rect(x + 3, 40, w - 6, 10, '#bfe3f2'); rect(x + w / 2 - 1, 40, 2, 10, '#555');
+      x += w + 1;
+    }
+  } else if (route.id === 'cond') {
+    for (let i = 0; i < 3; i++) {
+      const x = 4 + i * 64, h = 46;
+      rect(x, 50 - h, 50, h, i % 2 ? '#e8dcc8' : '#d8e4ec');
+      for (let yy = 8; yy < 44; yy += 7) for (let xx = x + 4; xx < x + 46; xx += 8) { rect(xx, yy, 5, 4, '#8fc6e0'); rect(xx, yy + 4, 5, 1, '#999'); }
+    }
+    rect(0, 44, SW, 6, '#7a7468'); for (let x = 0; x < SW; x += 6) rect(x, 40, 1, 4, '#555');
+    rect(120, 36, 22, 14, '#efe6d2'); rect(124, 40, 14, 6, '#8fc6e0');
+    const bins = ['#3a7fc4', '#d8553f', '#3f8f3a', '#e8b631'];
+    bins.forEach((b, i) => { rect(150 + i * 9, 40, 8, 10, b); rect(150 + i * 9, 39, 8, 1, '#222'); });
+  } else {
+    rect(0, 34, SW, 18, '#9fc48a');
+    for (let i = 0; i < 6; i++) { rect(i * 34 + 6, 12, 3, 30, '#6b4a2a'); rect(i * 34, 4, 15, 12, '#4f8a3c'); }
+    const bins = [['#3a7fc4', 'PAPEL'], ['#d8553f', 'PLÁST.'], ['#3f8f3a', 'VIDRO'], ['#e8b631', 'METAL'], ['#7a4a22', 'ÓLEO'], ['#555', 'ELETR.']];
+    bins.forEach(([b, t], i) => {
+      const x = 4 + i * 31; rect(x, 28, 26, 22, b); rect(x, 26, 26, 3, '#2a2a2a'); rect(x + 4, 33, 18, 2, '#222');
+      g.fillStyle = '#fff'; g.font = 'bold 4px monospace'; g.textAlign = 'center'; g.fillText(t, x + 13, 44);
+    });
+  }
+  // calçada e rua
+  rect(0, 50, SW, 10, '#c8c2b4'); for (let x = 0; x < SW; x += 8) rect(x, 50, 1, 10, '#b0aa9c');
+  rect(0, 60, SW, 48, route.id === 'feira' ? '#8f8a80' : '#77756f');
+  for (let x = 4; x < SW; x += 18) rect(x, 84, 9, 1, '#e8e2c8');
+  for (let i = 0; i < 40; i++) rect(r() * SW, 61 + r() * 46, 1, 1, '#6a6862');
+  rect(0, 59, SW, 1, '#9a9488');
+  CX = old;
+  streetCache[route.id] = c;
+  return c;
+}
+function drawPlayerVehicleStreet(x, y, fill, cols){
+  // tamanho grande (coordenadas da rua)
+  const tier = playerCap();
+  if (tier >= 400) {
+    // caminhão
+    rect(x - 4, y - 34, 44, 28, '#7d8a8f'); rect(x - 4, y - 34, 44, 2, '#9aa7ab');
+    rect(x - 2, y - 32, 40, 24, '#5d686c');
+    pileIn(x - 2, y - 8, 40, 24, fill, cols);
+    rect(x - 4, y - 6, 44, 3, '#333'); for (const wx of [x + 2, x + 30]) { rect(wx, y - 4, 7, 7, '#1a1a1a'); rect(wx + 2, y - 2, 3, 3, '#888'); }
+    return {x:x - 4, y:y - 36, w:46, h:38};
+  }
+  const big = tier >= 120 ? 1.15 : tier >= 70 ? 1 : 0.85;
+  const w = Math.round(30 * big), h = Math.round(16 * big);
+  const col = tier >= 120 ? '#2f6fae' : tier >= 70 ? '#8b5a2b' : '#7b8a94';
+  rect(x, y - h - 4, w, h, col); rect(x, y - h - 4, w, 2, 'rgba(255,255,255,.3)');
+  rect(x + 2, y - h - 2, w - 4, h - 4, 'rgba(0,0,0,.35)');
+  pileIn(x + 2, y - 6, w - 4, h - 4, fill, cols);
+  rect(x + w, y - h + 2, 8, 2, '#5a4a3a');
+  rect(x + 3, y - 5, 6, 6, '#222'); rect(x + 5, y - 3, 2, 2, '#888');
+  rect(x + w - 9, y - 5, 6, 6, '#222'); rect(x + w - 7, y - 3, 2, 2, '#888');
+  if (tier >= 120) { rect(x + w + 6, y - 6, 6, 6, '#222'); rect(x + w + 4, y - h - 6, 2, 12, '#333'); }
+  return {x:x - 2, y:y - h - 8, w:w + 6, h:h + 10};
+}
+function pileIn(x, bottom, w, h, fill, cols){
+  if (fill <= 0) return;
+  const hh = Math.min(h + 6, h * fill + 1);
+  const r = rng(13);
+  for (let yy = 0; yy < hh; yy += 2) for (let xx = 0; xx < w; xx += 3) {
+    const curve = yy > h ? (Math.abs(xx - w / 2) < (w / 2) * (1 - (yy - h) / 7)) : true;
+    if (curve) rect(x + xx, bottom - yy - 2, 3, 2, cols[Math.floor(r() * cols.length)]);
+  }
+}
+
+// =====================================================================
+// INTERFACE E JOGO
+// =====================================================================
+const $ = id => document.getElementById(id);
+let G_mode = 'base';     // 'base' | 'street'
+let trip = null;
+let busy = false;        // transição/obra em andamento
+const IC = {cart:'🛒', glove:'🧤', clock:'⏱️', route:'🗺️', map:'🧭', person:'🧑', bike:'🚲', truck:'🚛', tarp:'⛺', bag:'👜',
+  scale:'⚖️', house:'🏠', table:'🪑', bay:'🧱', press:'🗜️', belt:'🎞️', fork:'🏗️', machine:'⚙️', sun:'☀️', drop:'💧', boot:'🥾',
+  shirt:'🦺', goggle:'🥽', book:'📚', ear:'🎧', food:'🍲', kid:'🧸', can:'🥫', bucket:'🪣', bottle:'🍾', gear:'🔩', chip:'📟',
+  doc:'📄', net:'🤝'};
+
+// ---------- utilidades de tela
+function toast(title, txt, cls, ms, key){
+  if (key) { toast._k = toast._k || {}; const now = Date.now(); if (toast._k[key] && now - toast._k[key] < 8000) return; toast._k[key] = now; }
+  const box = $('toasts');
+  const d = document.createElement('div'); d.className = 'toast ' + (cls || '');
+  d.innerHTML = (title ? `<b>${title}</b>` : '') + (txt || '');
+  d.onclick = () => d.remove();
+  box.appendChild(d);
+  while (box.children.length > (window.innerWidth < 900 ? 2 : 4)) box.firstChild.remove();
+  setTimeout(() => { d.classList.add('out'); setTimeout(() => d.remove(), 300); }, ms || 4500);
+}
+function floatText(txt, lx, ly, cls, street){
+  const d = document.createElement('div'); d.className = 'floater ' + (cls || '');
+  d.textContent = txt;
+  d.style.left = (lx / (street ? SW : W) * 100) + '%'; d.style.top = (ly / (street ? SH : H) * 100) + '%';
+  $('floaters').appendChild(d); setTimeout(() => d.remove(), 1300);
+}
+function showModal(title, html, buttons, opts){
+  const m = $('modal');
+  m.innerHTML = `<h2>${title}</h2><div>${html}</div><div class="mBtns"></div>`;
+  const bb = m.querySelector('.mBtns');
+  (buttons || [{t:'OK'}]).forEach(b => {
+    const e = document.createElement('button'); e.className = 'btn ' + (b.cls || ''); e.innerHTML = b.t;
+    if (b.disabled) e.disabled = true;
+    e.onclick = () => { AU.sfx('click'); if (!b.keep) hideModal(); b.fn && b.fn(); };
+    bb.appendChild(e);
+  });
+  $('modalBg').classList.remove('hidden');
+  if (opts && opts.onShow) opts.onShow(m);
+}
+function hideModal(){ $('modalBg').classList.add('hidden'); }
+function modalOpen(){ return !$('modalBg').classList.contains('hidden'); }
+function tipOnce(id, title, txt){
+  if (S.tips[id]) return; S.tips[id] = 1;
+  toast('💡 ' + title, txt, 'fact', 9000);
+}
+
+// =====================================================================
+// RUA
+// =====================================================================
+function routeById(id){ return ROUTES.find(r => r.id === id); }
+function pickWeighted(obj){
+  let T = 0; for (const k in obj) T += obj[k];
+  let x = Math.random() * T; for (const k in obj) { x -= obj[k]; if (x <= 0) return k; }
+  return Object.keys(obj)[0];
+}
+function makeStreetItem(route, forceKind){
+  const scale = Math.max(1, playerCap() / 40) * route.wm;
+  let it;
+  const isRej = forceKind ? forceKind === 'rej' : Math.random() < route.rej;
+  if (isRej) {
+    const r = Math.floor(Math.random() * REJ.length);
+    it = {kind:'rej', r, kg:(0.5 + Math.random()) * Math.max(1, playerCap() / 40), spr:SPR['rej' + r], name:REJ[r].n};
+  } else {
+    const mix = {}; for (const m in route.mix) if (matOn(m)) mix[m] = route.mix[m];
+    const m = forceKind && forceKind !== 'mat' ? forceKind : pickWeighted(mix);
+    const w = MATS[m].w;
+    it = {kind:'mat', m, kg:(w[0] + Math.random() * (w[1] - w[0])) * scale, spr:SPR[m], name:MATS[m].n};
+  }
+  it.kg = Math.round(it.kg * 10) / 10;
+  // posição livre
+  let best = null;
+  for (let k = 0; k < 20; k++) {
+    const x = 8 + Math.random() * 128, y = 64 + Math.random() * 38;
+    const ok = trip.items.every(o => o.state !== 'ground' || Math.hypot(o.x - x, o.y - y) > 14);
+    best = {x, y}; if (ok) break;
+  }
+  it.x = best.x; it.y = best.y; it.state = 'ground'; it.born = trip.elapsed; it.id = Math.random();
+  trip.items.push(it); trip.spawned++;
+  return it;
+}
+function startTrip(routeId){
+  if (busy || G_mode !== 'base') return;
+  const route = routeById(routeId) || ROUTES[0];
+  S.route = route.id;
+  let total = Math.round(route.items * (1 + 0.15 * nI('conhecimento')));
+  if (route.id === 'feira' && evOn('feira2')) total *= 2;
+  trip = {route, items:[], cart:{}, cartKg:0, cap:playerCap(), time:tripTime(), left:tripTime(), elapsed:0, total, spawned:0,
+          got:0, rejN:0, drag:null, flying:[], helpers:[], lastSec:99, ended:false, cartRect:{x:140, y:60, w:46, h:40}, tut:!S.tut.done && S.st.trips === 0};
+  const first = Math.min(total, 11);
+  if (trip.tut) { makeStreetItem(route, 'papelao'); makeStreetItem(route, 'pet'); makeStreetItem(route, 'rej'); }
+  while (trip.spawned < first) makeStreetItem(route);
+  const nh = nI('ajudante');
+  for (let i = 0; i < nh; i++) trip.helpers.push({x:128 - i * 9, y:72 + i * 7, tx:null, target:null, cool:1 + i * 0.7, look:personLook(300 + i)});
+  AU.sfx('go');
+  transition(() => {
+    G_mode = 'street'; AU.setMode('street');
+    $('sceneWrap').classList.add('street'); document.body.classList.add('inStreet');
+    $('streetHud').classList.remove('hidden'); $('hots').classList.add('hidden');
+    $('actionBar').classList.add('hidden');
+    updateStreetHud();
+  });
+}
+function transition(mid){
+  busy = true;
+  $('fade').classList.add('on');
+  setTimeout(() => { mid(); $('fade').classList.remove('on'); setTimeout(() => busy = false, 350); }, 380);
+}
+function cartAdd(it){
+  if (trip.ended) return false;
+  if (trip.cartKg + it.kg > trip.cap + 0.001) {
+    AU.sfx('full');
+    floatText('Não cabe!', it.x, it.y - 8, 'bad', true);
+    if (trip.cartKg >= trip.cap * 0.9) { S.flags.cheio = 1; toast('Carrinho cheio!', 'Volte à base para descarregar.', 'good', 3000, 'cheio'); }
+    return false;
+  }
+  const key = it.kind === 'rej' ? 'rej' : it.m;
+  trip.cart[key] = (trip.cart[key] || 0) + it.kg; trip.cartKg += it.kg;
+  if (it.kind === 'rej') {
+    trip.rejN++;
+    AU.sfx('rej');
+    floatText('Rejeito!', trip.cartRect.x + 20, trip.cartRect.y, 'bad', true);
+    toast('🚫 ' + it.name + ' é rejeito', REJ[it.r].why + ' Ocupou ' + fmtKg(it.kg) + ' do carrinho.', 'bad', 5000);
+  } else {
+    trip.got++;
+    AU.sfx('pick');
+    floatText('+' + fmtKg(it.kg), trip.cartRect.x + 20, trip.cartRect.y, 'kg', true);
+  }
+  if (trip.cartKg >= trip.cap * 0.97) { S.flags.cheio = 1; toast('Carrinho cheio!', 'Ótimo trabalho! Volte à base para descarregar.', 'good', 3500, 'cheio'); AU.sfx('full'); }
+  updateStreetHud();
+  return true;
+}
+function flyToCart(it, from){
+  it.state = 'fly'; it.fx = it.x; it.fy = it.y; it.ft = 0;
+  trip.flying.push(it);
+}
+function updateStreet(dt){
+  if (!trip) return;
+  if (!trip.ended && !busy) {
+    trip.left -= dt; trip.elapsed += dt;
+    const sec = Math.ceil(trip.left);
+    if (sec <= 10 && sec !== trip.lastSec && sec > 0) { AU.sfx('tick'); trip.lastSec = sec; }
+    if (trip.left <= 0) { trip.left = 0; endTrip(true); }
+  }
+  // novos itens aparecem aos poucos
+  const ground = trip.items.filter(i => i.state === 'ground').length;
+  if (trip.spawned < trip.total && ground < 13) {
+    const interval = trip.time * 0.75 / Math.max(1, trip.total - 11);
+    trip.spawnT = (trip.spawnT || 0) + dt;
+    if (trip.spawnT > interval) { trip.spawnT = 0; makeStreetItem(trip.route); }
+  }
+  // voo até o carrinho
+  for (const it of trip.flying) {
+    it.ft += dt * 3;
+    const cx = trip.cartRect.x + trip.cartRect.w / 2, cy = trip.cartRect.y + 8;
+    it.x = it.fx + (cx - it.fx) * it.ft; it.y = it.fy + (cy - it.fy) * it.ft - Math.sin(it.ft * Math.PI) * 18;
+    if (it.ft >= 1) {
+      if (cartAdd(it)) it.state = 'gone';
+      else { it.state = 'ground'; it.x = it.fx; it.y = it.fy; }
+    }
+  }
+  trip.flying = trip.flying.filter(i => i.state === 'fly');
+  trip.items = trip.items.filter(i => i.state !== 'gone');
+  // ajudantes
+  for (const h of trip.helpers) {
+    if (trip.ended) break;
+    if (!h.target) {
+      h.cool -= dt;
+      if (h.cool <= 0) {
+        const free = trip.cap - trip.cartKg;
+        const cand = trip.items.filter(i => i.state === 'ground' && i.kind === 'mat' && i.kg <= free && !trip.helpers.some(o => o.target === i) && trip.drag?.it !== i);
+        if (cand.length) { cand.sort((a, b) => Math.hypot(a.x - h.x, a.y - h.y) - Math.hypot(b.x - h.x, b.y - h.y)); h.target = cand[0]; }
+        else h.cool = 1;
+      }
+    } else {
+      const it = h.target;
+      if (it.state !== 'ground') { h.target = null; continue; }
+      const dx = it.x - h.x, dy = it.y - h.y, d = Math.hypot(dx, dy), sp = 45 * dt;
+      if (d < 3) { flyToCart(it); h.target = null; h.cool = Math.max(1.2, 5 - nI('ajudante') * 0.6); }
+      else { h.x += dx / d * Math.min(sp, d); h.y += dy / d * Math.min(sp, d); h.flip = dx < 0; }
+    }
+  }
+}
+function updateStreetHud(){
+  if (!trip) return;
+  const s = Math.ceil(trip.left);
+  $('timer').textContent = '⏱ ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  $('timer').classList.toggle('warn', s <= 10);
+  $('cartTxt').textContent = `${trip.route.n} · ${fmtNum(trip.cartKg, 1)} / ${fmtNum(trip.cap)} kg`;
+  const f = Math.min(1, trip.cartKg / trip.cap);
+  $('cartFill').style.width = (f * 100) + '%';
+  $('cartFill').classList.toggle('full', f >= 0.97);
+}
+function endTrip(timeout){
+  if (!trip || trip.ended) return;
+  trip.ended = true;
+  if (trip.drag) { trip.drag.it.state = 'ground'; trip.drag = null; }
+  // itens que ainda voavam entram no carrinho
+  for (const it of trip.flying) { cartAdd(it); it.state = 'gone'; }
+  if (timeout) { AU.sfx('end'); floatText('Tempo esgotado!', SW / 2, SH / 2, 'bad', true); }
+  const t = trip;
+  setTimeout(() => {
+    // descarrega na base
+    let matKg = 0;
+    for (const k in t.cart) { S.mixed[k] = (S.mixed[k] || 0) + t.cart[k]; if (k !== 'rej') matKg += t.cart[k]; }
+    S.st.trips++; S.st.streetKg += t.cartKg; S.st.rejStreet += (t.cart.rej || 0);
+    if (matKg >= 10 && !(t.cart.rej > 0)) S.flags.limpa = 1;
+    transition(() => {
+      G_mode = 'base'; AU.setMode('base'); trip = null;
+      $('sceneWrap').classList.remove('street', 'dragging'); document.body.classList.remove('inStreet');
+      $('streetHud').classList.add('hidden'); $('hots').classList.remove('hidden'); $('actionBar').classList.remove('hidden');
+      $('itemTip').classList.add('hidden');
+      showTripSummary(t);
+      save();
+    });
+  }, timeout ? 900 : 150);
+}
+function showTripSummary(t){
+  const rows = MAT_IDS.filter(m => t.cart[m] > 0).map(m => `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${MATS[m].c}"></span> ${MATS[m].n}</td><td>${fmtKg(t.cart[m])}</td></tr>`).join('');
+  let est = 0; MAT_IDS.forEach(m => { if (t.cart[m]) est += t.cart[m] * price(m, 'sep'); });
+  const rej = t.cart.rej || 0;
+  const rejLine = rej > 0
+    ? `<p style="color:var(--red)"><b>Rejeito trazido por engano: ${fmtKg(rej)}</b> (${t.rejN} ${t.rejN === 1 ? 'item' : 'itens'}). Ele ocupou espaço e vai ser descartado na triagem.</p>`
+    : (t.cartKg >= 10 ? `<p style="color:var(--green)"><b>Nenhum rejeito! Saída limpa. ✨</b></p>` : '');
+  showModal('Resumo da saída', `
+    <p class="muted">${t.route.n}</p>
+    <table class="sumTable">${rows || '<tr><td>Nenhum material reciclável</td><td>–</td></tr>'}
+    <tr><td><b>Total no carrinho</b></td><td>${fmtKg(t.cartKg)} de ${fmtKg(t.cap)}</td></tr></table>
+    ${rejLine}
+    <p>O material chegou <b>misturado</b>. Depois de triado, vale cerca de <b>${fmtMoney(est)}</b>.</p>`,
+    [{t:'Continuar'}]);
+}
+
+// ---------- ponteiro na rua
+function streetPt(e){
+  const r = cv.getBoundingClientRect();
+  return {x:(e.clientX - r.left) / r.width * SW, y:(e.clientY - r.top) / r.height * SH};
+}
+function itemAt(p){
+  let best = null, bd = 13;
+  for (const it of trip.items) {
+    if (it.state !== 'ground') continue;
+    const d = Math.hypot(it.x - p.x, it.y - 3 - p.y);
+    if (d < bd) { bd = d; best = it; }
+  }
+  return best;
+}
+function inCart(p, pad){
+  const c = trip.cartRect; pad = pad || 6;
+  return p.x > c.x - pad && p.x < c.x + c.w + pad && p.y > c.y - pad - 6 && p.y < c.y + c.h + pad;
+}
+function showItemTip(it, p){
+  const tip = $('itemTip');
+  if (!it) { tip.classList.add('hidden'); return; }
+  tip.textContent = it.kind === 'rej' ? `${it.name} · rejeito` : `${it.name} · ${fmtKg(it.kg)}`;
+  tip.style.left = (p.x / SW * 100) + '%'; tip.style.top = (p.y / SH * 100) + '%';
+  tip.classList.remove('hidden');
+}
+cv.addEventListener('pointerdown', e => {
+  AU.init();
+  if (G_mode !== 'street' || !trip || trip.ended || busy) return;
+  const p = streetPt(e), it = itemAt(p);
+  if (!it) return;
+  e.preventDefault();
+  cv.setPointerCapture(e.pointerId);
+  trip.drag = {it, ox:it.x - p.x, oy:it.y - p.y, sx:p.x, sy:p.y, moved:0, pid:e.pointerId};
+  it.state = 'drag';
+  $('sceneWrap').classList.add('dragging');
+  AU.sfx('grab');
+  showItemTip(it, {x:it.x, y:it.y - 6});
+});
+cv.addEventListener('pointermove', e => {
+  if (G_mode !== 'street' || !trip) return;
+  const p = streetPt(e);
+  if (trip.drag && trip.drag.pid === e.pointerId) {
+    const d = trip.drag;
+    d.it.x = Math.max(4, Math.min(SW - 4, p.x + d.ox)); d.it.y = Math.max(54, Math.min(SH - 2, p.y + d.oy));
+    d.moved = Math.max(d.moved, Math.hypot(p.x - d.sx, p.y - d.sy));
+    showItemTip(d.it, {x:d.it.x, y:d.it.y - 6});
+  } else if (e.pointerType === 'mouse') {
+    const it = itemAt(p); showItemTip(it, it ? {x:it.x, y:it.y - 6} : p);
+  }
+});
+function dragEnd(e){
+  if (!trip || !trip.drag || trip.drag.pid !== e.pointerId) return;
+  const d = trip.drag, it = d.it, p = streetPt(e);
+  trip.drag = null; $('sceneWrap').classList.remove('dragging');
+  $('itemTip').classList.add('hidden');
+  if (trip.ended) { it.state = 'ground'; return; }
+  const tap = d.moved < 4;
+  if (tap && has('luvas_coleta')) { it.x = d.sx + d.ox; it.y = d.sy + d.oy; flyToCart(it); return; }
+  if (inCart(p, has('luvas_coleta') ? 10 : 6) || inCart({x:it.x, y:it.y}, 4)) {
+    it.fx = it.x; it.fy = it.y;
+    if (cartAdd(it)) it.state = 'gone';
+    else { it.state = 'ground'; it.x = Math.min(it.x, trip.cartRect.x - 12); }
+  } else {
+    it.state = 'ground'; AU.sfx('drop');
+    if (tap && !has('luvas_coleta')) toast(null, 'Arraste o material até o carrinho. Com <b>luvas de coleta</b> basta tocar.', '', 3000, 'arraste');
+  }
+}
+cv.addEventListener('pointerup', dragEnd);
+cv.addEventListener('pointercancel', dragEnd);
+cv.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !trip?.drag) $('itemTip').classList.add('hidden'); });
+
+// ---------- desenho da rua
+function drawStreet(t){
+  ctx.setTransform(RES * 2, 0, 0, RES * 2, 0, 0); ctx.imageSmoothingEnabled = false;
+  CX = ctx;
+  const bg = drawStreetBg(trip.route);
+  ctx.drawImage(bg, 0, 0, SW, SH);
+  // carrinho e jogador(a)
+  const cols = compColors(trip.cart);
+  const cr = drawPlayerVehicleStreet(146, 100, trip.cartKg / trip.cap, cols);
+  trip.cartRect = cr;
+  const pl = {skin:'#c58c5c', hair:'#2a1d14', shirt:'#e8b631', pants:'#3b4a6b', long:true};
+  drawPerson(cr.x + cr.w + 6 > SW - 4 ? cr.x - 6 : cr.x + cr.w + 6, 101, pl, trip.drag ? 'work' : 'stand', t, {gloves:has('luvas_coleta'), boots:has('botas'), uniform:has('uniforme')}, true);
+  // destaque do carrinho ao arrastar
+  if (trip.drag) {
+    const over = inCart({x:trip.drag.it.x, y:trip.drag.it.y}, 6);
+    CX.globalAlpha = 0.25 + 0.15 * Math.sin(t * 8);
+    rect(cr.x - 3, cr.y - 3, cr.w + 6, cr.h + 6, over ? '#62e06a' : '#ffe08a');
+    CX.globalAlpha = 1;
+  }
+  // itens (ordenados por y)
+  const list = trip.items.filter(i => i.state === 'ground' || i.state === 'drag' || i.state === 'fly').sort((a, b) => a.y - b.y);
+  for (const it of list) {
+    const s = it.spr; const lift = it.state === 'drag' ? 3 : 0;
+    CX.globalAlpha = 0.25; rect(it.x - s.width / 2, it.y, s.width, 1, '#000'); CX.globalAlpha = 1;
+    CX.drawImage(s, Math.round(it.x - s.width / 2), Math.round(it.y - s.height - lift));
+    if (it.kind === 'rej' && it.r <= 2 && it.state === 'ground') { // mosquitinhos
+      for (let k = 0; k < 2; k++) px(it.x - 2 + Math.round(Math.sin(t * 9 + k * 3 + it.id * 10) * 4), it.y - s.height - 3 + Math.round(Math.cos(t * 7 + k) * 2), '#222');
+    }
+  }
+  // ajudantes
+  trip.helpers.forEach((h, i) => drawPerson(h.x, h.y + 4, h.look, h.target ? 'walk' : 'stand', t + i, {gloves:1}, h.flip));
+  if (trip.helpers.length && trip.helpers.length > 1) {}
+}
+
+// =====================================================================
+// BASE: ações
+// =====================================================================
+function doSort(){
+  if (G_mode !== 'base' || busy) return;
+  const before = sum(S.mixed);
+  if (before <= 0.01) { toast(null, 'Não há material misturado para triar. Vá para a rua!', '', 2500, 'nomix'); return; }
+  const done = sortKg(manualSortAmount());
+  if (done <= 0) { AU.sfx('deny'); toast('Estoque de separado cheio!', 'Venda o material ou compre bags e baias para ganhar espaço.', 'bad', 3500, 'sepfull'); return; }
+  AU.sfx('sort');
+  const sp = S.phase <= 2 ? {x:56, y:128} : ZONES.sort; floatText('+' + fmtKg(done) + ' triado', sp.x, sp.y + 10, 'kg');
+}
+function doSell(){
+  if (G_mode !== 'base' || busy) return;
+  const r = sellAllManual();
+  if (r.w > 0) {
+    AU.sfx('sell');
+    floatText('+' + fmtMoney(r.money), ZONES.sell.x, ZONES.sell.y + 10, 'money');
+    return;
+  }
+  if (sum(S.mixed) > 0.5) {
+    const v = mixedValue();
+    showModal('Vender material misturado?', `<p>Você só tem material <b>misturado</b>. O atravessador paga apenas <b>${fmtMoney(v)}</b> por ele (30% do valor).</p><p>Se você triar antes, ganha bem mais!</p>`,
+      [{t:'Triar primeiro', cls:'alt'}, {t:'Vender misturado', cls:'red', fn:sellMixedNow}]);
+  } else toast(null, 'Nada para vender ainda.', '', 2000, 'nosell');
+}
+function sellMixedNow(){
+  const r = sellMixed();
+  if (r.w > 0 || r.rej > 0) { AU.sfx('sell'); floatText('+' + fmtMoney(r.money), ZONES.sell.x, ZONES.sell.y + 10, 'money'); }
+}
+function chooseRoute(){
+  if (busy || G_mode !== 'base') return;
+  AU.init();
+  const open = ROUTES.filter(routeOn);
+  if (open.length === 1 || !S.tut.done && S.st.trips === 0) { startTrip(open[0].id); return; }
+  const html = ROUTES.map(r => {
+    const on = routeOn(r);
+    let lock = '';
+    if (!on) {
+      if (S.phase + 1 < r.ph) lock = '???';
+      else if (r.id === 'pev') lock = 'Liberada pelo contrato com a prefeitura (fase 6).';
+      else if (S.phase < r.ph) lock = S.phase + 1 < r.ph ? '???' : `Libera na fase ${r.ph}.`;
+      else lock = `Compre "${ITEM[r.item].n}" na Loja.`;
+    }
+    const feira = r.id === 'feira' && evOn('feira2') ? ' <b style="color:var(--green)">· Dia de feira: dobro de material!</b>' : '';
+    const mats = Object.keys(r.mix).filter(matOn).map(m => MATS[m].n).join(', ');
+    return `<button class="routeCard" data-route="${r.id}" ${on ? '' : 'disabled'}>
+      <canvas data-prev="${r.id}" width="144" height="80"></canvas>
+      <div><div class="rnm">${on ? '' : '🔒 '}${on || S.phase + 1 >= r.ph ? r.n : '???'}</div>
+      <div class="muted">${on ? r.d + feira + '<br>Materiais: ' + mats + ' · Rejeito: ' + (r.rej >= 0.25 ? 'alto' : r.rej >= 0.12 ? 'médio' : r.rej >= 0.05 ? 'baixo' : 'quase nenhum') : lock}</div></div></button>`;
+  }).join('');
+  showModal('Para onde vamos?', `<p class="muted">Tempo: ${tripTime()} s · Carrinho: ${playerCap()} kg</p>${html}`, [{t:'Cancelar', cls:'alt'}], {onShow:m => {
+    m.querySelectorAll('[data-route]').forEach(b => b.onclick = () => { hideModal(); startTrip(b.dataset.route); });
+    m.querySelectorAll('[data-prev]').forEach(c => { const r = routeById(c.dataset.prev); const g = c.getContext('2d'); g.imageSmoothingEnabled = false; if (routeOn(r) || S.phase + 1 >= r.ph) g.drawImage(drawStreetBg(r), 0, 0, 144, 80); else { g.fillStyle = '#3a2a1c'; g.fillRect(0, 0, 144, 80); } });
+  }});
+}
+// segurar para repetir (triar)
+function holdRepeat(el, fn){
+  let iv = null, to = null;
+  const stop = () => { clearTimeout(to); clearInterval(iv); to = iv = null; };
+  el.addEventListener('pointerdown', e => { AU.init(); e.preventDefault(); fn(); to = setTimeout(() => { iv = setInterval(fn, 140); }, 350); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, stop));
+}
+
+// ---------- equipamentos além dos desenhados: [id, rótulo, máx. desenhado, x, y]
+const EQUIP_BADGES = [
+  ['mesa', 'Mesas', 4, 132, 138], ['esteira', 'Esteiras', 1, 175, 124], ['bag', 'Bags', 8, 222, 184], ['baia', 'Baias', 6, 70, 206],
+  ['prensa', 'Prensas', 2, 222, 130], ['linha_graos', 'Linhas de grãos', 1, 240, 100], ['balanca', 'Balanças', 3, 338, 146],
+  ['empilhadeira', 'Empilhadeiras', 2, 300, 196], ['separador', 'Separadores', 2, 140, 88], ['painel', 'Painéis solares', 10, 200, 22],
+  ['veiculos', 'Veículos', 3, 46, 184],
+];
+function equipCount(id){ return id === 'veiculos' ? nI('carroca') + nI('triciclo') + nI('caminhao') : nI(id); }
+// ---------- hotspots na cena
+function setupHots(){
+  const h = $('hots');
+  h.innerHTML = `<button class="hot" id="hotSort" style="left:${ZONES.sort.x / W * 100}%;top:${ZONES.sort.y / H * 100}%">✋ Triar <small id="hotSortKg"></small></button>
+  <button class="hot" id="hotSell" style="left:${ZONES.sell.x / W * 100}%;top:${ZONES.sell.y / H * 100}%">⚖ <span id="hotSellLbl">Vender</span></button>
+  <div class="badge hidden" id="bdg-triagem" style="left:${150 / W * 100}%;top:${176 / H * 100}%"></div>
+  <div class="badge hidden" id="bdg-venda" style="left:${306 / W * 100}%;top:${170 / H * 100}%"></div>
+  <div class="badge hidden" id="bdg-prensa" style="left:${232 / W * 100}%;top:${170 / H * 100}%"></div>
+  <div class="badge hidden" id="bdg-coleta" style="left:${40 / W * 100}%;top:${196 / H * 100}%"></div>` +
+  EQUIP_BADGES.map(([id, , , x, y]) => `<div class="badge hidden" id="eq-${id}" style="left:${x / W * 100}%;top:${y / H * 100}%"></div>`).join('');
+  holdRepeat($('hotSort'), doSort);
+  $('hotSell').onclick = () => { AU.init(); doSell(); };
+}
+
+// =====================================================================
+// PAINEL
+// =====================================================================
+let curTab = 'coop', curCat = 'rua', panelPressed = false, lastSig = '';
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => { AU.sfx('click'); curTab = b.dataset.tab; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); lastSig = ''; renderPanel(true); $('tabBody').scrollTop = 0; });
+$('panel').addEventListener('pointerdown', () => panelPressed = true);
+window.addEventListener('pointerup', () => setTimeout(() => panelPressed = false, 50));
+window.addEventListener('pointercancel', () => panelPressed = false);
+
+function stockBar(cur, cap){
+  const f = Math.min(1, cur / Math.max(1, cap));
+  return `<div class="pbar ${f >= 1 ? 'full' : f > 0.8 ? 'warn' : ''}"><div style="width:${f * 100}%"></div></div>`;
+}
+function chipsOf(store, withRej){
+  return '<div class="chips">' + Object.keys(store).filter(k => store[k] > 0.05 && (withRej || k !== 'rej')).map(k =>
+    `<span class="chip"><i style="background:${k === 'rej' ? '#6b6b4a' : MATS[k].c}"></i>${k === 'rej' ? 'Rejeito' : MATS[k].n}: ${fmtKg(store[k])}</span>`).join('') + '</div>';
+}
+function sellableValue(){
+  let v = 0;
+  for (const m in S.sep) v += S.sep[m] * price(m, 'sep');
+  for (const m in S.bale) v += S.bale[m] * price(m, 'bale');
+  for (const m in S.pellet) v += S.pellet[m] * price(m, 'pellet');
+  return v;
+}
+function renderCoop(){
+  const P = PHASES[S.phase - 1], N = PHASES[S.phase];
+  const cap = caps(), mixT = sum(S.mixed), sepU = sepUsed(), r = rates();
+  let h = `<div class="card"><h3>Fase ${S.phase} de 10 · ${P.name}</h3>`;
+  if (N) {
+    const prog = phaseProgress();
+    h += `<div class="pbar"><div style="width:${prog * 100}%"></div></div>
+      <div class="muted" style="margin:6px 0 4px">Próxima fase: <b>${N.name}</b></div>`;
+    reqList().forEach(q => {
+      const v = q.money ? '' : `<span class="v">${q.need === 1 ? '' : (q.label.includes('Reciclar') || q.label.includes('grãos') ? fmtKg(Math.min(q.cur, q.need)) + ' / ' + fmtKg(q.need) : fmtNum(Math.min(q.cur, q.need)) + ' / ' + fmtNum(q.need))}</span>`;
+      h += `<div class="req"><span class="${q.ok ? 'ok' : 'no'}">${q.ok ? '✔' : '✘'}</span><span>${q.label}</span>${v}</div>`;
+    });
+    h += `<button class="btn wide ${canAdvance() ? 'yellow' : ''}" data-act="advance" ${canAdvance() ? '' : 'disabled'}>${canAdvance() ? '🏗 Avançar para a fase ' + (S.phase + 1) : 'Complete os marcos acima para avançar'}</button>`;
+  } else h += `<p>Vocês chegaram ao topo: a cooperativa é referência regional! Continue crescendo, liberando os últimos itens e conquistas.</p>`;
+  h += `</div>`;
+  // estoques
+  h += `<div class="card"><h3>Estoque</h3>
+    <div class="stockRow"><div class="stockHead"><span>📦 Misturado</span><span>${fmtKg(mixT)} / ${fmtKg(cap.mixed)}</span></div>${stockBar(mixT, cap.mixed)}
+    ${chipsOf(S.mixed, true)}${mixT > cap.mixed ? '<div class="warnTxt">Estoque cheio: a coleta automática parou. Faça a triagem!</div>' : S._blkCol ? '<div class="warnTxt">Estoque cheio: a coleta automática parou.</div>' : ''}
+    <div class="row" style="margin-top:6px"><button class="btn alt" data-act="sort" style="flex:1">✋ Triar (${fmtKg(manualSortAmount())})</button>
+    <button class="btn red" data-act="sellMixed" style="flex:1" ${mixT > 0.1 ? '' : 'disabled'}>Vender misturado · ${fmtMoney(mixedValue())}</button></div></div>
+    <div class="stockRow"><div class="stockHead"><span>🗂 Separado${S.phase >= 7 ? ' + fardos + grãos' : ''}</span><span>${fmtKg(sepU)} / ${fmtKg(cap.sep)}</span></div>${stockBar(sepU, cap.sep)}
+    ${chipsOf(S.sep)}${S._blkTri ? '<div class="warnTxt">Espaço cheio: a triagem parou. Venda ou amplie o estoque!</div>' : ''}</div>`;
+  if (S.phase >= 7 || sum(S.bale) > 0) h += `<div class="stockRow"><div class="stockHead"><span>🧱 Fardos</span><span>${fmtNum(Math.floor(sum(S.bale) / BALE_KG))} fardos · ${fmtKg(sum(S.bale))}</span></div><div class="muted">Fardos ocupam metade do espaço e valem 30% a mais.</div></div>`;
+  if (S.phase >= 8 || sum(S.pellet) > 0) h += `<div class="stockRow"><div class="stockHead"><span>🔹 Grãos de plástico</span><span>${fmtKg(sum(S.pellet))}</span></div><div class="muted">Grãos valem 3x o preço do plástico.</div></div>`;
+  h += `<button class="btn wide" data-act="sell" ${sellableValue() > 0 ? '' : 'disabled'}>⚖ Vender tudo · ${fmtMoney(sellableValue())}</button></div>`;
+  // produção
+  const eff = (r.col + r.extra);
+  h += `<div class="card"><h3>Produção automática</h3>`;
+  if (coopCount() === 0 && S.phase < 6) h += `<p class="muted">Por enquanto é só você. Na fase 2 dá para chamar colegas, e eles trabalham mesmo quando você não está clicando.</p>`;
+  else {
+    const line = (lb, v, note) => `<div class="req"><span>${lb}</span><span class="v">${v}${note ? ' · ' + note : ''}</span></div>`;
+    h += line('🛒 Coleta (coletores e contratos)', fmtKg(eff) + '/s', S._blkCol ? '<b style="color:var(--red)">parada</b>' : '');
+    h += line('✋ Triagem', fmtKg(r.tri) + '/s', S._blkTri ? '<b style="color:var(--red)">parada</b>' : '');
+    if (S.phase >= 7) h += line('🗜 Prensa', fmtKg(r.pre) + '/s') + (S.phase >= 8 ? line('🔹 Linha de grãos', fmtKg(r.gra) + '/s') : '');
+    h += line('⚖ Venda', fmtKg(r.ven) + '/s');
+    if (r.money > 0) h += line('📄 Contratos', fmtMoney(r.money) + '/s');
+    h += line('💪 Produtividade', '+' + fmtNum((prod() - 1) * 100) + '%') + line('🏗 Estrutura da fase', 'x' + fmtNum(infra(), 1));
+    const bott = [];
+    if (eff > 0 && r.tri < eff * 0.7) bott.push('a triagem está mais lenta que a coleta');
+    if (r.tri > 0 && r.ven < r.tri * 0.7) bott.push('a venda está mais lenta que a triagem');
+    if (bott.length) h += `<div class="muted" style="margin-top:4px">⚠ Atenção: ${bott.join(' e ')}.</div>`;
+  }
+  h += `</div>`;
+  // eventos
+  if (S.ev.length) h += `<div class="card"><h3>Eventos ativos</h3>${S.ev.map(e => `<div class="req"><span>${e.t}</span><span class="v">${Math.ceil(e.until - S.t)} s</span></div>`).join('')}</div>`;
+  // preços
+  h += `<div class="card"><h3>Preços por kg</h3><div class="muted">Comprador: <b>${formal() ? 'Indústria (venda direta)' : 'Atravessador'}</b>${formal() ? '' : ' · Na fase 5 vocês vendem direto à indústria.'}</div>
+    <table class="prices"><tr><th>Material</th><th>Separado</th>${S.phase >= 7 ? '<th>Fardo</th>' : ''}${S.phase >= 8 ? '<th>Grão</th>' : ''}</tr>` +
+    MAT_IDS.filter(matOn).map(m => `<tr><td>${MATS[m].n}</td><td>${fmtMoney(price(m, 'sep'))}</td>${S.phase >= 7 ? `<td>${MATS[m].bale ? fmtMoney(price(m, 'bale')) : '–'}</td>` : ''}${S.phase >= 8 ? `<td>${MATS[m].pellet ? fmtMoney(price(m, 'pellet')) : '–'}</td>` : ''}</tr>`).join('') +
+    `</table><div class="muted" style="margin-top:4px">Misturado: 30% do valor, só para o atravessador.</div></div>`;
+  return h;
+}
+function lockText(it){
+  if (it.ph > S.phase) return `🔒 Libera na fase ${it.ph} (${PHASES[it.ph - 1].name}).`;
+  const miss = reqMissing(it); if (miss.length) return '🔒 Requer: ' + miss.map(id => ITEM[id].n).join(', ') + '.';
+  return '';
+}
+function itemCard(it){
+  const st = itemStatus(it), k = nI(it.id), lim = itemLimit(it);
+  if (st === 'hidden') return `<div class="card item mystery locked"><div class="ic" style="display:flex;align-items:center;justify-content:center;font-size:22px">❔</div><div class="info"><div class="nm">???</div><div class="ds">Algo novo vai aparecer mais para frente.</div></div></div>`;
+  const cnt = it.uniq ? '' : `<span class="cnt">${k}${isFinite(lim) && st !== 'locked' ? ' / ' + lim : ''}</span>`;
+  let act = '';
+  if (st === 'locked') act = `<div class="lockMsg">${lockText(it)}</div>`;
+  else if (st === 'limit') act = `<div class="limitMsg">Limite da fase atingido (${k}/${lim}). A próxima fase libera mais espaço no terreno.</div>`;
+  else if (it.uniq) { const c = itemCost(it); act = `<div class="buyRow"><button class="btn" data-buy="${it.id}" data-q="1" ${S.money >= c ? '' : 'disabled'}>Comprar<small>${fmtMoney(c)}</small></button></div>`; }
+  else {
+    const rem = remainingQty(it);
+    const opts = [1, 5, 10].map(q => { const qq = Math.min(q, rem); const c = costFor(it, qq); return `<button class="btn" data-buy="${it.id}" data-q="${qq}" ${S.money >= c && qq > 0 ? '' : 'disabled'}>${q}x${qq < q ? ` (${qq})` : ''}<small>${fmtMoney(c)}</small></button>`; });
+    const mx = maxAffordable(it);
+    opts.push(`<button class="btn blue" data-buy="${it.id}" data-q="${mx}" ${mx > 0 ? '' : 'disabled'}>Máx (${mx})<small>${fmtMoney(costFor(it, mx))}</small></button>`);
+    act = `<div class="buyRow">${opts.join('')}</div>`;
+  }
+  return `<div class="card item ${st === 'locked' ? 'locked' : ''}"><div class="ic" style="display:flex;align-items:center;justify-content:center;font-size:22px">${IC[it.ic] || '📦'}</div>
+    <div class="info"><div class="nm">${it.n}${cnt}</div><div class="ds">${it.d}</div>${act}</div></div>`;
+}
+function catHasBuyable(cat){
+  if (cat === 'pessoas') return canHire() && S.money >= hireCost() && ROLE_IDS.some(r => roleOpen(r) && freeVaga(r) > 0);
+  return ITEMS.some(it => it.cat === cat && itemStatus(it) === 'avail' && S.money >= itemCost(it));
+}
+function renderPeople(){
+  const v = vagas();
+  let h = `<div class="card"><h3>Cooperados: ${coopCount()} / ${maxCoop()}</h3>`;
+  if (S.phase < 2) h += `<p class="muted">Na fase 1 você trabalha sozinho(a). Na fase 2 (Ponto de acúmulo) dá para chamar os primeiros colegas.</p></div>`;
+  else {
+    const kit = kitCost(); const c = hireCost();
+    const anyVaga = ROLE_IDS.some(r => roleOpen(r) && freeVaga(r) > 0);
+    h += `<p class="muted">Cada pessoa trabalha numa função. As vagas dependem da estrutura: carroças, mesas, balanças...${kit ? ' Cada admissão inclui um kit de EPI (' + fmtMoney(kit) + ').' : ''}</p>
+      <button class="btn wide" data-act="hire" ${canHire() && anyVaga && S.money >= c ? '' : 'disabled'}>➕ Admitir cooperado(a) · ${fmtMoney(c)}</button>`;
+    if (!canHire()) h += `<div class="limitMsg" style="margin-top:6px">Limite de pessoas da fase atingido (${maxCoop()}). A próxima fase libera mais espaço.</div>`;
+    else if (!anyVaga) h += `<div class="lockMsg" style="margin-top:6px">Sem vagas livres. Compre uma carroça, balança, lona de triagem ou mesa para abrir vagas.</div>`;
+    h += `</div>`;
+    ROLE_IDS.forEach(r => {
+      const R = ROLES[r];
+      if (!roleOpen(r)) { h += `<div class="card locked"><div class="roleRow"><div><div class="rn">🔒 ${S.phase + 1 >= R.ph ? R.n : '???'}</div><div class="muted">Libera na fase ${R.ph}.</div></div></div></div>`; return; }
+      const moves = ROLE_IDS.filter(o => o !== r && roleOpen(o)).map(o => `<button class="btn alt" data-move="${r}>${o}" ${S.roles[r] > 0 && freeVaga(o) > 0 ? '' : 'disabled'}>→ ${ROLES[o].n}</button>`).join('');
+      h += `<div class="card"><div class="roleRow"><div><div class="rn">${R.n}</div><div class="muted">${R.d}<br>Vagas: ${R.vagaTxt}.</div></div><div class="cnt2">${S.roles[r]} / ${v[r]}</div></div>
+        ${S.roles[r] > 0 ? `<div class="muted" style="margin-top:6px">Mudar a função de 1 pessoa:</div><div class="moveBtns">${moves}</div>` : ''}</div>`;
+    });
+  }
+  return h;
+}
+function renderShop(){
+  let h = '<div id="cats">' + CATS.map(c => `<button class="cat ${c.id === curCat ? 'on' : ''}" data-cat="${c.id}">${c.n}${catHasBuyable(c.id) ? '<span class="dot"></span>' : ''}</button>`).join('') + '</div>';
+  if (curCat === 'pessoas') return h + renderPeople();
+  const list = ITEMS.filter(it => it.cat === curCat);
+  const order = {avail:0, limit:1, locked:2, hidden:3, done:4};
+  const sorted = list.filter(it => itemStatus(it) !== 'done').sort((a, b) => {
+    const sa = itemStatus(a), sb = itemStatus(b);
+    if (sa !== sb) return order[sa] - order[sb];
+    return itemCost(a) - itemCost(b);
+  });
+  // só um "???" por categoria
+  let shownHidden = 0;
+  sorted.forEach(it => { if (itemStatus(it) === 'hidden') { if (shownHidden++ < 1) h += itemCard(it); } else h += itemCard(it); });
+  const done = list.filter(it => itemStatus(it) === 'done');
+  if (!sorted.length) h += `<p class="muted">Tudo desta categoria já foi comprado!</p>`;
+  if (done.length) h += `<details class="done"><summary>✔ Concluídos (${done.length})</summary>${done.map(it => `<div class="doneItem">✔ ${it.n}${it.uniq ? '' : ' · ' + nI(it.id)}</div>`).join('')}</details>`;
+  return h;
+}
+function renderAch(){
+  const n = achCount();
+  let h = `<div class="card"><h3>Conquistas: ${n} / ${ACHS.length}</h3><div class="muted">Cada conquista dá +2% de produtividade para toda a cooperativa. Bônus atual: <b>+${n * 2}%</b>.</div></div><div class="achGrid">`;
+  ACHS.forEach(a => {
+    const on = !!S.ach[a.id];
+    h += `<div class="ach ${on ? 'on' : 'off'}"><div class="an">${on ? '🏆' : '🔒'} ${a.n}</div><div>${a.d}</div>${on ? '<div class="muted">+2% de produtividade</div>' : ''}</div>`;
+  });
+  return h + '</div>';
+}
+function renderMore(){
+  return `<div class="card"><h3>Ajustes</h3>
+    <div class="row" style="flex-wrap:wrap"><button class="btn ${S.set.music ? '' : 'alt'}" data-act="music">♪ Música: ${S.set.music ? 'ligada' : 'desligada'}</button>
+    <button class="btn ${S.set.sfx ? '' : 'alt'}" data-act="sfx">🔊 Efeitos: ${S.set.sfx ? 'ligados' : 'desligados'}</button></div></div>
+    <div class="card"><h3>Ajuda</h3><div class="row" style="flex-wrap:wrap"><button class="btn blue" data-act="help">❓ Como jogar</button><button class="btn blue" data-act="retut">🎓 Rever tutorial</button></div></div>
+    <div class="card"><h3>Seu progresso</h3>
+      <div class="req"><span>Saídas para a rua</span><span class="v">${fmtNum(S.st.trips)}</span></div>
+      <div class="req"><span>Coletado na rua</span><span class="v">${fmtKg(S.st.streetKg)}</span></div>
+      <div class="req"><span>Rejeito trazido por engano</span><span class="v">${fmtKg(S.st.rejStreet)}</span></div>
+      <div class="req"><span>Material triado</span><span class="v">${fmtKg(S.st.sorted)}</span></div>
+      <div class="req"><span>Material reciclado (vendido)</span><span class="v">${fmtKg(S.st.recycled)}</span></div>
+      <div class="req"><span>Total ganho</span><span class="v">${fmtMoney(S.st.earned)}</span></div>
+      <div class="muted" style="margin-top:6px">O jogo salva sozinho a cada 5 segundos.</div></div>
+    <div class="card"><h3>Sobre</h3><p class="muted">Catadores e catadoras fazem um trabalho essencial: tiram toneladas de material do lixo, devolvem matéria-prima à indústria e protegem o meio ambiente. Este jogo é uma homenagem a quem faz a reciclagem acontecer.</p></div>
+    <div class="card"><button class="btn red wide" data-act="reset">Reiniciar do zero</button></div>`;
+}
+function panelSig(){
+  if (curTab === 'coop') return 'c' + Math.round(S.money * 100) + '|' + Math.round(sum(S.mixed) * 10) + '|' + Math.round(sepUsed() * 10) + '|' + S.phase + '|' + coopCount() + '|' + S.ev.map(e => Math.ceil(e.until - S.t)).join() + '|' + S._blkCol + S._blkTri + '|' + Math.round(S.st.recycled) + '|' + JSON.stringify(S.items);
+  if (curTab === 'loja') {
+    let s = 'l' + curCat + S.phase + JSON.stringify(S.items) + JSON.stringify(S.roles) + hireCost();
+    if (curCat === 'pessoas') s += S.money >= hireCost();
+    else ITEMS.forEach(it => { if (it.cat === curCat) s += maxAffordable(it) + ',' + (S.money >= itemCost(it) ? 1 : 0) + ';'; });
+    return s;
+  }
+  if (curTab === 'ach') return 'a' + achCount();
+  return 'm' + S.set.music + S.set.sfx + Math.round(S.st.earned) + S.st.trips;
+}
+function renderPanel(force){
+  if (!force && panelPressed) return;
+  const sig = panelSig();
+  if (!force && sig === lastSig) return;
+  lastSig = sig;
+  const body = $('tabBody'), st = body.scrollTop;
+  const openDetails = body.querySelector('details.done')?.open;
+  body.innerHTML = curTab === 'coop' ? renderCoop() : curTab === 'loja' ? renderShop() : curTab === 'ach' ? renderAch() : renderMore();
+  if (openDetails) { const d = body.querySelector('details.done'); if (d) d.open = true; }
+  body.scrollTop = st;
+}
+$('tabBody').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  AU.init();
+  if (b.dataset.cat) { AU.sfx('click'); curCat = b.dataset.cat; lastSig = ''; renderPanel(true); return; }
+  if (b.dataset.buy) {
+    const q = +b.dataset.q; const it = ITEM[b.dataset.buy];
+    const got = buy(it.id, q);
+    if (got > 0) onBought(it, got); else AU.sfx('deny');
+    lastSig = ''; renderPanel(true); return;
+  }
+  if (b.dataset.move) { const [a, c] = b.dataset.move.split('>'); if (moveRole(a, c)) { AU.sfx('click'); toast(null, `1 pessoa passou de ${ROLES[a].n} para ${ROLES[c].n}.`, '', 2500); } lastSig = ''; renderPanel(true); return; }
+  const act = b.dataset.act;
+  if (act === 'advance') doAdvance();
+  else if (act === 'sort') doSort();
+  else if (act === 'sell') doSell();
+  else if (act === 'sellMixed') showModal('Vender misturado?', `<p>O atravessador paga <b>${fmtMoney(mixedValue())}</b> por todo o material misturado (30% do valor). Triando antes, você ganha bem mais.</p>`, [{t:'Cancelar', cls:'alt'}, {t:'Vender misturado', cls:'red', fn:sellMixedNow}]);
+  else if (act === 'hire') openHire();
+  else if (act === 'music') toggleMusic();
+  else if (act === 'sfx') toggleSfx();
+  else if (act === 'help') showHelp();
+  else if (act === 'retut') { S.tut = {step:0, done:false}; toast('Tutorial', 'Vamos rever o passo a passo!', 'fact'); if (G_mode === 'base') { curTab = 'coop'; selectTab('coop'); } }
+  else if (act === 'reset') showModal('Reiniciar do zero?', '<p>Todo o progresso será apagado: dinheiro, fases, cooperados e conquistas. Isso não pode ser desfeito.</p>',
+    [{t:'Cancelar', cls:'alt'}, {t:'Apagar e recomeçar', cls:'red', fn:() => { resetting = true; try { localStorage.removeItem(SAVE_KEY); } catch (e) {} location.reload(); }}]);
+  lastSig = ''; renderPanel(true);
+});
+let resetting = false;
+function selectTab(t){ curTab = t; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.tab === t)); lastSig = ''; renderPanel(true); }
+function onBought(it, q){
+  AU.sfx('buy'); S.flags.bought = 1;
+  toast('Comprado!', `${it.n}${q > 1 ? ' x' + q : ''}`, 'good', 2200);
+  bgCache.sig = '';
+  // explicações na hora em que a mecânica aparece
+  const tips = {
+    lona:['Lona de cobertura', 'Material coberto não estraga com a chuva e cabe mais coisa no monte.'],
+    bag:['Bags', 'Bags guardam o material separado. Se o espaço de separado encher, a triagem para.'],
+    balanca:['Balança', 'Cada balança abre 1 vaga de Venda. Quem vende pesa e vende o material separado automaticamente.'],
+    carroca:['Carroça para coletor', 'Cada carroça abre 1 vaga de Coleta. Admita um(a) cooperado(a) na Loja › Pessoas para sair com ela.'],
+    lona_triagem:['Triagem no chão', 'Cada lona abre 2 vagas de Triagem. Os triadores separam o misturado sozinhos.'],
+    mesa:['Mesa de triagem', 'A mesa abre 4 vagas e é bem mais rápida que triar no chão.'],
+    baia:['Baias', 'Baias guardam muito material separado e um pouco de misturado.'],
+    luvas_coleta:['Luvas de coleta', 'Agora é só tocar no material na rua para jogá-lo no carrinho!'],
+    ajudante:['Ajudante', 'O ajudante recolhe material reciclável sozinho durante as saídas. Ele nunca pega rejeito.'],
+    prensa:['Prensa enfardadeira', 'A prensa transforma material separado em fardos de 100 kg: valem 30% a mais e ocupam metade do espaço. Ela precisa de 1 pessoa na função Prensa e beneficiamento.'],
+    linha_graos:['Linha de grãos', 'O moedor, a lavadora e a extrusora transformam PET e plástico duro em grãos, que valem 3x mais. Cada linha precisa de 2 pessoas na função Prensa e beneficiamento.'],
+    esteira:['Esteira de triagem', 'A esteira abre 8 vagas de triagem bem rápidas.'],
+    separador:['Separador automático', 'Faz a triagem sozinho, sem precisar de vagas.'],
+    caminhao:['Caminhão', 'O caminhão abre 2 vagas de coleta e você também passa a sair com ele: 400 kg por saída!'],
+    logistica:['Logística reversa', 'A empresa paga um valor fixo por segundo e manda muito material para a cooperativa.'],
+  };
+  if (tips[it.id]) tipOnce('buy_' + it.id, tips[it.id][0], tips[it.id][1]);
+  if (it.lim && nI(it.id) >= itemLimit(it)) tipOnce('limit', 'Limite da fase', 'Cada fase tem um limite de equipamentos, por causa do espaço no terreno. Avançar de fase libera mais espaço.');
+}
+function openHire(){
+  if (!canHire()) return;
+  const c = hireCost();
+  const html = `<p>Custo: <b>${fmtMoney(c)}</b>${kitCost() ? ' (inclui kit de EPI)' : ''}. Escolha a função. Dá para mudar depois.</p>` + ROLE_IDS.map(r => {
+    const R = ROLES[r], open = roleOpen(r), fv = open ? freeVaga(r) : 0;
+    return `<button class="roleChoice" data-role="${r}" ${open && fv > 0 && S.money >= c ? '' : 'disabled'}><b>${open ? '' : '🔒 '}${R.n}</b> <span class="muted">· ${open ? fv + ' vaga' + (fv === 1 ? '' : 's') + ' livre' + (fv === 1 ? '' : 's') : 'libera na fase ' + R.ph}</span><br><span class="muted">${R.d} Vagas: ${R.vagaTxt}.</span></button>`;
+  }).join('');
+  showModal('Admitir cooperado(a)', html, [{t:'Cancelar', cls:'alt'}], {onShow:m => m.querySelectorAll('[data-role]').forEach(b => b.onclick = () => {
+    hideModal();
+    if (hire(b.dataset.role)) {
+      AU.sfx('buy');
+      const R = ROLES[b.dataset.role];
+      toast('Bem-vindo(a) à cooperativa!', `Nova pessoa na função ${R.n}.`, 'good');
+      if (b.dataset.role === 'coleta') tipOnce('hire_col', 'Coleta automática', 'O coletor sai com a carroça e traz material misturado para a base, mesmo quando você não está na rua.');
+      if (b.dataset.role === 'venda') tipOnce('hire_ven', 'Venda automática', 'Quem trabalha na venda vende o material separado sozinho. Ainda falta alguém para triar!');
+      if (b.dataset.role === 'triagem') tipOnce('hire_tri', 'Triagem automática', 'Os triadores separam o misturado sozinhos. Fique de olho no espaço de separado.');
+      lastSig = ''; renderPanel(true);
+    }
+  })});
+}
+
+// ---------- mudança de fase
+function doAdvance(){
+  if (!canAdvance() || busy) return;
+  if (G_mode !== 'base') return;
+  const old = buildBaseBg(), oldBg = mkCanvas(old.width, old.height); oldBg.getContext('2d').drawImage(old, 0, 0);
+  const info = advance(); if (!info) return;
+  busy = true; AU.sfx('hammer');
+  bgCache.sig = 'x';
+  // durante a obra, ainda mostramos o cenário antigo? Mostramos andaimes por cima do novo.
+  buildAnim = {t0:performance.now(), dur:3200, oldBg, cb:() => {
+    busy = false; AU.sfx('phase');
+    const P = PHASES[info.phase - 1];
+    let extra = '';
+    if (info.converted) extra += `<p style="background:#e8f5e0;border-radius:8px;padding:8px">🪑 <b>Melhoria!</b> As ${info.converted} lonas de triagem viraram ${info.converted} mesas de triagem. Ninguém perdeu a vaga: cada mesa tem 4 lugares e todo mundo trabalha em pé, na altura certa.</p>`;
+    if (info.phase === 5) extra += `<p>🏭 <b>Venda direta:</b> agora a balança vende para a indústria, por um preço melhor.</p>`;
+    if (info.phase === 7) extra += `<p>🗜 <b>Nova função: Prensa e beneficiamento.</b> Compre uma prensa e coloque alguém nessa função para produzir fardos.</p>`;
+    if (info.phase === 8) extra += `<p>🔹 A linha de grãos usa a função <b>Prensa e beneficiamento</b> (2 pessoas por linha).</p>`;
+    showModal(`Fase ${info.phase}: ${P.name}`, `<p>${P.msg}</p>${extra}<p><b>O que esta fase libera:</b></p><ul>${(P.libera || []).map(x => '<li>' + x + '</li>').join('')}</ul>
+      <p class="muted">Pessoas na fase: até ${P.max} (com você). Os equipamentos têm novos limites.</p>`, [{t:'Vamos trabalhar!'}]);
+    if (info.phase === 7) tipOnce('prensaRole', 'Nova função liberada', 'Prensa e beneficiamento: opera a prensa e a linha de grãos. Mude a função de alguém na Loja › Pessoas.');
+    lastSig = ''; renderPanel(true); save();
+  }};
+}
+
+// ---------- som
+function toggleMusic(){ S.set.music = !S.set.music; AU.init(); AU.setVolumes(); updateSoundBtns(); }
+function toggleSfx(){ S.set.sfx = !S.set.sfx; AU.init(); AU.setVolumes(); updateSoundBtns(); }
+function updateSoundBtns(){ $('btnMusic').classList.toggle('off', !S.set.music); $('btnSfx').classList.toggle('off', !S.set.sfx); lastSig = ''; }
+$('btnMusic').onclick = toggleMusic; $('btnSfx').onclick = toggleSfx;
+$('btnHelp').onclick = () => { AU.init(); showHelp(); };
+function showHelp(){
+  showModal('Como jogar', `
+    <p><b>1. Rua:</b> toque em <b>Ir para a rua</b> e arraste os materiais até o carrinho antes do tempo acabar. Evite o rejeito (resto de comida, fralda, isopor sujo...): ele não vale nada e ocupa espaço.</p>
+    <p><b>2. Triagem:</b> na base, toque em <b>Triar</b> para separar o material misturado por tipo. O rejeito é descartado.</p>
+    <p><b>3. Venda:</b> toque em <b>Vender</b>. Material separado vale muito mais que misturado. Na fase 5, vocês vendem direto à indústria. Fardos e grãos valem ainda mais.</p>
+    <p><b>4. Loja:</b> compre carrinhos maiores, estrutura, EPIs, novos materiais e rotas. Itens repetíveis ficam 15% mais caros a cada compra.</p>
+    <p><b>5. Pessoas:</b> a partir da fase 2, admita cooperados e escolha a função: coleta, triagem, venda e (na fase 7) prensa e beneficiamento. As vagas dependem da estrutura.</p>
+    <p><b>6. Estoque:</b> se o espaço encher, a etapa anterior para. Equilibre coleta, triagem e venda!</p>
+    <p><b>7. Fases:</b> cada fase pede marcos (pessoas, kg reciclados, EPIs...) e um custo. Veja na aba Cooperativa.</p>
+    <p class="muted">A cooperativa continua trabalhando enquanto você está fora (até 2 horas).</p>`,
+    [{t:'Rever tutorial', cls:'blue', fn:() => { S.tut = {step:0, done:false}; }}, {t:'Entendi'}]);
+}
+
+// =====================================================================
+// TUTORIAL
+// =====================================================================
+function canvasPtToPage(lx, ly, street){
+  const r = cv.getBoundingClientRect();
+  return {x:r.left + lx / (street ? SW : W) * r.width, y:r.top + ly / (street ? SH : H) * r.height};
+}
+const TUT = [
+  {id:'go', txt:'Toque em <b>Ir para a rua</b> para sair com seu carrinho e coletar material reciclável.', el:() => $('btnGo'), done:() => G_mode === 'street'},
+  {id:'drag', street:1, txt:() => has('luvas_coleta') ? 'Toque num material reciclável para jogá-lo no carrinho.' : '<b>Arraste</b> um material reciclável (papelão, garrafa PET...) até o <b>carrinho</b>.',
+   pt:() => { const it = trip && trip.items.find(i => i.state === 'ground' && i.kind === 'mat'); return it ? canvasPtToPage(it.x, it.y - 10, true) : null; }, done:() => trip && trip.got >= 1},
+  {id:'rej', street:1, txt:'Cuidado com o <b>rejeito</b>: resto de comida, fralda, isopor sujo... Não vale nada e ocupa espaço no carrinho. Deixe na rua!', ok:1,
+   pt:() => { const it = trip && trip.items.find(i => i.state === 'ground' && i.kind === 'rej'); return it ? canvasPtToPage(it.x, it.y - 10, true) : null; }, done:(s) => (performance.now() - s.t0) > 9000},
+  {id:'back', street:1, txt:'Colete mais um pouco. Quando quiser, toque em <b>Voltar à base</b>. Se o tempo acabar, você volta sozinho(a).', el:() => $('btnBack'), done:() => G_mode === 'base' && !modalOpen()},
+  {id:'sort', txt:'Toque em <b>Triar</b> para separar o material por tipo. O rejeito vai para o lixo. Toque várias vezes, ou segure.', el:() => $('hotSort'), done:() => sum(S.mixed) < 0.5},
+  {id:'sell', txt:'Material separado vale mais. Toque em <b>Vender</b>: o atravessador pesa e paga.', el:() => $('hotSell'), done:() => S.st.sales >= 1},
+  {id:'shop', txt:'Abra a <b>Loja</b> e compre seu primeiro item. Dica: o <b>Carrinho maior</b> leva mais material por saída.', el:() => curTab === 'loja' ? document.querySelector('[data-buy]:not(:disabled)') || $('tab-loja') : $('tab-loja'), done:() => S.flags.bought},
+  {id:'wait', txt:null, done:() => S.phase >= 2,
+   enter:() => toast('Continue assim!', 'Faça mais saídas, trie e venda. Na aba <b>Cooperativa</b> você vê o que falta para a fase 2, quando poderá chamar colegas.', 'fact', 9000)},
+  {id:'hire', txt:'Agora você pode chamar colegas! Primeiro compre uma <b>Balança</b> (Estrutura) ou uma <b>Carroça para coletor</b> (Rua) para abrir uma vaga. Depois, em <b>Loja › Pessoas</b>, admita alguém e escolha a função.',
+   el:() => curTab === 'loja' ? (curCat === 'pessoas' ? document.querySelector('[data-act="hire"]') : document.querySelector('.cat[data-cat="pessoas"]')) : $('tab-loja'), done:() => S.st.hires >= 1},
+];
+let tutState = {idx:-1, t0:0};
+function updateTutorial(){
+  const bub = $('tutBubble'), arr = $('tutArrow');
+  if (S.tut.done || modalOpen() || busy) { bub.classList.add('hidden'); arr.classList.add('hidden'); return; }
+  let step = TUT[S.tut.step];
+  if (!step) { S.tut.done = true; toast('🎓 Tutorial concluído!', 'Agora é com você. Eventos e curiosidades vão aparecer de vez em quando. Bom trabalho!', 'good', 7000); return; }
+  if (tutState.idx !== S.tut.step) { tutState = {idx:S.tut.step, t0:performance.now()}; step.enter && step.enter(); }
+  if (step.done(tutState)) { S.tut.step++; return; }
+  if (step.street && G_mode !== 'street') { // voltou da rua antes da hora
+    if (step.id !== 'back') { S.tut.step = 3; } return;
+  }
+  if (!step.txt || (!step.street && G_mode === 'street')) { bub.classList.add('hidden'); arr.classList.add('hidden'); return; }
+  let p = null;
+  if (step.el) { const e = step.el(); if (e && e.offsetParent !== null) { const r = e.getBoundingClientRect(); p = {x:r.left + r.width / 2, y:r.top}; } }
+  else if (step.pt) p = step.pt();
+  const txt = typeof step.txt === 'function' ? step.txt() : step.txt;
+  if (bub.dataset.step !== step.id + txt) {
+    bub.dataset.step = step.id + txt;
+    bub.innerHTML = `<div>${txt}</div><div class="tb">${step.ok ? '<button class="btn" id="tutOk">Entendi</button>' : ''}<button class="btn alt" id="tutSkip">Pular tutorial</button></div>`;
+    $('tutSkip').onclick = () => { S.tut.done = true; S.tut.step = TUT.length; bub.classList.add('hidden'); arr.classList.add('hidden'); toast(null, 'Tutorial pulado. Dá para rever em <b>Como jogar</b> (botão ?).', '', 4000); };
+    if (step.ok) $('tutOk').onclick = () => { S.tut.step++; };
+  }
+  bub.classList.remove('hidden');
+  const bw = bub.offsetWidth, bh = bub.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+  if (p && p.y > -20 && p.y < vh + 20) {
+    arr.classList.remove('hidden');
+    arr.style.left = p.x + 'px'; arr.style.top = (p.y - 2) + 'px';
+    let by = p.y - 44 - bh; if (by < 60) by = p.y + 50;
+    if (G_mode === 'street') { const cr = cv.getBoundingClientRect(); by = cr.bottom + 10; if (by + bh > vh - 6) by = cr.top + 50; }
+    if (by + bh > vh - 6) by = Math.max(60, vh - bh - 6);
+    bub.style.left = Math.max(6, Math.min(vw - bw - 6, p.x - bw / 2)) + 'px'; bub.style.top = by + 'px';
+  } else {
+    arr.classList.add('hidden');
+    bub.style.left = Math.max(6, vw / 2 - bw / 2) + 'px'; bub.style.top = (vh - bh - 12) + 'px';
+  }
+}
+
+// =====================================================================
+// GANCHOS DA LÓGICA
+// =====================================================================
+HOOK.ach = a => {
+  AU.sfx('ach');
+  toast('🏆 Conquista: ' + a.n, a.d + ' <b>+2% de produtividade.</b>', 'ach', 6000);
+  tipOnce('ach', 'Conquistas', 'Cada conquista dá +2% de produtividade para todo mundo. Veja todas na aba Conquistas.');
+};
+HOOK.event = ev => {
+  AU.sfx(ev.good ? 'event' : 'bad');
+  toast((ev.good ? '📣 ' : '⚠ ') + ev.t, ev.d, ev.good ? 'good' : 'bad', 7000);
+  if (ev.id === 'chuva') rainUntil = performance.now() + 8000;
+  tipOnce('events', 'Eventos', 'De vez em quando acontece algo na cidade. Os eventos ruins são raros e dá para evitá-los com melhorias, como a lona contra a chuva.');
+  lastSig = '';
+};
+
+// =====================================================================
+// LAÇO PRINCIPAL
+// =====================================================================
+let lastFrame = performance.now(), acc = 0, incomeHist = [], uiT = 0, factT = 0;
+function catchUp(secs){
+  const before = S.money;
+  const steps = Math.min(7200, Math.floor(secs));
+  for (let i = 0; i < steps; i++) tick(1, true);
+  const g = S.money - before;
+  if (g > 0.5) toast('Enquanto você estava fora', `A cooperativa ganhou <b>${fmtMoney(g)}</b>.`, 'good', 5000);
+}
+function render(t){
+  if (G_mode === 'street' && trip) { drawStreet(t); return null; }
+  ctx.setTransform(RES, 0, 0, RES, 0, 0); ctx.imageSmoothingEnabled = false; CX = ctx;
+  const bgOld = buildAnim && buildAnim.oldBg && (performance.now() - buildAnim.t0) < buildAnim.dur * 0.9;
+  ctx.drawImage(bgOld ? buildAnim.oldBg : buildBaseBg(), 0, 0, W, H);
+  const shown = drawBaseDynamic(t);
+  drawBuild(t);
+  return shown;
+}
+function updateHud(shown){
+  $('money').textContent = fmtMoney(S.money);
+  // renda média dos últimos 10 s
+  const now = performance.now();
+  incomeHist.push([now, S.st.earned]); while (incomeHist.length > 2 && now - incomeHist[0][0] > 10000) incomeHist.shift();
+  const [t0, e0] = incomeHist[0]; const rate = now - t0 > 1500 ? (S.st.earned - e0) / ((now - t0) / 1000) : 0;
+  $('rate').textContent = '+' + fmtMoney(Math.max(0, rate)) + '/s';
+  $('phaseChip').textContent = window.innerWidth < 600 ? `Fase ${S.phase}/10` : `Fase ${S.phase}/10 · ${PHASES[S.phase - 1].name}`;
+  if (G_mode === 'street') { updateStreetHud(); return; }
+  const mixT = sum(S.mixed), sv = sellableValue();
+  const open = ROUTES.filter(routeOn);
+  $('goSub').textContent = open.length > 1 ? 'Escolher rota' : open[0].n;
+  $('sortSub').textContent = fmtKg(mixT) + ' misturado';
+  $('sellSub').textContent = sv > 0 ? fmtMoney(sv) : (mixT > 0 ? 'só misturado' : 'nada a vender');
+  const sp = S.phase <= 2 ? {x:56, y:128} : ZONES.sort, hb = $('hotSort');
+  if (hb) { hb.style.left = (sp.x / W * 100) + '%'; hb.style.top = (sp.y / H * 100) + '%'; }
+  const hs = $('hotSortKg'); if (hs) hs.textContent = mixT > 0 ? fmtKg(mixT) : '';
+  const hl = $('hotSellLbl'); if (hl) hl.textContent = has('balanca') ? 'Vender' : 'Atravessador';
+  $('hotSort')?.classList.toggle('pulse', mixT > 0.5 && S.phase <= 3);
+  $('hotSell')?.classList.toggle('pulse', sv > 0.5 && S.phase <= 3);
+  $('btnGo').disabled = busy;
+  // contadores de pessoas além das desenhadas
+  if (shown) ROLE_IDS.forEach(r => {
+    const b = $('bdg-' + r); if (!b) return;
+    const n = S.roles[r];
+    if (n > 0 && n > (shown[r] || 0)) { b.textContent = `${ROLES[r].n} x${n}`; b.classList.remove('hidden'); } else b.classList.add('hidden');
+  });
+  EQUIP_BADGES.forEach(([id, lb, mx]) => {
+    const b = $('eq-' + id); if (!b) return;
+    const n = equipCount(id), show = n > mx && !(id === 'mesa' && nI('esteira') > 0 && n <= 2);
+    if (show) { b.textContent = `${lb} x${n}`; b.classList.remove('hidden'); } else b.classList.add('hidden');
+  });
+  // bolinha da loja
+  const any = CATS.some(c => catHasBuyable(c.id));
+  $('dotLoja').classList.toggle('hidden', !any);
+}
+function frame(now){
+  let dt = (now - lastFrame) / 1000; lastFrame = now;
+  if (dt > 5) { catchUp(dt); dt = 0; }
+  dt = Math.min(dt, 0.25);
+  acc += dt;
+  while (acc >= 0.2) { tick(0.2); acc -= 0.2; }
+  if (G_mode === 'street') updateStreet(dt);
+  const shown = render(now / 1000);
+  uiT += dt;
+  if (uiT > 0.25) { uiT = 0; updateHud(shown); renderPanel(); }
+  else if (G_mode === 'street') updateStreetHud();
+  updateTutorial();
+  // curiosidades
+  if (S.tut.done && !busy) {
+    S.nextFact -= dt;
+    if (S.nextFact <= 0) {
+      S.nextFact = 110 + Math.random() * 70;
+      const f = FACTS[S.factIdx % FACTS.length]; S.factIdx++;
+      toast('🌱 Você sabia?', f, 'fact', 10000);
+      $('tipTxt').innerHTML = '<b>Você sabia?</b> ' + f;
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+// =====================================================================
+// INÍCIO
+// =====================================================================
+function boot(){
+  const had = load();
+  const off = had ? offlineProgress() : null;
+  setupHots();
+  holdRepeat($('btnSort'), doSort);
+  $('btnSell').onclick = () => { AU.init(); doSell(); };
+  $('btnGo').onclick = () => { AU.init(); chooseRoute(); };
+  $('btnBack').onclick = () => { AU.sfx('click'); endTrip(false); };
+  updateSoundBtns();
+  $('tipTxt').innerHTML = '<b>Dica:</b> ' + (S.phase === 1 ? 'no começo, a rua é sua principal fonte de renda. Encha o carrinho, trie e venda!' : FACTS[S.factIdx % FACTS.length]);
+  document.addEventListener('pointerdown', () => AU.init(), {once:true});
+  setInterval(() => { if (!resetting) save(); }, 5000);
+  window.addEventListener('beforeunload', () => { if (!resetting) save(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && !resetting) save(); });
+  renderPanel(true);
+  if (!had) {
+    showModal('Bem-vindo(a) à cooperativa!', `
+      <p>Você é um(a) catador(a) e guarda seu carrinho num terreno baldio do bairro.</p>
+      <p>Cada garrafa, latinha e caixa de papelão que você recolhe deixa de ir para o lixão e volta para a indústria como matéria-prima. Seu trabalho é <b>essencial</b> para a cidade e para o meio ambiente.</p>
+      <p>Com o tempo, outros catadores vão se juntar a você. Juntos, vocês vão transformar este terreno numa grande central de reciclagem.</p>`,
+      [{t:'Pular tutorial', cls:'alt', fn:() => { S.tut.done = true; S.tut.step = TUT.length; }}, {t:'Começar!', fn:() => {}}]);
+  } else if (off && (off.money > 0.01 || off.col > 1)) {
+    const h = Math.floor(off.secs / 3600), m = Math.floor(off.secs % 3600 / 60);
+    showModal('Enquanto você estava fora...', `<p>Você ficou fora por ${h ? h + ' h ' : ''}${m} min${off.secs >= 7200 ? ' (a cooperativa conta até 2 horas)' : ''}. A cooperativa continuou trabalhando:</p>
+      <table class="sumTable"><tr><td>Material coletado</td><td>${fmtKg(off.col)}</td></tr><tr><td>Material triado</td><td>${fmtKg(off.sorted)}</td></tr>
+      <tr><td>Material vendido</td><td>${fmtKg(off.sold)}</td></tr><tr><td><b>Ganho</b></td><td>${fmtMoney(off.money)}</td></tr></table>${off.sorted < 0.5 && off.col > 0 ? '<p class="muted">O material chegou, mas ninguém fez a triagem. Trie e venda, ou tenha triadores (a partir da fase 3).</p>' : ''}`, [{t:'Ótimo!'}]);
+  }
+  requestAnimationFrame(t => { lastFrame = t; requestAnimationFrame(frame); });
+}
+boot();
+
+</script>
+</body>
+</html>
