@@ -190,7 +190,13 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
 .ach{background:#fffaf0;border:2px solid var(--line);border-radius:10px;padding:8px;font-size:12px}
 .ach.on{border-color:#e8b631;background:#fff6d8}
 .ach .an{font-weight:800;font-size:13px;margin-bottom:2px}
-.ach.off{opacity:.7}
+.ach.off{opacity:.78}
+.ach.t-b.on{border-color:#c98a52;background:#fbeee0}.ach.t-p.on{border-color:#9aa7b0;background:#f1f4f6}.ach.t-o.on{border-color:#e8b631;background:#fff6d8}
+.ach .pbar{height:7px;margin-top:5px}.ach .pv{font-size:11px;color:var(--ink2);margin-top:2px;font-variant-numeric:tabular-nums}
+.ach.secret{background:#f0e8d6;border-style:dashed}
+.achCat{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 6px}
+.achCat h4{margin:0}
+.nearRow{margin:6px 0}.nearRow .nm{display:flex;justify-content:space-between;font-size:13px;font-weight:700}
 /* modal */
 #modalBg{position:fixed;inset:0;background:rgba(15,10,5,.6);z-index:80;display:flex;align-items:center;justify-content:center;padding:14px}
 #modal{background:var(--paper);border:3px solid #1d150f;border-radius:14px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;padding:16px;box-shadow:0 8px 0 rgba(0,0,0,.35);animation:pop .25s ease-out}
@@ -212,7 +218,9 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
 #tutBubble{position:fixed;z-index:70;max-width:300px;background:#fffbe8;border:3px solid #e8b631;border-radius:12px;padding:10px 12px;font-size:14px;box-shadow:0 6px 0 rgba(0,0,0,.3);line-height:1.35}
 #tutBubble .tb{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
 #tutBubble .tb button{font-size:12px;padding:5px 9px}
-#tutArrow{position:fixed;z-index:71;font-size:34px;pointer-events:none;color:#e8b631;text-shadow:0 2px 0 #000;animation:bob .7s infinite;transform:translate(-50%,-100%)}
+#tutHole{position:fixed;z-index:69;border-radius:12px;pointer-events:none;box-shadow:0 0 0 3px #ffe08a,0 0 16px 5px rgba(255,224,138,.85),0 0 0 9999px rgba(12,8,4,.42);animation:holeGlow 1.2s ease-in-out infinite}
+@keyframes holeGlow{50%{box-shadow:0 0 0 4px #fff3b0,0 0 26px 9px rgba(255,224,138,.95),0 0 0 9999px rgba(12,8,4,.42)}}
+#tutBubble .tt{line-height:1.38}
 @keyframes bob{50%{margin-top:-10px}}
 #buildOverlay{position:absolute;inset:0;pointer-events:none}
 /* responsivo */
@@ -293,7 +301,7 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
 </div>
 <div id="modalBg" class="hidden"><div id="modal"></div></div>
 <div id="tutBubble" class="hidden"></div>
-<div id="tutArrow" class="hidden">▼</div>
+<div id="tutHole" class="hidden"></div>
 <script>
 /*LOGIC-START*/
 'use strict';
@@ -301,47 +309,62 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
 // CONFIGURAÇÃO
 // =====================================================================
 const MATS = {
-  papelao:  {n:'Papelão',         c:'#b8864b', atr:0.40, ind:0.60, w:[2,4],     bale:1},
-  pet:      {n:'Garrafa PET',     c:'#62c0ea', atr:0.80, ind:1.50, w:[1,2],     bale:1, pellet:1},
-  lata:     {n:'Latinha',         c:'#c9ccd4', atr:4.50, ind:6.50, w:[0.5,1.2], bale:1, item:'mat_lata'},
-  plastico: {n:'Plástico duro',   c:'#e2574c', atr:1.20, ind:1.80, w:[1,2.5],   bale:1, pellet:1, item:'mat_plastico'},
-  vidro:    {n:'Vidro',           c:'#6fc27a', atr:0.15, ind:0.25, w:[2,4],     item:'mat_vidro'},
-  sucata:   {n:'Sucata de metal', c:'#8f7462', atr:0.80, ind:1.20, w:[2,5],     bale:1, item:'mat_sucata'},
-  oleo:     {n:'Óleo de cozinha', c:'#e8c24a', atr:1.20, ind:1.80, w:[1,2],     item:'mat_oleo'},
-  eletro:   {n:'Eletrônicos',     c:'#5a6080', atr:2.50, ind:4.00, w:[2,4],     item:'mat_eletro'},
+  papelao:  {n:'Papelão',               c:'#b8864b', atr:0.40, ind:0.60, bale:1},
+  papel:    {n:'Papel branco e jornal', c:'#e6e1d2', atr:0.45, ind:0.75, bale:1, item:'mat_papel'},
+  pet:      {n:'Garrafa PET',           c:'#62c0ea', atr:0.80, ind:1.50, bale:1, pellet:1},
+  filme:    {n:'Saco plástico',         c:'#a9cfe0', atr:0.30, ind:0.60, bale:1},
+  lata:     {n:'Latinha',               c:'#c9ccd4', atr:4.50, ind:6.50, bale:1},
+  plastico: {n:'Plástico duro',         c:'#e2574c', atr:1.20, ind:1.80, bale:1, pellet:1, item:'mat_plastico'},
+  vidro:    {n:'Vidro',                 c:'#6fc27a', atr:0.15, ind:0.25, item:'mat_vidro'},
+  sucata:   {n:'Sucata de metal',       c:'#8f7462', atr:0.80, ind:1.20, bale:1, item:'mat_sucata'},
+  oleo:     {n:'Óleo de cozinha',       c:'#e8c24a', atr:1.20, ind:1.80, item:'mat_oleo'},
+  eletro:   {n:'Eletrônicos',           c:'#5a6080', atr:2.50, ind:4.00, item:'mat_eletro'},
 };
 const MAT_IDS = Object.keys(MATS);
 // participação (em kg) de cada material na coleta automática
-const AUTO_MIX = {papelao:38, pet:18, lata:6, plastico:12, vidro:12, sucata:7, oleo:3, eletro:4};
+const AUTO_MIX = {papelao:32, papel:8, pet:16, filme:6, lata:6, plastico:10, vidro:10, sucata:6, oleo:3, eletro:3};
+// volumes encontrados na rua: conteúdo + embalagem (pk = fração do peso que é embalagem)
+const VOLS = {
+  papelao:[{id:'pilha_papelao', n:'Pilha de papelão', kg:[4, 6]}],
+  papel:[{id:'pilha_jornal', n:'Pilha de jornais', kg:[4, 6]}],
+  pet:[{id:'caixa_pet', n:'Caixa com garrafas PET', kg:[2.5, 4], pack:'papelao', pk:0.15}, {id:'saco_pet', n:'Saco com garrafas PET', kg:[2.5, 4], pack:'filme', pk:0.06}],
+  lata:[{id:'saco_latas', n:'Saco com latinhas', kg:[2, 3.5], pack:'filme', pk:0.06}],
+  plastico:[{id:'baldes', n:'Baldes e potes', kg:[3, 5]}],
+  vidro:[{id:'caixa_vidro', n:'Caixa com garrafas de vidro', kg:[5, 8], pack:'papelao', pk:0.1}],
+  sucata:[{id:'caixa_sucata', n:'Caixa com sucata', kg:[5, 9], pack:'papelao', pk:0.08}],
+  oleo:[{id:'caixa_oleo', n:'Caixa com óleo usado', kg:[3, 5], pack:'papelao', pk:0.12}],
+  eletro:[{id:'caixa_eletro', n:'Caixa com eletrônicos', kg:[4, 7], pack:'papelao', pk:0.1}],
+};
+const MIX_VOL = {id:'saco_misto', n:'Saco misturado', kg:[3, 5], pack:'filme', pk:0.06};
 const BALE_KG = 100;   // 1 fardo = 100 kg
 const PELLET_MULT = 3; // grãos valem 3x
 const BALE_MULT = 1.3; // fardos valem 30% a mais
 const MIXED_FACTOR = 0.3; // misturado vale 30% da média
 
 const REJ = [
-  {n:'Resto de comida',        ops:'Ops! Resto de comida não é reciclável: é orgânico e vai para a compostagem. No carrinho, só ocupa espaço.'},
-  {n:'Fralda usada',           ops:'Ops! Fralda usada não é reciclável e só ocupa espaço no carrinho.'},
-  {n:'Isopor sujo',            ops:'Ops! Isopor sujo de comida não dá para reciclar e só ocupa espaço no carrinho.'},
-  {n:'Papel higiênico usado',  ops:'Ops! Papel higiênico usado não é reciclável e só ocupa espaço no carrinho.'},
+  {n:'Resto de comida',           ops:'Ops! Resto de comida não é reciclável: é orgânico e vai para a compostagem. No carrinho, só ocupa espaço.'},
+  {n:'Fralda usada',              ops:'Ops! Fralda usada não é reciclável e só ocupa espaço no carrinho.'},
+  {n:'Isopor sujo',               ops:'Ops! Isopor sujo de comida não dá para reciclar e só ocupa espaço no carrinho.'},
+  {n:'Guardanapo usado',          ops:'Ops! Guardanapo usado está sujo de comida e não é reciclável. Só ocupa espaço no carrinho.'},
+  {n:'Bituca de cigarro',         ops:'Ops! Bituca de cigarro não é reciclável e só ocupa espaço no carrinho.'},
   {n:'Caixa de pizza engordurada', ops:'Ops! Caixa de pizza engordurada não é reciclável: a gordura estraga o papel. Só ocupa espaço no carrinho.'},
-  {n:'Bituca de cigarro',      ops:'Ops! Bituca de cigarro não é reciclável e só ocupa espaço no carrinho.'},
 ];
 
 const ROUTES = [
-  {id:'bairro', n:'Rua do bairro', item:null, ph:1, items:22, rej:0.18, wm:1,
-   mix:{papelao:5, pet:4, lata:2, plastico:2, vidro:2, sucata:1, oleo:1, eletro:0.5},
-   d:'Casas e calçadas do bairro. Papelão e garrafas PET.'},
-  {id:'feira', n:'Feira livre', item:'rota_feira', ph:2, items:28, rej:0.30, wm:1.1,
-   mix:{papelao:5, pet:3, lata:5, plastico:3, vidro:1, sucata:0.5, oleo:0.5},
+  {id:'bairro', n:'Rua do bairro', item:null, ph:1, items:14, rej:0.18, wm:1,
+   mix:{papelao:5, papel:2, pet:4, lata:3, plastico:2, vidro:2, sucata:1, oleo:1, eletro:0.5},
+   d:'Casas e calçadas do bairro. Papelão, garrafas PET e latinhas.'},
+  {id:'feira', n:'Feira livre', item:'rota_feira', ph:2, items:16, rej:0.28, wm:1.1,
+   mix:{papelao:5, papel:1, pet:3, lata:5, plastico:3, vidro:1, sucata:0.5, oleo:0.5},
    d:'Barracas e caixotes. Muita latinha e papelão, mas muito resto de comida.'},
-  {id:'centro', n:'Centro comercial', item:'rota_centro', ph:3, items:30, rej:0.12, wm:1.2,
-   mix:{papelao:9, pet:2, lata:2, plastico:5, vidro:1, sucata:1, eletro:1.5},
-   d:'Lojas e calçadão. Muito papelão das caixas e plástico duro.'},
-  {id:'cond', n:'Condomínios parceiros', item:'rota_cond', ph:5, items:30, rej:0.05, wm:1.35,
-   mix:{papelao:4, pet:3, lata:4, plastico:3, vidro:5, oleo:2, eletro:1},
+  {id:'centro', n:'Centro comercial', item:'rota_centro', ph:3, items:18, rej:0.12, wm:1.2,
+   mix:{papelao:9, papel:4, pet:2, lata:2, plastico:5, vidro:1, sucata:1, eletro:1.5},
+   d:'Lojas e escritórios. Muito papelão, papel branco e plástico duro.'},
+  {id:'cond', n:'Condomínios parceiros', item:'rota_cond', ph:5, items:18, rej:0.05, wm:1.35,
+   mix:{papelao:4, papel:3, pet:3, lata:4, plastico:3, vidro:5, oleo:2, eletro:1},
    d:'Moradores que já separam o lixo. Material limpo e quase nenhum rejeito.'},
-  {id:'pev', n:'Pontos de Entrega Voluntária', item:null, ph:6, items:34, rej:0.02, wm:1.6,
-   mix:{papelao:4, pet:4, lata:3, plastico:4, vidro:4, sucata:2, oleo:3, eletro:3},
+  {id:'pev', n:'Pontos de Entrega Voluntária', item:null, ph:6, items:20, rej:0.02, wm:1.6,
+   mix:{papelao:4, papel:3, pet:4, lata:3, plastico:4, vidro:4, sucata:2, oleo:3, eletro:3},
    d:'Contêineres da coleta seletiva. Todos os tipos, inclusive óleo e eletrônicos.'},
 ];
 
@@ -350,13 +373,13 @@ const PHASES = [
    msg:''},
   {name:'Ponto de acúmulo', max:3, cost:60, costName:'Limpar o terreno', goal:'limpar o terreno', reqs:[['trips',3]],
    msg:'Você limpou o terreno! Agora dá para cobrir o material com uma lona, guardar em bags, ter uma balança e chamar os primeiros colegas.',
-   libera:['Lona, bags e balança','Primeiros colegas (até 2)','Rota da feira livre','Latinhas']},
+   libera:['Lona, bags e balança','Primeiros colegas (até 2)','Rota da feira livre','Plástico duro e papel branco/jornal']},
   {name:'Grupo informal', max:6, cost:400, costName:'Construir o barracão de madeira', goal:'construir o barracão de madeira', reqs:[['working',3],['recycled',300]],
    msg:'O grupo levantou um barracão de madeira. Agora vocês trabalham juntos e fazem a triagem no chão, sobre lonas.',
-   libera:['Barracão de madeira','Triagem no chão (lonas)','Primeiros EPIs: luvas','Rota do centro comercial','Plástico duro']},
+   libera:['Barracão de madeira','Triagem no chão (lonas)','Primeiros EPIs: luvas','Rota do centro comercial','Vidro']},
   {name:'Associação', max:10, cost:2500, costName:'Organizar a associação', goal:'organizar a associação', reqs:[['working',5],['item','luvas_epi'],['recycled',1000]],
    msg:'O grupo virou uma associação! Tem mesa de triagem, banheiro, baias para separar os materiais e mais equipamentos de proteção.',
-   libera:['Mesas de triagem','Baias','Banheiro','Botas, uniforme e óculos','Triciclos','Vidro']},
+   libera:['Mesas de triagem','Baias','Banheiro','Botas, uniforme e óculos','Triciclos']},
   {name:'Cooperativa formalizada', max:15, cost:12000, costName:'Formalização (CNPJ, estatuto e assembleia)', goal:'pagar a formalização (CNPJ, estatuto e assembleia)', reqs:[['coop',7],['epiFull']],
    msg:'Com CNPJ, estatuto e assembleia, a cooperativa é oficial! O galpão de alvenaria está de pé e agora vocês vendem direto para a indústria, sem atravessador.',
    libera:['Venda direta à indústria','Galpão de alvenaria','Condomínios parceiros','Capacitação','Sucata de metal']},
@@ -392,6 +415,7 @@ const ITEMS = [
   // ---------- RUA E COLETA
   {id:'carrinho2', cat:'rua', n:'Carrinho maior', d:'Seu carrinho passa a levar 40 kg.', cost:15, ph:1, uniq:1, ic:'cart'},
   {id:'luvas_coleta', cat:'rua', n:'Luvas de coleta', d:'Com as mãos protegidas, é só tocar no material para jogá-lo no carrinho.', cost:25, ph:1, uniq:1, ic:'glove'},
+  {id:'sacos', cat:'rua', n:'Sacolões de ráfia', d:'Você amarra volumes maiores: +20% de kg em cada volume encontrado na rua.', cost:35, ph:1, max:5, ic:'bag'},
   {id:'tempo', cat:'rua', n:'Mais tempo na rua', d:'+5 segundos em cada saída (começa com 25 s).', cost:20, ph:1, max:8, ic:'clock'},
   {id:'carroca_propria', cat:'rua', n:'Carroça própria', d:'Você troca o carrinho por uma carroça: 70 kg por saída.', cost:60, ph:2, uniq:1, req:['carrinho2'], ic:'cart'},
   {id:'rota_feira', cat:'rua', n:'Rota: Feira livre', d:'Muita latinha e papelão, mas também muito resto de comida.', cost:50, ph:2, uniq:1, ic:'route'},
@@ -430,9 +454,9 @@ const ITEMS = [
   {id:'refeitorio', cat:'seguranca', n:'Refeitório', d:'Comida boa e um lugar digno para comer. +10% de produtividade.', cost:45000, ph:7, uniq:1, ic:'food'},
   {id:'creche', cat:'seguranca', n:'Creche', d:'Os filhos dos cooperados ficam cuidados perto dos pais. +10% de produtividade.', cost:70000, ph:7, uniq:1, ic:'kid'},
   // ---------- MATERIAIS
-  {id:'mat_lata', cat:'materiais', n:'Latinhas de alumínio', d:'Compradores de alumínio aceitam seu material. O alumínio é o que vale mais por kg.', cost:40, ph:2, uniq:1, mat:'lata', ic:'can'},
-  {id:'mat_plastico', cat:'materiais', n:'Plástico duro', d:'Baldes, potes e cadeiras quebradas agora são aceitos.', cost:300, ph:3, uniq:1, mat:'plastico', ic:'bucket'},
-  {id:'mat_vidro', cat:'materiais', n:'Vidro', d:'Garrafas e potes de vidro. Pesado e barato, mas infinitamente reciclável.', cost:1200, ph:4, uniq:1, mat:'vidro', ic:'bottle'},
+  {id:'mat_papel', cat:'materiais', n:'Papel branco e jornal', d:'Jornais, cadernos e folhas de escritório agora são aceitos.', cost:80, ph:2, uniq:1, mat:'papel', ic:'doc'},
+  {id:'mat_plastico', cat:'materiais', n:'Plástico duro', d:'Baldes, potes e cadeiras quebradas agora são aceitos.', cost:150, ph:2, uniq:1, mat:'plastico', ic:'bucket'},
+  {id:'mat_vidro', cat:'materiais', n:'Vidro', d:'Garrafas e potes de vidro. Pesado e barato, mas infinitamente reciclável.', cost:400, ph:3, uniq:1, mat:'vidro', ic:'bottle'},
   {id:'mat_sucata', cat:'materiais', n:'Sucata de metal', d:'Ferro, panelas velhas e peças de metal.', cost:5000, ph:5, uniq:1, mat:'sucata', ic:'gear'},
   {id:'mat_oleo', cat:'materiais', n:'Óleo de cozinha usado', d:'Recolhido em garrafas, vira sabão e biodiesel.', cost:15000, ph:6, uniq:1, mat:'oleo', ic:'drop'},
   {id:'mat_eletro', cat:'materiais', n:'Eletrônicos', d:'Lixo eletrônico com destino correto para metais e peças.', cost:60000, ph:7, uniq:1, mat:'eletro', ic:'chip'},
@@ -453,30 +477,73 @@ const ROLES = {
 };
 const ROLE_IDS = Object.keys(ROLES);
 
-const ACHS = [
-  {id:'saida1', n:'Primeira saída', d:'Faça sua primeira saída para a rua.'},
-  {id:'cheio', n:'Carrinho cheio', d:'Encha o carrinho até o limite numa saída.'},
-  {id:'limpa', n:'Saída limpa', d:'Volte com pelo menos 10 kg e nenhum rejeito.'},
-  {id:'venda1', n:'Primeira venda', d:'Venda material pela primeira vez.'},
-  {id:'colega', n:'Primeiro colega', d:'Admita o primeiro cooperado.'},
-  {id:'t1', n:'1 tonelada', d:'Recicle 1.000 kg de material.'},
-  {id:'chuva', n:'Material protegido', d:'Passe por uma chuva forte com o material coberto.'},
-  {id:'cnpj', n:'CNPJ na mão', d:'Formalize a cooperativa (fase 5).'},
-  {id:'semAtrav', n:'Sem atravessador', d:'Faça a primeira venda direto para a indústria.'},
-  {id:'t10', n:'10 toneladas', d:'Recicle 10.000 kg de material.'},
-  {id:'coop10', n:'10 cooperados', d:'Tenha 10 cooperados trabalhando.'},
-  {id:'prefeitura', n:'Contrato com a prefeitura', d:'Feche o contrato de coleta seletiva (fase 6).'},
-  {id:'rotas', n:'Conhece a cidade', d:'Libere todas as rotas.'},
-  {id:'epi', n:'Todos com EPI', d:'Tenha luvas, botas, uniforme, óculos e protetor auricular para todos.'},
-  {id:'fardo1', n:'Primeiro fardo', d:'Produza o primeiro fardo na prensa.'},
-  {id:'mats', n:'Tudo se recicla', d:'Libere todos os tipos de material.'},
-  {id:'t100', n:'100 toneladas', d:'Recicle 100.000 kg de material.'},
-  {id:'grao1', n:'Primeiros grãos', d:'Produza o primeiro kg de grãos de plástico.'},
-  {id:'coop50', n:'50 cooperados', d:'Tenha 50 cooperados trabalhando.'},
-  {id:'milhao', n:'R$ 1 milhão', d:'Ganhe R$ 1.000.000 no total.'},
-  {id:'fase10', n:'Referência regional', d:'Chegue à fase 10.'},
-];
-const ACH_BONUS = 0.02;
+const ACH_CATS = [['rua', 'Rua'], ['triagem', 'Triagem'], ['vendas', 'Vendas'], ['pessoas', 'Pessoas'], ['estrutura', 'Estrutura'],
+  ['fases', 'Fases'], ['ambiente', 'Meio ambiente'], ['especiais', 'Especiais']];
+const ACHS = [];
+// cat, id, nome, descrição, valor atual, meta, nível (b/p/o), secreta
+const A_ = (cat, id, n, d, v, need, tier, secret) => ACHS.push({cat, id, n, d, v, need:need || 1, tier, secret});
+const fl = k => () => S.flags[k] ? 1 : 0, st_ = k => () => S.st[k] || 0;
+A_('rua', 'saida1', 'Primeira saída', 'Faça sua primeira saída para a rua.', st_('trips'));
+A_('rua', 'saidas10', 'Pé na estrada', 'Faça 10 saídas para a rua.', st_('trips'), 10, 'b');
+A_('rua', 'saidas50', 'Conhece cada esquina', 'Faça 50 saídas para a rua.', st_('trips'), 50, 'p');
+A_('rua', 'saidas200', 'Lenda do bairro', 'Faça 200 saídas para a rua.', st_('trips'), 200, 'o');
+A_('rua', 'cheio', 'Carrinho cheio', 'Encha o carrinho até o limite numa saída.', fl('cheio'));
+A_('rua', 'cheioRapido', 'Mão rápida', 'Encha o carrinho com pelo menos 8 segundos sobrando.', fl('cheioRapido'));
+A_('rua', 'limpa', 'Saída limpa', 'Volte com pelo menos 10 kg e nenhum rejeito.', fl('limpa'));
+A_('rua', 'limpas10', 'Olho treinado', 'Faça 10 saídas sem nenhum rejeito.', st_('cleanTrips'), 10, 'p');
+A_('rua', 'kgRua1t', 'Carrinho incansável', 'Colete 1 t na rua.', st_('streetKg'), 1000, 'b');
+A_('rua', 'kgRua10t', 'Rei da coleta', 'Colete 10 t na rua.', st_('streetKg'), 10000, 'o');
+A_('rua', 'feira', 'Dia de feira', 'Vá à feira livre num dia de feira.', fl('feiraDia'));
+A_('rua', 'rotas', 'Conhece a cidade', 'Libere todas as rotas.', () => ROUTES.filter(routeOn).length, ROUTES.length);
+A_('triagem', 'tri1', 'Mesa posta', 'Jogue a primeira rodada de triagem.', st_('sortRounds'));
+A_('triagem', 'tri10', 'Separador dedicado', 'Jogue 10 rodadas de triagem.', st_('sortRounds'), 10, 'b');
+A_('triagem', 'tri50', 'Mãos ágeis', 'Jogue 50 rodadas de triagem.', st_('sortRounds'), 50, 'p');
+A_('triagem', 'tri150', 'Mestre da triagem', 'Jogue 150 rodadas de triagem.', st_('sortRounds'), 150, 'o');
+A_('triagem', 'perfeita', 'Sem erros', 'Faça uma rodada de triagem sem nenhum erro.', st_('perfect'));
+A_('triagem', 'perf10', 'Capricho', 'Faça 10 rodadas perfeitas.', st_('perfect'), 10, 'p');
+A_('triagem', 'perf50', 'Perfeccionista', 'Faça 50 rodadas perfeitas.', st_('perfect'), 50, 'o');
+A_('triagem', 'emb25', 'Embalagem também conta', 'Separe 25 embalagens na lixeira certa.', st_('packOk'), 25, 'b');
+A_('triagem', 'rejOk20', 'Lixeira cinza', 'Descarte 20 rejeitos na lixeira certa.', st_('rejOkN'), 20, 'b');
+A_('vendas', 'venda1', 'Primeira venda', 'Venda material pela primeira vez.', st_('sales'));
+A_('vendas', 'semAtrav', 'Sem atravessador', 'Venda direto para a indústria.', fl('semAtrav'));
+A_('vendas', 'ganho1k', 'Primeiro mil', 'Ganhe R$ 1.000 no total.', st_('earned'), 1e3, 'b');
+A_('vendas', 'ganho100k', 'Caixa forte', 'Ganhe R$ 100 mil no total.', st_('earned'), 1e5, 'p');
+A_('vendas', 'milhao', 'R$ 1 milhão', 'Ganhe R$ 1 milhão no total.', st_('earned'), 1e6, 'o');
+A_('vendas', 'fardo1', 'Primeiro fardo', 'Produza o primeiro fardo na prensa.', () => Math.floor(S.st.baleKg / BALE_KG));
+A_('vendas', 'fardos100', 'Pilha de fardos', 'Produza 100 fardos.', () => Math.floor(S.st.baleKg / BALE_KG), 100, 'p');
+A_('vendas', 'grao1', 'Primeiros grãos', 'Produza o primeiro kg de grãos de plástico.', st_('pelletKg'));
+A_('vendas', 'graos10t', 'Fábrica de grãos', 'Produza 10 t de grãos de plástico.', st_('pelletKg'), 10000, 'o');
+A_('pessoas', 'colega', 'Primeiro colega', 'Admita o primeiro cooperado.', st_('hires'));
+A_('pessoas', 'coop10', 'Time formado', 'Tenha 10 cooperados.', () => coopCount(), 10, 'b');
+A_('pessoas', 'coop50', 'Muita gente junta', 'Tenha 50 cooperados.', () => coopCount(), 50, 'p');
+A_('pessoas', 'coop100', 'Cem cooperados', 'Tenha 100 cooperados.', () => coopCount(), 100, 'o');
+A_('pessoas', 'funcoes', 'Cada um no seu posto', 'Tenha gente em todas as funções.', () => ROLE_IDS.filter(r => S.roles[r] > 0).length, 4);
+A_('pessoas', 'epi', 'Todos com EPI', 'Tenha luvas, botas, uniforme, óculos e protetor auricular.', () => ['luvas_epi', 'botas', 'uniforme', 'oculos', 'protetor'].filter(has).length, 5);
+A_('pessoas', 'bemestar', 'Lugar bom de trabalhar', 'Construa vestiário, refeitório e creche.', () => ['vestiario', 'refeitorio', 'creche'].filter(has).length, 3);
+A_('estrutura', 'lona', 'Teto sobre o material', 'Compre a primeira lona de cobertura.', () => nI('lona'));
+A_('estrutura', 'mesa1', 'Na altura certa', 'Tenha a primeira mesa de triagem.', () => nI('mesa'));
+A_('estrutura', 'prensa1', 'Prensa ligada', 'Compre a primeira prensa enfardadeira.', () => nI('prensa'));
+A_('estrutura', 'solar10', 'Energia do sol', 'Instale 10 painéis solares.', () => nI('painel'), 10, 'p');
+A_('estrutura', 'frota', 'Frota própria', 'Tenha 5 caminhões de coleta.', () => nI('caminhao'), 5, 'o');
+A_('estrutura', 'terreno', 'Espaço para crescer', 'Compre o terreno vizinho.', () => nI('terreno'), 1, 'o');
+const FASE_N = ['', '', 'Terreno limpo', 'Grupo formado', 'Associação', 'CNPJ na mão', 'Contrato com a prefeitura', 'Estrutura profissional', 'Beneficiamento', 'Indústria sustentável', 'Referência regional'];
+for (let f = 2; f <= 10; f++) A_('fases', 'fase' + f, FASE_N[f], `Chegue à fase ${f}.`, () => S.phase >= f ? 1 : 0, 1, f >= 9 ? 'o' : f >= 6 ? 'p' : f >= 4 ? 'b' : null);
+A_('ambiente', 't1', '1 tonelada', 'Recicle 1 t de material.', st_('recycled'), 1000, 'b');
+A_('ambiente', 't10', '10 toneladas', 'Recicle 10 t de material.', st_('recycled'), 10000, 'p');
+A_('ambiente', 't100', '100 toneladas', 'Recicle 100 t de material.', st_('recycled'), 100000, 'o');
+A_('ambiente', 'rejOut100', 'Lixo no lugar certo', 'Descarte 100 kg de rejeito corretamente.', st_('rejOut'), 100, 'b');
+A_('ambiente', 'vidro1t', 'Vidro infinito', 'Recicle 1 t de vidro.', () => (S.st.recM || {}).vidro || 0, 1000, 'p');
+A_('ambiente', 'mats', 'Tudo se recicla', 'Libere todos os tipos de material.', () => MAT_IDS.filter(matOn).length, MAT_IDS.length);
+A_('ambiente', 'chuva', 'Material protegido', 'Passe por uma chuva forte com o material coberto.', fl('chuva'));
+A_('ambiente', 'mural', 'Educação ambiental', 'Leve educação ambiental para a comunidade.', () => nI('mural'));
+A_('especiais', 'identidade', 'Cara própria', 'Crie a logo da cooperativa.', () => S.coop && S.coop.logo ? 1 : 0);
+A_('especiais', 'streak5', 'Sequência perfeita', 'Faça 5 rodadas de triagem perfeitas seguidas.', st_('bestStreak'), 5, 'o', 1);
+A_('especiais', 'curioso', 'Curioso', 'Leia 10 curiosidades sobre reciclagem.', () => S.factIdx, 10, null, 1);
+A_('especiais', 'retorno', 'Bom te ver de volta', 'Volte ao jogo depois de um tempo fora.', fl('retorno'), 1, null, 1);
+A_('especiais', 'mil_t', 'Mil toneladas', 'Recicle 1.000 t de material.', st_('recycled'), 1e6, 'o', 1);
+A_('especiais', 'dezMilhoes', 'Cooperativa milionária', 'Ganhe R$ 10 milhões no total.', st_('earned'), 1e7, 'o', 1);
+const ACH = {}; ACHS.forEach(a => ACH[a.id] = a);
+const ACH_BONUS = 0.01;
 
 const EVENTS = [
   {id:'lata2', good:1, w:3, dur:60, t:'Preço da latinha subiu!', d:'O alumínio vale o dobro por 60 segundos. Hora de vender latinha!'},
@@ -516,11 +583,12 @@ const HOOK = {toast(){}, sfx(){}, ach(){}, event(){}, tip(){}};
 let S = null;
 function newState(){
   return {
-    v:2, money:0, phase:1, items:{}, roles:{coleta:0, triagem:0, venda:0, prensa:0},
+    v:3, money:0, phase:1, items:{}, roles:{coleta:0, triagem:0, venda:0, prensa:0},
     mixed:{}, sep:{}, bale:{}, pellet:{},
-    st:{trips:0, streetKg:0, rejStreet:0, autoKg:0, sorted:0, rejOut:0, recycled:0, earned:0, baleKg:0, pelletKg:0, sales:0, hires:0, sortRounds:0, sortLost:0, sortOk:0, sortErr:0},
+    st:{trips:0, streetKg:0, rejStreet:0, autoKg:0, sorted:0, rejOut:0, recycled:0, earned:0, baleKg:0, pelletKg:0, sales:0, hires:0, sortRounds:0, sortLost:0, sortOk:0, sortErr:0,
+        cleanTrips:0, perfect:0, streak:0, bestStreak:0, packOk:0, rejOkN:0, buys:0, recM:{}},
     ach:{}, flags:{}, ev:[], nextEv:200, nextFact:70, factIdx:0,
-    tut:{step:0, done:false}, tips:{}, set:{music:true, sfx:true}, coop:{name:'', logo:null},
+    tut:{step:0, done:false}, tips:{}, set:{music:true, sfx:true}, coop:{name:'', logo:null}, vols:[],
     t:0, lastSave:Date.now(), route:'bairro',
   };
 }
@@ -689,7 +757,7 @@ function sortKg(amount){
 function sellStore(store, form, kg){
   const out = takeProp(store, Object.keys(store), kg);
   let money = 0, w = 0;
-  for (const m in out) { money += out[m] * price(m, form); w += out[m]; }
+  for (const m in out) { money += out[m] * price(m, form); w += out[m]; S.st.recM[m] = (S.st.recM[m] || 0) + out[m]; }
   return {money, w};
 }
 function addMoney(v){ S.money += v; S.st.earned += v; }
@@ -717,7 +785,7 @@ function sellAllManual(){
 }
 function sellMixed(){
   const v = mixedValue(); let w = 0;
-  for (const m in S.mixed) if (m !== 'rej') w += S.mixed[m];
+  for (const m in S.mixed) if (m !== 'rej') { w += S.mixed[m]; S.st.recM[m] = (S.st.recM[m] || 0) + S.mixed[m]; }
   const rej = S.mixed.rej || 0;
   S.mixed = {};
   S.st.rejOut += rej;
@@ -732,7 +800,7 @@ const BINS = [
   {id:'vidro',    n:'Vidro',           cor:'verde',    c:'#3f8f3a', d:'#2a6a28'},
   {id:'rejeito',  n:'Rejeito',         cor:'cinza',    c:'#8a8f94', d:'#5f6468'},
 ];
-const BIN_OF = {papelao:'papel', pet:'plastico', plastico:'plastico', lata:'metal', sucata:'metal', vidro:'vidro', rej:'rejeito'};
+const BIN_OF = {papelao:'papel', papel:'papel', pet:'plastico', filme:'plastico', plastico:'plastico', lata:'metal', sucata:'metal', vidro:'vidro', rej:'rejeito'};
 const AUTO_SORTED = ['oleo', 'eletro']; // já chegam em recipientes próprios
 function sortBatchKg(){ return Math.max(25, playerCap()) * Math.sqrt(infra()); }
 // retira um lote do misturado; devolve {m:kg} ou {full:true} ou null
@@ -862,35 +930,11 @@ function advance(){
 // =====================================================================
 // CONQUISTAS E EVENTOS
 // =====================================================================
-function achCond(id){
-  const st = S.st;
-  switch (id) {
-    case 'saida1': return st.trips >= 1;
-    case 'cheio': return !!S.flags.cheio;
-    case 'limpa': return !!S.flags.limpa;
-    case 'venda1': return st.sales >= 1;
-    case 'colega': return st.hires >= 1;
-    case 't1': return st.recycled >= 1000;
-    case 't10': return st.recycled >= 10000;
-    case 't100': return st.recycled >= 100000;
-    case 'chuva': return !!S.flags.chuva;
-    case 'cnpj': return S.phase >= 5;
-    case 'semAtrav': return !!S.flags.semAtrav;
-    case 'coop10': return coopCount() >= 10;
-    case 'coop50': return coopCount() >= 50;
-    case 'prefeitura': return S.phase >= 6;
-    case 'rotas': return ROUTES.every(routeOn);
-    case 'epi': return epiFull() && has('protetor');
-    case 'fardo1': return st.baleKg >= BALE_KG;
-    case 'mats': return MAT_IDS.every(matOn);
-    case 'grao1': return st.pelletKg >= 1;
-    case 'milhao': return st.earned >= 1e6;
-    case 'fase10': return S.phase >= 10;
-  }
-  return false;
-}
+function achValue(a){ return a.v() || 0; }
+function achDone(a){ return achValue(a) >= a.need; }
+function achProgress(a){ return Math.min(1, achValue(a) / a.need); }
 function checkAch(){
-  ACHS.forEach(a => { if (!S.ach[a.id] && achCond(a.id)) { S.ach[a.id] = Date.now(); HOOK.ach(a); } });
+  ACHS.forEach(a => { if (!S.ach[a.id] && achDone(a)) { S.ach[a.id] = Date.now(); HOOK.ach(a); } });
 }
 function eventOk(e){
   switch (e.id) {
@@ -958,7 +1002,7 @@ function fmtKg(v){
 // =====================================================================
 // SALVAR / CARREGAR / OFFLINE
 // =====================================================================
-const SAVE_KEY = 'cooperativa-idle-v2';
+const SAVE_KEY = 'cooperativa-idle-v3';
 function save(){
   if (typeof localStorage === 'undefined') return;
   S.lastSave = Date.now();
@@ -968,9 +1012,9 @@ function load(){
   let d = null;
   try { d = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) {}
   const base = newState();
-  if (d && d.v === 2) {
+  if (d && d.v === 3) {
     for (const k in base) if (d[k] === undefined) d[k] = base[k];
-    for (const k in base.st) if (d.st[k] === undefined) d.st[k] = 0;
+    for (const k in base.st) if (d.st[k] === undefined) d.st[k] = base.st[k];
     for (const k in base.roles) if (d.roles[k] === undefined) d.roles[k] = 0;
     S = d; return true;
   }
@@ -979,6 +1023,7 @@ function load(){
 function offlineProgress(){
   const el = Math.min(7200, Math.max(0, (Date.now() - (S.lastSave || Date.now())) / 1000));
   if (el < 30) return null;
+  if (el > 120) S.flags.retorno = 1;
   const before = {money:S.money, auto:S.st.autoKg, sorted:S.st.sorted, rec:S.st.recycled};
   const steps = Math.floor(el);
   for (let i = 0; i < steps; i++) tick(1, true);
@@ -1332,6 +1377,127 @@ const SPR = {
   ], {w:'#f2efe6', o:'#d98a3a', a:'#666'}),
 };
 
+// novos materiais: papel/jornal e saco plástico
+SPR.papel = mkSprite([
+  '.wwwwwwwwww.',
+  'wWWWWWWWWWWw',
+  'wWllllllWWWw',
+  'wWWWWWWWWWWw',
+  'wWllllWllllw',
+  'wWWWWWWWWWWw',
+  'wWllllWllllw',
+  'gggggggggggg',
+], {w:'#d8d3c4', W:'#f4f1e6', l:'#9a968a', g:'#b8b3a4'});
+SPR.filme = mkSprite([
+  '...bb.....',
+  '..bWbb....',
+  '.bbbWbbb..',
+  'bbWbbbbWbb',
+  'bbbbWbbbb.',
+  '.bbbbbbbb.',
+  '..bbbbbb..',
+], {b:'#b9d7e4', W:'#eef8fc'});
+SPR.rej3 = mkSprite([ // guardanapo usado
+  '..wwwww..',
+  '.wWwwyww.',
+  'wwwwWwww.',
+  'wwyWwwwrw',
+  '.wwwwwww.',
+], {w:'#f8f8f4', W:'#d6d6cf', y:'#d8b86a', r:'#c8402e'});
+SPR.rej4 = mkSprite([ // bituca de cigarro (algumas)
+  '..........',
+  'wwwwoo....',
+  '..wwwwwoo.',
+  'wwwoo.....',
+], {w:'#f2efe6', o:'#d98a3a'});
+SPR.rej5 = mkSprite([ // caixa de pizza engordurada
+  'bbbbbbbbbbbbbb',
+  'bBBBBBBBBBBBBb',
+  'bbbddbbbPPbbbb',
+  'bbdddbbbPPbbdb',
+  'bbbbbbbdbbbddb',
+  'dddddddddddddd',
+], {b:'#c79058', B:'#e4c08a', d:'#6b4a2a', P:'#c0392b'});
+
+// ---------- volumes da rua e embalagens (montados a partir das peças)
+function composeSprite(w, h, fn){ const c = mkCanvas(w, h), g = c.getContext('2d'); const old = CX; CX = g; fn(g); CX = old; return c; }
+function sackShape(w, h, body, hi, tie){
+  rect(w / 2 - 1, 0, 2, 3, tie); rect(w / 2 - 2, 2, 4, 1, tie);
+  rect(3, 3, w - 6, 2, body); rect(1, 5, w - 2, h - 7, body); rect(2, h - 2, w - 4, 2, body);
+  rect(2, 6, 2, h - 9, hi); alpha(0.25, () => rect(w - 4, 6, 2, h - 8, '#000'));
+}
+function boxShape(w, h, y0){
+  rect(0, y0, w, h - y0, '#c99459'); rect(0, y0, w, 1, '#e0b47a'); rect(0, h - 1, w, 1, '#8a5f32');
+  alpha(0.2, () => rect(w - 3, y0, 3, h - y0, '#000'));
+  rect(w / 2 - 2, y0 + 2, 4, h - y0 - 3, '#e7d6a0'); rect(2, y0 + 4, 3, 1, '#6b4a2a');
+}
+const VSPR = {
+  saco_latas: composeSprite(16, 16, () => {
+    sackShape(16, 16, '#d8e8ef', '#f2fbff', '#e8b631');
+    for (const [x, y, c] of [[4, 7, '#d23a2a'], [8, 6, '#c9ccd4'], [5, 11, '#c9ccd4'], [9, 10, '#d23a2a'], [11, 7, '#2a6fa8']]) { rect(x, y, 3, 4, c); px(x, y, '#fff'); }
+  }),
+  caixa_pet: composeSprite(18, 16, () => {
+    for (let i = 0; i < 4; i++) { const x = 2 + i * 4; rect(x, 2, 3, 6, '#9fd8f2'); rect(x + 1, 0, 1, 2, '#2a9d3a'); px(x, 3, '#fff'); }
+    boxShape(18, 16, 6);
+  }),
+  saco_pet: composeSprite(16, 16, () => {
+    sackShape(16, 16, '#cfe4ee', '#f2fbff', '#3a7fc4');
+    for (const [x, y] of [[4, 6], [8, 7], [6, 10], [10, 10]]) { rect(x, y, 2, 4, '#62c0ea'); px(x, y - 1, '#2a9d3a'); }
+  }),
+  pilha_papelao: composeSprite(18, 14, () => {
+    shadow(9, 13, 18);
+    const cols = ['#c99459', '#b88449', '#d4a066', '#c08a52'];
+    for (let i = 0; i < 4; i++) { rect(1 + (i % 2), 10 - i * 3, 16, 3, cols[i]); rect(1 + (i % 2), 10 - i * 3, 16, 1, '#e0b47a'); }
+    rect(6, 1, 1, 12, '#5c3a1e'); rect(12, 1, 1, 12, '#5c3a1e');
+  }),
+  pilha_jornal: composeSprite(16, 14, () => {
+    for (let i = 0; i < 4; i++) { rect(1 + (i % 2), 10 - i * 3, 14, 3, i % 2 ? '#e6e1d2' : '#f4f1e6'); for (let k = 0; k < 3; k++) rect(3 + k * 4 + (i % 2), 11 - i * 3, 3, 1, '#9a968a'); }
+    rect(7, 1, 1, 12, '#8b5a2b');
+  }),
+  baldes: composeSprite(16, 15, () => {
+    rect(1, 6, 9, 8, '#e0574a'); rect(1, 6, 9, 1, '#ff8a7a'); rect(2, 14, 7, 1, '#a83226'); rect(0, 4, 11, 2, '#3a3a3a');
+    rect(8, 8, 7, 6, '#3a7fc4'); rect(8, 8, 7, 1, '#7fb6e8'); rect(9, 14, 5, 1, '#1f4f8a');
+    rect(5, 1, 7, 4, '#e8b631'); rect(5, 1, 7, 1, '#ffe08a');
+  }),
+  caixa_vidro: composeSprite(18, 17, () => {
+    for (let i = 0; i < 4; i++) { const x = 2 + i * 4; rect(x, 1, 2, 7, i % 2 ? '#3f9a4c' : '#7a4a22'); px(x, 0, '#c9a14a'); px(x, 3, '#bdf0c6'); }
+    boxShape(18, 17, 7);
+  }),
+  caixa_sucata: composeSprite(18, 16, () => {
+    rect(2, 2, 8, 2, '#7a6252'); rect(9, 0, 2, 7, '#8f7462'); rect(12, 3, 4, 4, '#6e5241'); px(13, 4, '#b5652f');
+    boxShape(18, 16, 6);
+  }),
+  caixa_oleo: composeSprite(18, 16, () => {
+    for (let i = 0; i < 3; i++) { const x = 3 + i * 5; rect(x, 2, 3, 6, '#f2c94a'); px(x + 1, 1, '#c0392b'); rect(x, 4, 3, 1, '#fff'); }
+    boxShape(18, 16, 6);
+  }),
+  caixa_eletro: composeSprite(18, 16, () => {
+    rect(2, 1, 9, 6, '#4e5470'); rect(3, 2, 4, 3, '#6fa3c9'); rect(12, 3, 4, 4, '#22252f'); rect(13, 0, 1, 3, '#333');
+    boxShape(18, 16, 6);
+  }),
+  saco_misto: composeSprite(16, 16, () => {
+    sackShape(16, 16, '#efe8d8', '#fffaf0', '#8b5a2b');
+    for (let i = 0; i < 9; i++) for (let k = 0; k < 9; k++) if ((i * 7 + k * 3) % 11 === 0) rect(2 + i * 1.3, 5 + k, 1, 1, '#d8ccb0');
+    rect(5, 3, 3, 3, '#c99459'); rect(9, 2, 2, 4, '#62c0ea'); rect(7, 4, 2, 2, '#d23a2a');
+  }),
+};
+// itens do minigame: grupos de conteúdo e embalagens abertas
+const GSPR = {};
+function groupSprite(m){
+  if (GSPR[m]) return GSPR[m];
+  const s = SPR[m], w = s.width + 6, h = s.height + 3;
+  return GSPR[m] = composeSprite(w, h, g => { g.drawImage(s, 0, 3); g.drawImage(s, 6, 3); g.drawImage(s, 3, 0); });
+}
+const PSPR = {
+  filme: composeSprite(14, 9, () => { // saco plástico aberto e amassado
+    rect(1, 2, 12, 6, '#b9d7e4'); rect(0, 4, 3, 3, '#b9d7e4'); rect(11, 1, 3, 4, '#b9d7e4'); rect(3, 3, 6, 1, '#eef8fc'); rect(5, 6, 5, 1, '#eef8fc');
+    alpha(0.25, () => rect(2, 7, 10, 1, '#000')); rect(6, 0, 2, 2, '#e8b631');
+  }),
+  papelao: composeSprite(16, 9, () => { // caixa aberta e achatada
+    rect(0, 2, 16, 6, '#c99459'); rect(0, 2, 16, 1, '#e0b47a'); rect(5, 0, 6, 3, '#b88449'); rect(0, 7, 16, 1, '#8a5f32');
+    rect(7, 2, 2, 6, '#e7d6a0'); rect(2, 4, 3, 1, '#6b4a2a');
+  }),
+};
 // ---------- partículas (poeira, fumaça, folhas)
 const FX = [];
 function spawnFx(mode, x, y, kind, n){
@@ -2469,29 +2635,55 @@ function pickWeighted(obj){
   let x = Math.random() * T; for (const k in obj) { x -= obj[k]; if (x <= 0) return k; }
   return Object.keys(obj)[0];
 }
-function makeStreetItem(route, forceKind){
-  const scale = Math.max(1, playerCap() / 40) * route.wm;
+function volScale(route){ return Math.max(1, playerCap() / 40) * route.wm * (1 + 0.2 * nI('sacos')); }
+function routeMats(route){ const mix = {}; for (const m in route.mix) if (matOn(m)) mix[m] = route.mix[m]; return mix; }
+// cria um volume (saco, caixa, pilha) ou um rejeito na rua
+function makeStreetItem(route, force){
+  const sc = volScale(route);
   let it;
-  const isRej = forceKind ? forceKind === 'rej' : Math.random() < route.rej;
-  if (isRej) {
-    const r = Math.floor(Math.random() * REJ.length);
-    it = {kind:'rej', r, kg:(0.5 + Math.random()) * Math.max(1, playerCap() / 40), spr:SPR['rej' + r], name:REJ[r].n};
+  if (force === 'rej' || (!force && Math.random() < route.rej)) {
+    let r; do { r = Math.floor(Math.random() * REJ.length); } while (REJ.length > 1 && r === trip.lastRej);
+    trip.lastRej = r;
+    it = {kind:'rej', r, kg:(0.8 + Math.random() * 0.8) * Math.max(1, playerCap() / 40), spr:SPR['rej' + r], name:REJ[r].n};
   } else {
-    const mix = {}; for (const m in route.mix) if (matOn(m)) mix[m] = route.mix[m];
-    const m = forceKind && forceKind !== 'mat' ? forceKind : pickWeighted(mix);
-    const w = MATS[m].w;
-    it = {kind:'mat', m, kg:(w[0] + Math.random() * (w[1] - w[0])) * scale, spr:SPR[m], name:MATS[m].n};
+    const mix = routeMats(route);
+    const mats = Object.keys(mix);
+    let def, parts = {};
+    if (force === 'misto' || (!force && mats.length >= 2 && Math.random() < 0.15)) {
+      def = MIX_VOL;
+      const kg = (def.kg[0] + Math.random() * (def.kg[1] - def.kg[0])) * sc;
+      const pick = mats.slice().sort(() => Math.random() - 0.5).slice(0, 2 + (mats.length > 2 && Math.random() < 0.5 ? 1 : 0));
+      const rejF = Math.random() < 0.35 ? 0.12 : 0, body = kg * (1 - def.pk - rejF);
+      pick.forEach(m => parts[m] = (parts[m] || 0) + body / pick.length);
+      parts.filme = kg * def.pk; if (rejF) parts.rej = kg * rejF;
+      it = {kind:'vol', vid:def.id, kg, parts, spr:VSPR[def.id], name:def.n + (rejF ? ' (com um pouco de rejeito)' : '')};
+    } else {
+      const m = force && force !== 'mat' ? force : pickWeighted(mix);
+      const opts = VOLS[m]; def = opts[Math.floor(Math.random() * opts.length)];
+      const kg = (def.kg[0] + Math.random() * (def.kg[1] - def.kg[0])) * sc;
+      if (def.pack) { parts[m] = kg * (1 - def.pk); parts[def.pack] = (parts[def.pack] || 0) + kg * def.pk; } else parts[m] = kg;
+      it = {kind:'vol', vid:def.id, kg, parts, spr:VSPR[def.id], name:def.n};
+    }
   }
   it.kg = Math.round(it.kg * 10) / 10;
   let best = null;
-  for (let k = 0; k < 20; k++) {
-    const x = 10 + Math.random() * 124, y = 68 + Math.random() * 36;
-    const ok = trip.items.every(o => o.state !== 'ground' || Math.hypot(o.x - x, o.y - y) > 15);
+  for (let k = 0; k < 24; k++) {
+    const x = 12 + Math.random() * 120, y = 70 + Math.random() * 34;
+    const ok = trip.items.every(o => o.state !== 'ground' || Math.hypot(o.x - x, o.y - y) > 18);
     best = {x, y}; if (ok) break;
   }
   it.x = best.x; it.y = best.y; it.state = 'ground'; it.id = Math.random();
   trip.items.push(it); trip.spawned++;
   return it;
+}
+// as primeiras peças de cada saída garantem uma boa mistura dos materiais liberados
+function forcedOrder(route){
+  const mix = routeMats(route), mats = Object.keys(mix).sort((a, b) => mix[b] - mix[a]);
+  const order = [];
+  mats.forEach((m, i) => { order.push(m); if (i === 1) order.push('rej'); });
+  if (mats.length >= 2) order.push('misto');
+  if (!order.includes('rej')) order.push('rej');
+  return order;
 }
 function startTrip(routeId){
   if (busy || G_mode !== 'base') return;
@@ -2501,10 +2693,11 @@ function startTrip(routeId){
   if (route.id === 'feira' && evOn('feira2')) total *= 2;
   trip = {route, items:[], cart:{}, cartKg:0, cap:playerCap(), time:tripTime(), left:tripTime(), elapsed:0, total, spawned:0,
           got:0, rejN:0, drag:null, flying:[], helpers:[], lastSec:99, ended:false, cartRect:{x:140, y:60, w:46, h:40},
-          tut:!S.tut.done && S.st.trips === 0, bend:0};
-  const first = Math.min(total, 11);
-  if (trip.tut) { makeStreetItem(route, 'papelao'); makeStreetItem(route, 'pet'); makeStreetItem(route, 'rej'); }
-  while (trip.spawned < first) makeStreetItem(route);
+          tut:!S.tut.done && S.st.trips === 0, bend:0, vols:[], lastRej:-1};
+  if (route.id === 'feira' && evOn('feira2')) S.flags.feiraDia = 1;
+  const first = Math.min(total, 9), order = forcedOrder(route);
+  while (trip.spawned < first) makeStreetItem(route, order.shift());
+  trip.order = order;
   for (let i = 0; i < nI('ajudante'); i++) trip.helpers.push({x:128 - i * 9, y:72 + i * 7, target:null, cool:1 + i * 0.7, look:personLook(300 + i)});
   AU.sfx('go');
   transition(() => { setSceneMode('street'); updateStreetHud(); });
@@ -2517,8 +2710,11 @@ function cartAdd(it){
     if (trip.cartKg >= trip.cap * 0.9) { S.flags.cheio = 1; toast('Carrinho cheio!', 'Volte à base para descarregar.', 'good', 3000, 'cheio'); }
     return false;
   }
-  const key = it.kind === 'rej' ? 'rej' : it.m;
-  trip.cart[key] = (trip.cart[key] || 0) + it.kg; trip.cartKg += it.kg;
+  const parts = it.kind === 'rej' ? {rej:it.kg} : it.parts;
+  const scale = it.kg / Object.values(parts).reduce((a, v) => a + v, 0);
+  const vol = {v:it.kind === 'rej' ? 'rej' : it.vid, p:{}, r:it.r};
+  for (const m in parts) { const kg = parts[m] * scale; trip.cart[m] = (trip.cart[m] || 0) + kg; vol.p[m] = kg; }
+  trip.vols.push(vol); trip.cartKg += it.kg;
   trip.bend = 0.35;
   const cx = trip.cartRect.x + trip.cartRect.w / 2, cy = trip.cartRect.y + 6;
   spawnFx('street', cx, cy, 'dust', 4);
@@ -2532,7 +2728,7 @@ function cartAdd(it){
     AU.sfx('pick');
     floatText('+' + fmtKg(it.kg), cx, trip.cartRect.y, 'kg', true);
   }
-  if (trip.cartKg >= trip.cap * 0.97) { S.flags.cheio = 1; toast('Carrinho cheio!', 'Ótimo trabalho! Volte à base para descarregar.', 'good', 3500, 'cheio'); AU.sfx('full'); }
+  if (trip.cartKg >= trip.cap * 0.97) { S.flags.cheio = 1; if (trip.left >= 8) S.flags.cheioRapido = 1; toast('Carrinho cheio!', 'Ótimo trabalho! Volte à base para descarregar.', 'good', 3500, 'cheio'); AU.sfx('full'); }
   updateStreetHud();
   return true;
 }
@@ -2540,24 +2736,20 @@ function flyToCart(it){
   it.state = 'fly'; it.fx = it.x; it.fy = it.y; it.ft = 0;
   trip.flying.push(it);
 }
-function tutPausesTimer(){
-  if (!trip || !trip.tut || S.tut.done) return false;
-  const st = TUT[S.tut.step]; return !!st && (st.id === 'drag' || st.id === 'rej');
-}
 function updateStreet(dt){
   if (!trip) return;
   trip.bend = Math.max(0, trip.bend - dt);
-  if (!trip.ended && !busy && !tutPausesTimer()) {
+  if (!trip.ended && !busy) {
     trip.left -= dt; trip.elapsed += dt;
     const sec = Math.ceil(trip.left);
     if (sec <= 10 && sec !== trip.lastSec && sec > 0) { AU.sfx('tick'); trip.lastSec = sec; }
     if (trip.left <= 0) { trip.left = 0; endTrip(true); }
   }
   const ground = trip.items.filter(i => i.state === 'ground').length;
-  if (trip.spawned < trip.total && ground < 13) {
-    const interval = trip.time * 0.75 / Math.max(1, trip.total - 11);
+  if (trip.spawned < trip.total && ground < 10) {
+    const interval = trip.time * 0.7 / Math.max(1, trip.total - 9);
     trip.spawnT = (trip.spawnT || 0) + dt;
-    if (trip.spawnT > interval) { trip.spawnT = 0; makeStreetItem(trip.route); }
+    if (trip.spawnT > interval) { trip.spawnT = 0; makeStreetItem(trip.route, trip.order && trip.order.shift()); }
   }
   for (const it of trip.flying) {
     it.ft += dt * 3;
@@ -2576,7 +2768,7 @@ function updateStreet(dt){
       h.cool -= dt;
       if (h.cool <= 0) {
         const free = trip.cap - trip.cartKg;
-        const cand = trip.items.filter(i => i.state === 'ground' && i.kind === 'mat' && i.kg <= free && !trip.helpers.some(o => o.target === i) && trip.drag?.it !== i);
+        const cand = trip.items.filter(i => i.state === 'ground' && i.kind === 'vol' && !(i.parts && i.parts.rej) && i.kg <= free && !trip.helpers.some(o => o.target === i) && trip.drag?.it !== i);
         if (cand.length) { cand.sort((a, b) => Math.hypot(a.x - h.x, a.y - h.y) - Math.hypot(b.x - h.x, b.y - h.y)); h.target = cand[0]; }
         else h.cool = 1;
       }
@@ -2611,7 +2803,8 @@ function endTrip(timeout){
     let matKg = 0;
     for (const k in t.cart) { S.mixed[k] = (S.mixed[k] || 0) + t.cart[k]; if (k !== 'rej') matKg += t.cart[k]; }
     S.st.trips++; S.st.streetKg += t.cartKg; S.st.rejStreet += (t.cart.rej || 0);
-    if (matKg >= 10 && !(t.cart.rej > 0)) S.flags.limpa = 1;
+    if (matKg >= 10 && !(t.cart.rej > 0)) { S.flags.limpa = 1; S.st.cleanTrips++; }
+    S.vols.push(...t.vols); if (S.vols.length > 60) S.vols.splice(0, S.vols.length - 60);
     transition(() => { trip = null; for (let i = TQ.length - 1; i >= 0; i--) if (TQ[i].street) TQ.splice(i, 1); setSceneMode('base'); showTripSummary(t); save(); });
   }, timeout ? 900 : 150);
 }
@@ -2652,7 +2845,7 @@ function inCart(p, pad){
 function showItemTip(it, p){
   const tip = $('itemTip');
   if (!it) { tip.classList.add('hidden'); return; }
-  tip.textContent = it.kind === 'rej' || it.m === 'rej' ? `${it.name} · não reciclável` : `${it.name} · ${fmtKg(it.kg)}`;
+  tip.textContent = it.kind === 'rej' || it.m === 'rej' ? `${it.name} · não reciclável` : `${it.name}${it.pack ? ' (embalagem)' : ''} · ${fmtKg(it.kg)}`;
   const w = G_mode === 'sort' ? SL.w : SW, h = G_mode === 'sort' ? SL.h : SH;
   tip.style.left = (p.x / w * 100) + '%'; tip.style.top = (p.y / h * 100) + '%';
   tip.classList.remove('hidden');
@@ -2737,47 +2930,92 @@ function drawStreet(t){
 // =====================================================================
 // MINIGAME DE TRIAGEM
 // =====================================================================
-const MAT_TIPO = {papelao:'papel', pet:'plástico', plastico:'plástico', lata:'metal', sucata:'metal', vidro:'vidro'};
+const MAT_TIPO = {papelao:'papel', papel:'papel', pet:'plástico', filme:'plástico', plastico:'plástico', lata:'metal', sucata:'metal', vidro:'vidro'};
+const VOL_DEF = {}; Object.values(VOLS).forEach(a => a.forEach(d => VOL_DEF[d.id] = d)); VOL_DEF[MIX_VOL.id] = MIX_VOL;
+const PLURAL = {papelao:'Papelão', papel:'Papel e jornal', pet:'Garrafas PET', filme:'Sacos plásticos', lata:'Latinhas', plastico:'Plástico duro',
+  vidro:'Garrafas de vidro', sucata:'Sucata de metal'};
+// abre os volumes trazidos da rua e agrupa o que tem dentro (conteúdo, embalagem e rejeito)
+function takeSortVolumes(){
+  const tot = sum(S.mixed); if (tot <= 0.05) return null;
+  let target = Math.min(tot, sortBatchKg());
+  const matShare = (tot - (S.mixed.rej || 0)) / tot, space = caps().sep - sepUsed();
+  if (target * matShare > space) { if (space <= 0.5) return {full:true}; target = space / Math.max(matShare, 1e-6); }
+  const groups = {}, opened = []; let took = 0;
+  const add = (key, m, kg, extra) => { const g = groups[key] || (groups[key] = Object.assign({m, kg:0}, extra)); g.kg += kg; };
+  while (S.vols.length && took < target) {
+    const v = S.vols[0];
+    let vk = 0; for (const m in v.p) vk += Math.min(v.p[m], S.mixed[m] || 0);
+    if (vk < 0.05) { S.vols.shift(); continue; }
+    if (took > 0 && took + vk > target * 1.15) break;
+    // no máximo 8 tipos diferentes por rodada: o resto fica para o próximo lote
+    const pk0 = v.v === 'rej' ? null : (VOL_DEF[v.v] || {}).pack;
+    const newKeys = Object.keys(v.p).map(m => m === 'rej' ? 'rej' + v.r : m === pk0 ? 'pack_' + m : m).filter(k => !groups[k]);
+    if (opened.length && Object.keys(groups).length + new Set(newKeys).size > 8) break;
+    S.vols.shift(); opened.push(v);
+    const packM = v.v === 'rej' ? null : (VOL_DEF[v.v] || {}).pack;
+    for (const m in v.p) {
+      const kg = Math.min(v.p[m], S.mixed[m] || 0); if (kg <= 0) continue;
+      S.mixed[m] -= kg; if (S.mixed[m] < 1e-6) delete S.mixed[m];
+      took += kg;
+      if (m === 'rej') { const r = v.r != null ? v.r : Math.floor(Math.random() * REJ.length); add('rej' + r, 'rej', kg, {r}); }
+      else if (m === packM) add('pack_' + m, m, kg, {pack:true});
+      else add(m, m, kg, {});
+    }
+  }
+  if (!opened.length && took < target - 0.05) { // material sem volume (coletores, doações)
+    const out = takeProp(S.mixed, Object.keys(S.mixed), target - took);
+    for (const m in out) { took += out[m]; if (m === 'rej') { const r = Math.floor(Math.random() * REJ.length); add('rej' + r, 'rej', out[m], {r}); } else add(m, m, out[m], {}); }
+  }
+  return {groups:Object.values(groups), opened};
+}
 function startSort(){
   if (busy || G_mode !== 'base') return;
   AU.init();
-  const b = takeSortBatch();
+  const b = takeSortVolumes();
   if (!b) { toast(null, 'Não há material misturado para triar. Vá para a rua!', '', 2500, 'nomix'); return; }
   if (b.full) { AU.sfx('deny'); toast('Estoque de separado cheio!', 'Venda o material ou compre bags e baias para ganhar espaço.', 'bad', 3500, 'sepfull'); return; }
-  // óleo e eletrônicos já chegam separados em recipientes próprios
   let autoKg = 0;
-  for (const m of AUTO_SORTED) if (b[m]) { sortItem(m, b[m], true); autoKg += b[m]; delete b[m]; }
-  let tot = 0; for (const k in b) tot += b[k];
-  const N = Math.max(3, Math.min(12, Math.round(tot / 2.5)));
-  const raw = Object.keys(b).filter(k => b[k] > 0.001).map(k => ({k, v:b[k] / tot * N}));
-  raw.forEach(r => r.n = Math.floor(r.v));
-  let left = N - raw.reduce((a, r) => a + r.n, 0);
-  raw.sort((a, c) => (c.v - c.n) - (a.v - a.n));
-  for (const r of raw) { if (left <= 0) break; r.n++; left--; }
-  if (!S.tut.done && b.rej > 0) { const rr = raw.find(r => r.k === 'rej'); if (rr && rr.n === 0) { rr.n = 1; const big = raw.reduce((a, r) => r.n > a.n ? r : a, raw[0]); if (big !== rr && big.n > 1) big.n--; } }
-  const items = [];
-  for (const r of raw) {
-    if (r.n === 0) { sortItem(r.k, b[r.k], true); if (r.k !== 'rej') autoKg += b[r.k]; continue; } // pedacinhos
-    for (let i = 0; i < r.n; i++) {
-      const it = {m:r.k, kg:b[r.k] / r.n, state:'table'};
-      if (r.k === 'rej') { it.r = Math.floor(Math.random() * REJ.length); it.spr = SPR['rej' + it.r]; it.name = REJ[it.r].n; }
-      else { it.spr = SPR[r.k]; it.name = MATS[r.k].n; }
-      items.push(it);
-    }
+  let gs = [];
+  for (const g of b.groups) {
+    if (g.kg <= 0.01) continue;
+    if (AUTO_SORTED.includes(g.m)) { sortItem(g.m, g.kg, true); autoKg += g.kg; continue; } // óleo e eletrônicos já vêm separados
+    gs.push(g);
   }
+  // de 6 a 8 itens por rodada, não importa quantos kg: o peso é dividido entre eles
+  while (gs.length > 8) {
+    const pk = gs.find(g => g.pack && gs.some(o => o !== g && !o.pack && o.m === g.m));
+    if (pk) { gs.find(o => o !== pk && !o.pack && o.m === pk.m).kg += pk.kg; gs.splice(gs.indexOf(pk), 1); continue; }
+    gs.sort((a, c) => a.kg - c.kg);
+    const small = gs.shift(); sortItem(small.m, small.kg, true); if (small.m !== 'rej') autoKg += small.kg;
+  }
+  while (gs.length < 6) {
+    const big = gs.reduce((a, g) => !a || g.kg > a.kg ? g : a, null);
+    if (!big || big.kg < 0.6) break;
+    big.kg /= 2; gs.push(Object.assign({}, big));
+  }
+  const items = gs.map(g => {
+    const it = {m:g.m, kg:g.kg, pack:!!g.pack, state:'table'};
+    if (g.m === 'rej') { it.r = g.r; it.spr = SPR['rej' + g.r]; it.name = REJ[g.r].n; }
+    else if (g.pack) { it.spr = PSPR[g.m] || SPR[g.m]; it.name = g.m === 'filme' ? 'Saco plástico (embalagem)' : 'Caixa de papelão (embalagem)'; }
+    else { it.spr = g.m === 'filme' ? PSPR.filme : groupSprite(g.m); it.name = PLURAL[g.m] || MATS[g.m].n; }
+    return it;
+  });
   for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
   SL = window.innerWidth < 700 && window.innerHeight > window.innerWidth * 1.2 ? SORT_L.port : SORT_L.land;
   const cols = SL.cols, rows = Math.ceil(items.length / cols);
+  const cx = SL.table[0] + SL.table[2] / 2, cy = SL.table[1] + SL.table[3] / 2 + 6;
   items.forEach((it, i) => {
     const c = i % cols, r = Math.floor(i / cols);
-    it.hx = SL.x0 + c * SL.dx + (Math.random() - 0.5) * 10 + (r % 2) * (SL.dx / 4); it.hy = SL.y0 + r * ((SL.y1 - SL.y0) / Math.max(1, rows - 1)) + (Math.random() - 0.5) * 3;
+    it.hx = SL.x0 + c * SL.dx + (Math.random() - 0.5) * 8 + (r % 2) * (SL.dx / 4); it.hy = SL.y0 + r * ((SL.y1 - SL.y0) / Math.max(1, rows - 1)) + (Math.random() - 0.5) * 3;
     if (rows === 1) it.hy = (SL.y0 + SL.y1) / 2;
-    it.hy = Math.min(SL.y1, Math.max(SL.y0, it.hy));
-    it.x = it.hx; it.y = it.hy;
+    it.hy = Math.min(SL.y1, Math.max(SL.y0, it.hy)); it.hx = Math.min(SL.w - 10, Math.max(10, it.hx));
+    it.x = cx; it.y = cy;
   });
-  sortG = {items, total:items.length, ok:0, err:0, kgOk:0, kgLost:0, rejOk:0, autoKg, errors:[], drag:null, sel:null, flash:{}, ended:false, msgT:0};
+  const vols = b.opened.slice(0, 4).map(v => v.v === 'rej' ? SPR['rej' + (v.r || 0)] : VSPR[v.v]).filter(Boolean);
+  sortG = {items, total:items.length, ok:0, err:0, kgOk:0, kgLost:0, rejOk:0, autoKg, errors:[], drag:null, sel:null, flash:{}, ended:false, msgT:0,
+           intro:{t:vols.length ? 0 : 0.55, vols, cx, cy}, hasPack:items.some(i => i.pack)};
   AU.sfx('sort');
-  transition(() => { setSceneMode('sort'); updateSortHud(); setSortMsg(S.st.sortRounds === 0 ? 'Arraste cada item para a lixeira da cor certa.' : ''); });
+  transition(() => { setSceneMode('sort'); updateSortHud(); setSortMsg(vols.length ? 'Abrindo os volumes...' : ''); });
 }
 function setSortMsg(html, bad){
   const m = $('sortMsg');
@@ -2795,7 +3033,7 @@ function binAt(p){
   return -1;
 }
 function sortPointerDown(e){
-  if (!sortG || sortG.ended) return;
+  if (!sortG || sortG.ended || sortG.intro.t < 1) return;
   const p = smallPt(e);
   const it = itemAt(sortG.items, p, ['table']);
   if (it) {
@@ -2834,20 +3072,20 @@ function dropInBin(it, bi){
   it.state = 'gone';
   if (it.m === 'rej') {
     sortItem('rej', it.kg, true);
-    if (right) { sortG.ok++; sortG.rejOk += it.kg; AU.sfx('pick'); floatText('✔ Rejeito', bx, BIN_Y - 12, 'kg', 'sort'); }
+    if (right) { sortG.ok++; sortG.rejOk += it.kg; S.st.rejOkN++; AU.sfx('pick'); floatText('✔ Rejeito', bx, BIN_Y - 12, 'kg', 'sort'); }
     else {
       sortG.err++; AU.sfx('rej');
       const msg = `${it.name} é rejeito: vai na lixeira <b>cinza</b>.`;
       sortG.errors.push(msg); setSortMsg('Ops! ' + msg, true); floatText('✘', bx, BIN_Y - 12, 'bad', 'sort');
     }
   } else if (right) {
-    sortItem(it.m, it.kg, true); sortG.ok++; sortG.kgOk += it.kg;
+    sortItem(it.m, it.kg, true); sortG.ok++; sortG.kgOk += it.kg; if (it.pack) S.st.packOk++;
     AU.sfx('pick'); floatText('+' + fmtKg(it.kg) + ' ✔', bx, BIN_Y - 12, 'kg', 'sort');
     spawnFx('sort', bx, BIN_Y, 'spark', 6);
   } else {
     sortItem(it.m, it.kg, false); sortG.err++; sortG.kgLost += it.kg;
     const cb = BINS.find(x => x.id === BIN_OF[it.m]);
-    const msg = `${it.name} é ${MAT_TIPO[it.m]}: vai na lixeira <b>${cb.cor}</b>.`;
+    const msg = `${it.name}: é ${MAT_TIPO[it.m]}, vai na lixeira <b>${cb.cor}</b>.`;
     sortG.errors.push(msg); AU.sfx('rej'); setSortMsg('Ops! ' + msg + ' Este item virou rejeito.', true);
     floatText('✘ virou rejeito', bx, BIN_Y - 12, 'bad', 'sort');
   }
@@ -2865,6 +3103,7 @@ function finishSort(quit){
   let bonus = 0;
   if (!quit) {
     S.st.sortRounds++; S.st.sortOk += g.ok; S.st.sortErr += g.err;
+    if (g.err === 0 && g.total >= 3) { S.st.perfect++; S.st.streak++; S.st.bestStreak = Math.max(S.st.bestStreak, S.st.streak); } else S.st.streak = 0;
     if (S.roles.triagem > 0) {
       // bônus de capricho: 15% do valor do que foi separado certo
       bonus = Math.round(g.kgOk * avgSepPrice() * 0.15 * 100) / 100;
@@ -2903,6 +3142,11 @@ function drawSort(t){
     const f = sortG.flash[i];
     drawBin(i, b, i === over || (!dragIt && sortG.sel && false), f && f.a > 0 ? f : null);
   });
+  const I = sortG.intro;
+  if (I.t < 0.55) { // volumes fechados no meio da mesa, balançando antes de abrir
+    I.vols.forEach((v, i) => { const sh = Math.sin(performance.now() / 40 + i) * (I.t > 0.3 ? 1.5 : 0.5); CX.drawImage(v, Math.round(I.cx - v.width / 2 + (i - (I.vols.length - 1) / 2) * 18 + sh), Math.round(I.cy - v.height)); });
+    drawFx('sort'); return;
+  }
   const list = sortG.items.filter(i => i.state !== 'gone').sort((a, b) => (a.state === 'drag') - (b.state === 'drag') || a.y - b.y);
   for (const it of list) {
     const s = it.spr, lift = it.state === 'drag' ? 4 : 0;
@@ -2914,6 +3158,17 @@ function drawSort(t){
 }
 function updateSort(dt){
   if (!sortG) return;
+  const I = sortG.intro;
+  if (I.t < 1) {
+    const before = I.t; I.t = Math.min(1, I.t + dt * (busy ? 0 : 1.2));
+    if (before < 0.55 && I.t >= 0.55) { AU.sfx('grab'); spawnFx('sort', I.cx, I.cy, 'dust', 14); }
+    const k = Math.max(0, (I.t - 0.55) / 0.45), e = 1 - Math.pow(1 - k, 3);
+    sortG.items.forEach(it => { if (it.state === 'table') { it.x = I.cx + (it.hx - I.cx) * e; it.y = I.cy + (it.hy - I.cy) * e - Math.sin(k * Math.PI) * 8; } });
+    if (I.t >= 1) {
+      if (sortG.hasPack && !S.tips.pack) { S.tips.pack = 1; setSortMsg('📦 A embalagem também é reciclável! Separe ela também.'); sortG.msgT = 6; }
+      else setSortMsg(S.st.sortRounds === 0 ? 'Arraste cada item para a lixeira da cor certa.' : '');
+    }
+  }
   for (const k in sortG.flash) sortG.flash[k].a = Math.max(0, sortG.flash[k].a - dt * 1.5);
   if (sortG.msgT > 0) { sortG.msgT -= dt; if (sortG.msgT <= 0) setSortMsg(''); }
 }
@@ -3159,14 +3414,29 @@ function renderShop(){
   if (done.length) h += `<details class="done"><summary>✔ Concluídos (${done.length})</summary>${done.map(it => `<div class="doneItem">✔ ${it.n}${it.uniq ? '' : ' · ' + nI(it.id)}</div>`).join('')}</details>`;
   return h;
 }
+const ACH_FMT = {kgRua1t:'kg', kgRua10t:'kg', graos10t:'kg', t1:'kg', t10:'kg', t100:'kg', rejOut100:'kg', vidro1t:'kg', mil_t:'kg',
+  ganho1k:'money', ganho100k:'money', milhao:'money', dezMilhoes:'money'};
+const TIER = {b:['🥉', 'Bronze'], p:['🥈', 'Prata'], o:['🥇', 'Ouro']};
+function achVal(a, v){ const f = ACH_FMT[a.id]; return f === 'kg' ? fmtKg(v) : f === 'money' ? fmtMoney(v) : fmtNum(Math.floor(v)); }
+function achCard(a){
+  const on = !!S.ach[a.id], tier = a.tier ? TIER[a.tier] : null;
+  if (!on && a.secret) return `<div class="ach off secret"><div class="an">❔ Conquista secreta</div><div>Continue jogando para descobrir.</div></div>`;
+  const prog = !on && a.need > 1 ? `<div class="pbar"><div style="width:${achProgress(a) * 100}%"></div></div><div class="pv">${achVal(a, Math.min(achValue(a), a.need))} / ${achVal(a, a.need)}</div>` : '';
+  return `<div class="ach ${on ? 'on' : 'off'} ${a.tier ? 't-' + a.tier : ''}"><div class="an">${on ? (tier ? tier[0] : '🏆') : '🔒'} ${a.n}</div><div>${a.d}</div>${prog}${on ? `<div class="muted">${tier ? tier[1] + ' · ' : ''}+1% de produtividade</div>` : ''}</div>`;
+}
+function nearAch(k){
+  return ACHS.filter(a => !S.ach[a.id] && !a.secret && a.need > 1).map(a => ({a, p:achProgress(a)})).filter(x => x.p < 1).sort((x, y) => y.p - x.p).slice(0, k);
+}
 function renderAch(){
   const n = achCount();
-  let h = `<div class="card"><h3>Conquistas: ${n} / ${ACHS.length}</h3><div class="muted">Cada conquista dá +2% de produtividade para toda a cooperativa. Bônus atual: <b>+${n * 2}%</b>.</div></div><div class="achGrid">`;
-  ACHS.forEach(a => {
-    const on = !!S.ach[a.id];
-    h += `<div class="ach ${on ? 'on' : 'off'}"><div class="an">${on ? '🏆' : '🔒'} ${a.n}</div><div>${a.d}</div>${on ? '<div class="muted">+2% de produtividade</div>' : ''}</div>`;
+  let h = `<div class="card"><h3>Conquistas: ${n} / ${ACHS.length}</h3><div class="muted">Cada conquista dá +1% de produtividade para toda a cooperativa. Bônus atual: <b>+${n}%</b>.</div></div>`;
+  const near = nearAch(3);
+  if (near.length) h += `<div class="card"><h3>Perto de conseguir</h3>${near.map(({a, p}) => `<div class="nearRow"><div class="nm"><span>${a.tier ? TIER[a.tier][0] + ' ' : ''}${a.n}</span><span class="muted">${achVal(a, achValue(a))} / ${achVal(a, a.need)}</span></div><div class="pbar"><div style="width:${p * 100}%"></div></div></div>`).join('')}</div>`;
+  ACH_CATS.forEach(([cat, nm]) => {
+    const list = ACHS.filter(a => a.cat === cat), got = list.filter(a => S.ach[a.id]).length;
+    h += `<div class="achCat"><h4>${nm}</h4><span class="muted">${got} / ${list.length}</span></div><div class="achGrid">${list.map(achCard).join('')}</div>`;
   });
-  return h + '</div>';
+  return h;
 }
 function renderMore(){
   const acc = S.st.sortOk + S.st.sortErr ? Math.round(S.st.sortOk / (S.st.sortOk + S.st.sortErr) * 100) + '%' : '–';
@@ -3178,7 +3448,7 @@ function renderMore(){
   return idCard + `<div class="card"><h3>Ajustes</h3>
     <div class="row" style="flex-wrap:wrap"><button class="btn ${S.set.music ? '' : 'alt'}" data-act="music">♪ Música: ${S.set.music ? 'ligada' : 'desligada'}</button>
     <button class="btn ${S.set.sfx ? '' : 'alt'}" data-act="sfx">🔊 Efeitos: ${S.set.sfx ? 'ligados' : 'desligados'}</button></div></div>
-    <div class="card"><h3>Ajuda</h3><div class="row" style="flex-wrap:wrap"><button class="btn blue" data-act="help">❓ Como jogar</button><button class="btn blue" data-act="retut">🎓 Rever tutorial</button></div></div>
+    <div class="card"><h3>Ajuda</h3><div class="row" style="flex-wrap:wrap"><button class="btn blue" data-act="help">❓ Como jogar</button><button class="btn blue" data-act="retut">🎓 Recomeçar tutorial</button></div></div>
     <div class="card"><h3>Seu progresso</h3>
       <div class="req"><span>Saídas para a rua</span><span class="v">${fmtNum(S.st.trips)}</span></div>
       <div class="req"><span>Coletado na rua</span><span class="v">${fmtKg(S.st.streetKg)}</span></div>
@@ -3199,7 +3469,7 @@ function panelSig(){
     else ITEMS.forEach(it => { if (it.cat === curCat) s += maxAffordable(it) + ',' + (S.money >= itemCost(it) ? 1 : 0) + ';'; });
     return s;
   }
-  if (curTab === 'ach') return 'a' + achCount();
+  if (curTab === 'ach') return 'a' + achCount() + nearAch(3).map(x => Math.round(x.p * 50)).join() + ACHS.filter(a => a.need > 1 && !S.ach[a.id]).map(a => Math.round(achProgress(a) * 25)).join('');
   return 'm' + S.set.music + S.set.sfx + Math.round(S.st.earned) + S.st.trips + S.st.sortRounds + logoSig() + coopName() + S.phase;
 }
 function renderPanel(force){
@@ -3243,7 +3513,7 @@ $('tabBody').addEventListener('click', e => {
 let resetting = false;
 function selectTab(t){ curTab = t; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.tab === t)); lastSig = ''; renderPanel(true); }
 function onBought(it, q){
-  AU.sfx('buy'); S.flags.bought = 1;
+  AU.sfx('buy'); S.flags.bought = 1; S.st.buys++;
   toast('Comprado!', `${it.n}${q > 1 ? ' x' + q : ''}`, 'good', 2200);
   bgCache.sig = '';
   const tips = {
@@ -3328,73 +3598,157 @@ function showHelp(){
     <p><b>6. Pessoas:</b> a partir da fase 2, admita cooperados e escolha a função: coleta, venda, triagem (fase 3) e prensa e beneficiamento (fase 7). Com triadores, a triagem fica automática.</p>
     <p><b>7. Estoque:</b> se o espaço encher, a etapa anterior para. Equilibre coleta, triagem e venda!</p>
     <p class="muted">A cooperativa continua trabalhando enquanto você está fora (até 2 horas).</p>`,
-    [{t:'Rever tutorial', cls:'blue', fn:restartTutorial}, {t:'Entendi'}]);
+    [{t:'🎓 Recomeçar tutorial', cls:'blue', fn:restartTutorial}, {t:'Entendi'}]);
 }
 
 // =====================================================================
-// TUTORIAL
+// TUTORIAL (cada passo olha a situação real do jogo)
 // =====================================================================
 function canvasPtToPage(lx, ly, small){
   const r = cv.getBoundingClientRect();
   const w = small === 'sort' ? SL.w : small ? SW : W, h = small === 'sort' ? SL.h : small ? SH : H;
   return {x:r.left + lx / w * r.width, y:r.top + ly / h * r.height};
 }
+function elRect(e){
+  if (!e || e.offsetParent === null) return null;
+  const r = e.getBoundingClientRect(); if (!r.width && !r.height) return null;
+  return {l:r.left, t:r.top, r:r.right, b:r.bottom};
+}
+function itemRect(it, dims){
+  const a = canvasPtToPage(it.x - it.spr.width / 2 - 2, it.y - it.spr.height - 3, dims), b = canvasPtToPage(it.x + it.spr.width / 2 + 2, it.y + 2, dims);
+  return {l:a.x, t:a.y, r:b.x, b:b.y};
+}
+const tc = k => (S.st[k] || 0) - ((S.tut.base || {})[k] || 0); // contadores desde o início do tutorial
+function streetGuide(prefix){
+  if (!trip) return null;
+  const it = trip.items.find(i => i.state === 'ground' && i.kind === 'vol' && i.kg <= trip.cap - trip.cartKg);
+  if (it && trip.cartKg < trip.cap * 0.9) return {txt:(prefix || '') + (has('luvas_coleta') ? 'Toque num volume reciclável (saco, caixa ou pilha) para jogá-lo no carrinho.' : '<b>Arraste</b> um volume reciclável (saco, caixa ou pilha) até o <b>carrinho</b>.'), it, dims:true};
+  return {txt:'Carrinho bom! Toque em <b>Voltar à base</b>.', el:$('btnBack')};
+}
+function sortGuide(){
+  if (!sortG || sortG.intro.t < 1) return null;
+  const it = sortG.sel && sortG.sel.state === 'table' ? sortG.sel : sortG.items.find(i => i.state === 'table');
+  if (!it) return null;
+  return {txt:'Arraste cada item para a lixeira da cor certa: <b class="c-azul">azul</b> papel, <b class="c-verm">vermelha</b> plástico, <b class="c-amar">amarela</b> metal, <b class="c-verde">verde</b> vidro e <b class="c-cinza">cinza</b> rejeito. As embalagens também se separam! Também dá para tocar no item e depois na lixeira.', it, dims:'sort'};
+}
+// como ganhar dinheiro agora, conforme o que o jogador tem em mãos
+function earnGuide(reason){
+  if (G_mode === 'street') return streetGuide(reason);
+  if (G_mode === 'sort') return sortGuide();
+  if (sum(S.mixed) > 0.5) return {txt:reason + 'Leve o material para a mesa de triagem: toque em <b>Triar</b>.', el:$('hotSort')};
+  if (sellableValue() > 0.01) return {txt:reason + 'Venda o material separado: toque em <b>Vender</b>.', el:$('hotSell')};
+  return {txt:reason + 'Faça mais uma saída: toque em <b>Ir para a rua</b>.', el:$('btnGo')};
+}
+function shopGuide(cat, sel, label){
+  if (G_mode !== 'base') return null;
+  if (curTab !== 'loja') return {txt:'Abra a <b>Loja</b>.', el:$('tab-loja')};
+  if (curCat !== cat) return {txt:`Toque na categoria <b>${CATS.find(c => c.id === cat).n}</b>.`, el:document.querySelector(`.cat[data-cat="${cat}"]`)};
+  return {txt:label, el:document.querySelector(sel)};
+}
+function firstBuyTarget(){
+  const av = ITEMS.filter(it => itemStatus(it) === 'avail');
+  return av.find(it => it.id === 'carrinho2') || av.sort((a, b) => itemCost(a) - itemCost(b))[0];
+}
+function vagaTarget(){ return ['balanca', 'carroca'].map(id => ITEM[id]).filter(it => itemStatus(it) === 'avail').sort((a, b) => itemCost(a) - itemCost(b))[0]; }
 const TUT = [
-  {id:'go', txt:'Toque em <b>Ir para a rua</b> para sair com seu carrinho e coletar material reciclável.', el:() => $('btnGo'), done:() => G_mode === 'street'},
-  {id:'drag', mode:'street', txt:() => has('luvas_coleta') ? 'Toque num material reciclável para jogá-lo no carrinho.' : '<b>Arraste</b> um material reciclável (caixa de papelão, garrafa PET...) até o <b>carrinho</b>. O relógio espera você aprender.',
-   pt:() => { const it = trip && trip.items.find(i => i.state === 'ground' && i.kind === 'mat'); return it ? canvasPtToPage(it.x, it.y - it.spr.height - 2, true) : null; }, done:() => trip && trip.got >= 1},
-  {id:'rej', mode:'street', txt:'Pegue só os <b>recicláveis</b>. O <b>rejeito</b> (resto de comida, fralda, isopor sujo...) fica para a coleta comum: no carrinho, ele só ocupa espaço.', ok:1,
-   pt:() => { const it = trip && trip.items.find(i => i.state === 'ground' && i.kind === 'rej'); return it ? canvasPtToPage(it.x, it.y - it.spr.height - 2, true) : null; }, done:s => (performance.now() - s.t0) > 12000},
-  {id:'back', mode:'street', txt:'Agora o relógio está correndo! Colete o que der e toque em <b>Voltar à base</b>. Se o tempo acabar, você volta sozinho(a).', el:() => $('btnBack'), done:() => G_mode === 'base' && !modalOpen()},
-  {id:'sort', txt:'Toque em <b>Triar</b> para levar o material para a mesa de triagem.', el:() => $('hotSort'), done:() => G_mode === 'sort'},
-  {id:'sortgame', mode:'sort', txt:'Arraste cada item para a lixeira da cor certa: <b class="c-azul">azul</b> papel, <b class="c-verm">vermelha</b> plástico, <b class="c-amar">amarela</b> metal, <b class="c-verde">verde</b> vidro e <b class="c-cinza">cinza</b> rejeito. Também dá para tocar no item e depois na lixeira.',
-   pt:() => { const it = sortG && sortG.items.find(i => i.state === 'table'); return it ? canvasPtToPage(it.x, it.y - it.spr.height - 2, 'sort') : null; }, done:() => S.st.sortRounds >= 1 && G_mode === 'base' && !modalOpen()},
-  {id:'sell', txt:'Material separado vale mais. Toque em <b>Vender</b>: o atravessador pesa e paga.', el:() => $('hotSell'), done:() => S.st.sales >= 1},
-  {id:'shop', txt:'Abra a <b>Loja</b> e compre seu primeiro item. Dica: o <b>Carrinho maior</b> leva mais material por saída.', el:() => curTab === 'loja' ? document.querySelector('[data-buy]:not(:disabled)') || $('tab-loja') : $('tab-loja'), done:() => S.flags.bought},
-  {id:'goal', txt:'Este é o <b>Próximo objetivo</b>. Ele mostra o que falta para avançar de fase. Agora: faça 3 saídas e <b>junte R$ 60 para limpar o terreno</b>. Quando tudo estiver pronto, o botão de avançar aparece aqui.', ok:1,
-   el:() => $('goalBox'), done:() => false},
-  {id:'wait', txt:null, done:() => S.phase >= 2},
-  {id:'hire', txt:'Agora você pode chamar colegas! Primeiro compre uma <b>Balança</b> (Estrutura) ou uma <b>Carroça para coletor</b> (Rua) para abrir uma vaga. Depois, em <b>Loja › Pessoas</b>, admita alguém e escolha a função.',
-   el:() => curTab === 'loja' ? (curCat === 'pessoas' ? document.querySelector('[data-act="hire"]') : document.querySelector('.cat[data-cat="pessoas"]')) : $('tab-loja'), done:() => S.st.hires >= 1},
-  {id:'end', txt:'Muito bem! Daqui pra frente, siga o <b>Próximo objetivo</b>: é ele que guia o crescimento da cooperativa, fase por fase.', ok:1, el:() => $('goalBox'), done:() => false},
+  {id:'go', view:() => G_mode === 'base' ? {txt:'Vamos começar! Toque em <b>Ir para a rua</b> para sair com seu carrinho. Cada saída dura <b>25 segundos</b>.', el:$('btnGo')} : null,
+   done:() => G_mode === 'street' || tc('trips') > 0},
+  {id:'drag', view:() => G_mode === 'street' ? streetGuide('') : null, done:() => (trip && trip.got >= 1) || tc('trips') > 0},
+  {id:'rej', ok:1, view:() => {
+     if (G_mode !== 'street') return null;
+     const it = trip.items.find(i => i.state === 'ground' && i.kind === 'rej');
+     return {txt:'Pegue só os <b>recicláveis</b>. O <b>rejeito</b> (resto de comida, fralda, isopor sujo, guardanapo usado, bituca...) fica para a coleta comum: no carrinho, ele só ocupa espaço.', it, dims:true};
+   }, done:s => G_mode !== 'street' || performance.now() - s.t0 > 7000},
+  {id:'fill', view:() => G_mode === 'street' ? (trip.cartKg >= trip.cap * 0.6 || trip.left < 8 ? {txt:'Toque em <b>Voltar à base</b> quando quiser. Se o tempo acabar, você volta sozinho(a).', el:$('btnBack')} : streetGuide('Isso! Continue. ')) : null,
+   done:() => tc('trips') > 0 && G_mode === 'base' && !modalOpen()},
+  {id:'sort', view:() => earnGuide(sum(S.mixed) > 0.5 || G_mode !== 'base' ? '' : 'Você voltou sem material reciclável. '), done:() => G_mode === 'sort' || tc('sortRounds') > 0},
+  {id:'sortgame', view:() => G_mode === 'sort' ? sortGuide() : null, back:() => G_mode === 'base' && !modalOpen() && tc('sortRounds') === 0 ? 'sort' : null,
+   done:() => tc('sortRounds') > 0 && G_mode === 'base' && !modalOpen()},
+  {id:'sell', view:() => G_mode === 'base' && sellableValue() > 0.01 ? {txt:'Material separado vale mais! Toque em <b>Vender</b>: o atravessador pesa e paga.', el:$('hotSell')} : earnGuide(''),
+   done:() => tc('sales') > 0},
+  {id:'shop', view:() => {
+     const it = firstBuyTarget(); if (!it) return null;
+     const c = itemCost(it);
+     if (S.money < c) return earnGuide(`Você tem <b>${fmtMoney(S.money)}</b> e o item <b>${it.n}</b> custa <b>${fmtMoney(c)}</b>. Vamos juntar mais! `);
+     return shopGuide(it.cat, `[data-buy="${it.id}"]:not(:disabled)`, `Compre <b>${it.n}</b> por ${fmtMoney(c)}.${it.id === 'carrinho2' ? ' Ele leva mais material em cada saída.' : ''}`);
+   }, done:() => tc('buys') > 0},
+  {id:'goal', ok:1, view:() => G_mode === 'base' ? {txt:S.phase === 1 ? 'Este é o <b>Próximo objetivo</b>: ele mostra o que falta para avançar de fase. Agora faça 3 saídas e <b>junte R$ 60 para limpar o terreno</b>. Quando tudo estiver pronto, o botão de avançar aparece aqui.' : 'Este é o <b>Próximo objetivo</b>: ele mostra o que falta para avançar de fase.', el:$('goalBox')} : null,
+   done:() => false},
+  {id:'phase2', view:() => {
+     if (S.phase !== 1 || G_mode !== 'base') return null;
+     if (canAdvance()) return {txt:'Tudo pronto! Toque em <b>Avançar para a fase 2</b>.', el:document.querySelector('#goalBox [data-act="advance"]')};
+     return performance.now() - lastInput > 9000 ? earnGuide('Dica: ') : null; // só aparece se o jogador ficar parado
+   },
+   done:() => S.phase >= 2},
+  {id:'vaga', view:() => {
+     const it = vagaTarget(); if (!it) return null;
+     const c = itemCost(it);
+     if (S.money < c) return earnGuide(`Para chamar um colega, primeiro abra uma vaga: a <b>${it.n}</b> custa ${fmtMoney(c)}. Você tem ${fmtMoney(S.money)}. `);
+     return shopGuide(it.cat, `[data-buy="${it.id}"]:not(:disabled)`, `Compre a <b>${it.n}</b>: ela abre 1 vaga de ${it.id === 'balanca' ? 'Venda' : 'Coleta'} para um colega.`);
+   }, done:() => S.phase !== 2 || tc('hires') > 0 || !canHire() || (vagas().venda + vagas().coleta) > (S.roles.venda + S.roles.coleta) || !vagaTarget()},
+  {id:'hire', view:() => {
+     const c = hireCost();
+     if (S.money < c) return earnGuide(`Admitir um colega custa ${fmtMoney(c)}. Você tem ${fmtMoney(S.money)}. `);
+     return shopGuide('pessoas', '[data-act="hire"]', 'Toque em <b>Admitir cooperado(a)</b> e escolha a função dele(a).');
+   }, done:() => tc('hires') > 0 || S.phase !== 2 || !canHire()},
+  {id:'end', ok:1, view:() => G_mode === 'base' ? {txt:'Muito bem! Daqui pra frente, siga o <b>Próximo objetivo</b>: ele guia o crescimento da cooperativa, fase por fase.', el:$('goalBox')} : null, done:() => false},
 ];
+let lastInput = performance.now();
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => lastInput = performance.now(), true));
 const TUT_IDX = id => TUT.findIndex(s => s.id === id);
 let tutState = {idx:-1, t0:0};
-function restartTutorial(){ S.tut = {step:0, done:false}; toast('Tutorial', 'Vamos rever o passo a passo!', 'fact'); if (G_mode === 'base') selectTab('coop'); }
+function restartTutorial(){
+  S.tut = {step:0, done:false, base:{trips:S.st.trips, sortRounds:S.st.sortRounds, sales:S.st.sales, buys:S.st.buys, hires:S.st.hires}};
+  tutState = {idx:-1, t0:0};
+  if (G_mode === 'base') selectTab('coop');
+  toast('🎓 Tutorial', 'Vamos recomeçar o passo a passo!', 'fact', 3000);
+}
+// o balão fica ao lado, acima ou abaixo do alvo, nunca por cima dele
+function placeBubble(bub, r){
+  const vw = window.innerWidth, vh = window.innerHeight, bw = bub.offsetWidth, bh = bub.offsetHeight, m = 14, pad = 6;
+  const clampX = x => Math.max(pad, Math.min(vw - bw - pad, x)), clampY = y => Math.max(pad, Math.min(vh - bh - pad, y));
+  let pos = null;
+  if (r) {
+    const cx = (r.l + r.r) / 2, cy = (r.t + r.b) / 2;
+    const cands = [
+      {x:clampX(cx - bw / 2), y:r.b + m, ok:r.b + m + bh <= vh - pad},
+      {x:clampX(cx - bw / 2), y:r.t - m - bh, ok:r.t - m - bh >= pad},
+      {x:r.r + m, y:clampY(cy - bh / 2), ok:r.r + m + bw <= vw - pad},
+      {x:r.l - m - bw, y:clampY(cy - bh / 2), ok:r.l - m - bw >= pad},
+    ];
+    pos = cands.find(c => c.ok);
+    if (!pos) pos = {x:clampX(cx - bw / 2), y:r.t > vh - r.b ? pad : vh - bh - pad};
+  } else pos = {x:clampX(vw / 2 - bw / 2), y:vh - bh - 12};
+  bub.style.left = pos.x + 'px'; bub.style.top = pos.y + 'px';
+}
 function updateTutorial(){
-  const bub = $('tutBubble'), arr = $('tutArrow');
-  const hide = () => { bub.classList.add('hidden'); arr.classList.add('hidden'); };
+  const bub = $('tutBubble'), hole = $('tutHole');
+  const hide = () => { bub.classList.add('hidden'); hole.classList.add('hidden'); };
   if (S.tut.done || modalOpen() || busy) return hide();
   const step = TUT[S.tut.step];
   if (!step) { S.tut.done = true; toast('🎓 Tutorial concluído!', 'Agora é com você. Bom trabalho!', 'good', 5000); return hide(); }
-  if (tutState.idx !== S.tut.step) { tutState = {idx:S.tut.step, t0:performance.now()}; step.enter && step.enter(); }
+  if (tutState.idx !== S.tut.step) tutState = {idx:S.tut.step, t0:performance.now()};
   if (step.done(tutState)) { S.tut.step++; return; }
-  if (step.mode === 'street' && G_mode !== 'street') { S.tut.step = TUT_IDX('back'); return; }
-  if (step.mode === 'sort' && G_mode !== 'sort') { if (G_mode === 'base') S.tut.step = TUT_IDX('sort'); return hide(); }
-  if (!step.txt || (!step.mode && G_mode !== 'base')) return hide();
-  let p = null;
-  if (step.el) { const e = step.el(); if (e && e.offsetParent !== null) { const r = e.getBoundingClientRect(); p = {x:r.left + r.width / 2, y:r.top}; } }
-  else if (step.pt) p = step.pt();
-  const txt = typeof step.txt === 'function' ? step.txt() : step.txt;
-  if (bub.dataset.step !== step.id + txt) {
-    bub.dataset.step = step.id + txt;
-    bub.innerHTML = `<div>${txt}</div><div class="tb">${step.ok ? '<button class="btn" id="tutOk">Entendi</button>' : ''}<button class="btn alt" id="tutSkip">Pular tutorial</button></div>`;
-    $('tutSkip').onclick = () => { S.tut.done = true; S.tut.step = TUT.length; hide(); toast(null, 'Tutorial pulado. Dá para rever em <b>Como jogar</b> (botão ?).', '', 4000); };
+  if (step.back) { const b = step.back(); if (b) { S.tut.step = TUT_IDX(b); return; } }
+  const v = step.view && step.view();
+  if (!v || !v.txt) return hide();
+  let r = v.it ? itemRect(v.it, v.dims) : v.el ? elRect(v.el) : null;
+  // leva o alvo para dentro da tela (painel, loja, celular)
+  if (v.el && r && (r.t < 40 || r.b > window.innerHeight - 10) && tutState.scrolled !== v.el) { tutState.scrolled = v.el; v.el.scrollIntoView({block:'center', behavior:'smooth'}); }
+  if (bub.dataset.step !== step.id) {
+    bub.dataset.step = step.id; bub.dataset.txt = '';
+    bub.innerHTML = `<div class="tt"></div><div class="tb">${step.ok ? '<button class="btn" id="tutOk">Entendi</button>' : ''}<button class="btn alt" id="tutSkip">Pular tutorial</button></div>`;
+    $('tutSkip').onclick = () => { S.tut.done = true; S.tut.step = TUT.length; hide(); toast(null, 'Tutorial pulado. Dá para recomeçar em <b>Como jogar</b> (botão ?).', '', 4000); };
     if (step.ok) $('tutOk').onclick = () => { S.tut.step++; };
   }
+  if (bub.dataset.txt !== v.txt) { bub.dataset.txt = v.txt; bub.querySelector('.tt').innerHTML = v.txt; }
   bub.classList.remove('hidden');
-  const bw = bub.offsetWidth, bh = bub.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
-  if (p && p.y > -20 && p.y < vh + 20) {
-    arr.classList.remove('hidden');
-    arr.style.left = p.x + 'px'; arr.style.top = (p.y - 2) + 'px';
-    let by = p.y - 44 - bh; if (by < 60) by = p.y + 50;
-    if (G_mode !== 'base') { const cr = cv.getBoundingClientRect(); by = cr.bottom + 10; if (by + bh > vh - 6) by = cr.top + 50; }
-    if (by + bh > vh - 6) by = Math.max(60, vh - bh - 6);
-    bub.style.left = Math.max(6, Math.min(vw - bw - 6, p.x - bw / 2)) + 'px'; bub.style.top = by + 'px';
-  } else {
-    arr.classList.add('hidden');
-    bub.style.left = Math.max(6, vw / 2 - bw / 2) + 'px'; bub.style.top = (vh - bh - 12) + 'px';
-  }
+  if (r) {
+    const p = 6;
+    hole.style.left = (r.l - p) + 'px'; hole.style.top = (r.t - p) + 'px'; hole.style.width = (r.r - r.l + p * 2) + 'px'; hole.style.height = (r.b - r.t + p * 2) + 'px';
+    hole.classList.remove('hidden');
+    placeBubble(bub, {l:r.l - p, t:r.t - p, r:r.r + p, b:r.b + p});
+  } else { hole.classList.add('hidden'); placeBubble(bub, null); }
 }
 
 // =====================================================================
@@ -3482,8 +3836,9 @@ function openLogoEditor(){
 // =====================================================================
 HOOK.ach = a => {
   AU.sfx('ach');
-  toast('🏆 Conquista: ' + a.n, a.d + ' <b>+2% de produtividade.</b>', 'ach', 5000);
-  tipOnce('ach', 'Conquistas', 'Cada conquista dá +2% de produtividade para todo mundo. Veja todas na aba Conquistas.');
+  const tier = a.tier ? TIER[a.tier][0] + ' ' : '🏆 ';
+  toast(tier + (a.secret ? 'Conquista secreta: ' : 'Conquista: ') + a.n, a.d + ' <b>+1% de produtividade.</b>', 'ach', 5000);
+  tipOnce('ach', 'Conquistas', 'São mais de 60 conquistas, e cada uma dá +1% de produtividade para todo mundo. Veja todas na aba Conquistas.');
 };
 HOOK.event = ev => {
   AU.sfx(ev.good ? 'event' : 'bad');
