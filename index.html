@@ -50,6 +50,14 @@ button:disabled{cursor:not-allowed;opacity:.5}
 #leSigla:disabled{opacity:.45}
 #money{font-weight:800;font-size:18px;color:#ffe08a;font-variant-numeric:tabular-nums}
 #rate{font-size:12px;color:#d9c7a3}
+#cashLbl{font-size:10.5px;color:#d9c7a3;text-transform:uppercase;letter-spacing:.4px;line-height:1}
+.floater.small{font-size:clamp(10px,1.5vw,13px);color:#ffe9b0}
+.autoPill{position:absolute;transform:translate(-50%,0);background:rgba(47,125,74,.92);color:#fff;border:2px solid #1d150f;border-radius:14px;padding:2px 8px;font-size:clamp(9px,1.4vw,12px);white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.autoPill.off{background:rgba(138,106,74,.95)}
+.autoPill span{margin-left:3px}
+.repRow{display:flex;justify-content:space-between;margin:8px 0 2px;font-weight:700}
+#repRange{width:100%;accent-color:var(--green)}
+.repScale{display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);margin-bottom:6px}
 #phaseChip{background:#5a4230;border-radius:20px;padding:3px 10px;font-size:12px;white-space:nowrap}
 #top .sp{flex:1}
 .ibtn{background:#5a4230;color:var(--paper);width:34px;height:34px;font-size:17px;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
@@ -107,7 +115,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 #sceneWrap.street #sky,#sceneWrap.sorting #sky{top:calc(6% + 34px)}
 #sceneWrap.street .skymsg,#sceneWrap.sorting .skymsg{pointer-events:none;opacity:.93}
 .skymsg{pointer-events:auto;cursor:pointer;background:rgba(255,251,236,.96);border:2px solid #3a2a1c;border-radius:12px;padding:6px 12px;font-size:13.5px;line-height:1.3;box-shadow:0 3px 0 rgba(0,0,0,.3);animation:skyIn .3s ease-out;text-align:center;position:relative;max-width:100%}
-.skymsg b{display:block;font-size:14.5px}
+.skymsg>b{display:block;font-size:14.5px}
 .skymsg.good{border-color:var(--green)}.skymsg.bad{border-color:var(--red);background:rgba(255,240,236,.97)}
 .skymsg.ach{border-color:#e8b631;background:rgba(255,246,216,.97)}.skymsg.fact{border-color:var(--blue);background:rgba(234,243,251,.97)}
 .skymsg .more{position:absolute;right:-6px;top:-8px;background:#3a2a1c;color:#fff;font-style:normal;font-size:10px;border-radius:8px;padding:1px 5px}
@@ -244,7 +252,7 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
   #phaseChip{max-width:34vw;overflow:hidden;text-overflow:ellipsis}
 
   body.inStreet #panel{display:none}
-  .skymsg{font-size:12px;padding:4px 9px}.skymsg b{font-size:12.5px}
+  .skymsg{font-size:12px;padding:4px 9px}.skymsg>b{font-size:12.5px}
   #goalBox{padding:7px 9px}.gLine{font-size:12.5px}
   .big{min-width:90px;font-size:15px;padding:10px 6px}
 }
@@ -255,7 +263,7 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
 <header id="top">
   <div id="logo"><span id="logoEmb"><span class="rc">♻</span></span><span class="txt" id="coopName">Cooperativa</span></div>
   <div class="brk"></div>
-  <div id="moneyBox"><div id="money">R$ 0,00</div><div id="rate">+R$ 0,00/s</div></div>
+  <div id="moneyBox"><div id="cashLbl">Seu dinheiro</div><div id="money">R$ 0,00</div><div id="rate">+R$ 0,00/s</div></div>
   <div id="phaseChip">Fase 1</div>
   <div class="sp"></div>
   <button class="ibtn" id="btnMusic" title="Música" aria-label="Ligar ou desligar música">♪</button>
@@ -287,7 +295,7 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
     <div id="actionBar">
       <button class="big b-go" id="btnGo">🛒 Ir para a rua<small id="goSub">Rua do bairro</small></button>
       <button class="big b-sort" id="btnSort">✋ Triar<small id="sortSub">0 kg misturado</small></button>
-      <button class="big b-sell" id="btnSell">⚖ Vender<small id="sellSub">R$ 0,00</small></button>
+      <button class="big b-sell" id="btnSell">⚖ <span id="btnSellLbl">Vender</span><small id="sellSub">R$ 0,00</small></button>
     </div>
     <div id="goalBox"></div>
   </section>
@@ -401,7 +409,7 @@ const PHASES = [
    msg:'Vocês são referência na região! A cooperativa lidera uma rede, tem grandes contratos e um centro de educação ambiental. Da carrocinha à central de reciclagem: que caminhada!',
    libera:['Rede de cooperativas','Centro de educação ambiental']},
 ];
-const INFRA = [1, 3, 3.5, 6, 10, 16, 22, 30, 40, 55];
+const INFRA = [1, 3, 6.5, 13, 21, 30, 42, 57, 76, 105];
 
 const CATS = [
   {id:'rua', n:'Rua e coleta'},
@@ -432,7 +440,7 @@ const ITEMS = [
   // ---------- ESTRUTURA
   {id:'lona', cat:'estrutura', n:'Lona de cobertura', d:'Protege o material da chuva. +60 kg de espaço para material misturado.', cost:30, ph:2, uniq:1, ic:'tarp'},
   {id:'bag', cat:'estrutura', n:'Bag', d:'+50 kg de espaço para material separado.', cost:15, ph:2, lim:L(0,3,6,8,10,12,15,15,20,25), ic:'bag'},
-  {id:'balanca', cat:'estrutura', n:'Balança', d:'1 vaga de venda. Pesar direito garante um preço justo.', cost:40, ph:2, lim:L(0,1,1,2,2,3,4,5,6,8), ic:'scale'},
+  {id:'balanca', cat:'estrutura', n:'Balança própria', d:'Sem ela, o atravessador pesa na balança dele e paga por um peso 15% menor que o real. Com balança própria, o peso é justo. Também abre 1 vaga de Venda.', cost:40, ph:2, lim:L(0,1,1,2,2,3,4,5,6,8), ic:'scale'},
   {id:'lona_triagem', cat:'estrutura', n:'Lona de triagem no chão', d:'2 vagas de triagem. Trabalho pesado, agachado no chão.', cost:120, ph:3, lim:L(0,0,2,2,0,0,0,0,0,0), ic:'tarp'},
   {id:'banheiro', cat:'estrutura', n:'Banheiro', d:'Dignidade básica para quem trabalha. +5% de produtividade.', cost:500, ph:4, uniq:1, ic:'house'},
   {id:'mesa', cat:'estrutura', n:'Mesa de triagem', d:'4 vagas de triagem, com o material na altura certa.', cost:700, ph:4, lim:L(0,0,0,2,3,4,6,8,10,14), ic:'table'},
@@ -456,12 +464,12 @@ const ITEMS = [
   {id:'refeitorio', cat:'seguranca', n:'Refeitório', d:'Comida boa e um lugar digno para comer. +10% de produtividade.', cost:45000, ph:7, uniq:1, ic:'food'},
   {id:'creche', cat:'seguranca', n:'Creche', d:'Os filhos dos cooperados ficam cuidados perto dos pais. +10% de produtividade.', cost:70000, ph:7, uniq:1, ic:'kid'},
   // ---------- MATERIAIS
-  {id:'mat_papel', cat:'materiais', n:'Papel branco e jornal', d:'Jornais, cadernos e folhas de escritório agora são aceitos.', cost:80, ph:2, uniq:1, mat:'papel', ic:'doc'},
-  {id:'mat_plastico', cat:'materiais', n:'Plástico duro', d:'Baldes, potes e cadeiras quebradas agora são aceitos.', cost:150, ph:2, uniq:1, mat:'plastico', ic:'bucket'},
-  {id:'mat_vidro', cat:'materiais', n:'Vidro', d:'Garrafas e potes de vidro. Pesado e barato, mas infinitamente reciclável.', cost:400, ph:3, uniq:1, mat:'vidro', ic:'bottle'},
-  {id:'mat_sucata', cat:'materiais', n:'Sucata de metal', d:'Ferro, panelas velhas e peças de metal.', cost:5000, ph:5, uniq:1, mat:'sucata', ic:'gear'},
-  {id:'mat_oleo', cat:'materiais', n:'Óleo de cozinha usado', d:'Recolhido em garrafas, vira sabão e biodiesel.', cost:15000, ph:6, uniq:1, mat:'oleo', ic:'drop'},
-  {id:'mat_eletro', cat:'materiais', n:'Eletrônicos', d:'Lixo eletrônico com destino correto para metais e peças.', cost:60000, ph:7, uniq:1, mat:'eletro', ic:'chip'},
+  {id:'mat_papel', cat:'materiais', n:'Encontrar comprador de papel (aparista)', d:'O aparista compra jornal, revista, caderno e papel de escritório. Sem quem compre, não adianta recolher.', cost:80, ph:2, uniq:1, mat:'papel', ic:'doc'},
+  {id:'mat_plastico', cat:'materiais', n:'Aprender a identificar os plásticos', d:'Cada plástico tem um código e um comprador diferente. Com uma oficina, o grupo aprende a separar baldes, potes e frascos.', cost:150, ph:2, uniq:1, mat:'plastico', ic:'bucket'},
+  {id:'mat_vidro', cat:'materiais', n:'Caçamba para vidro', d:'Vidro é pesado e quebra: precisa de uma caçamba própria para guardar com segurança até a venda.', cost:400, ph:3, uniq:1, mat:'vidro', ic:'bottle'},
+  {id:'mat_sucata', cat:'materiais', n:'Encontrar comprador de sucata', d:'Ferro-velho e siderurgia compram panelas, ferragens e peças de metal, mas só em quantidade.', cost:5000, ph:5, uniq:1, mat:'sucata', ic:'gear'},
+  {id:'mat_oleo', cat:'materiais', n:'Bombonas para óleo', d:'Óleo usado precisa de bombonas fechadas para não vazar. Depois vira sabão e biodiesel.', cost:15000, ph:6, uniq:1, mat:'oleo', ic:'drop'},
+  {id:'mat_eletro', cat:'materiais', n:'Parceria com recicladora de eletrônicos', d:'Eletrônicos têm peças tóxicas e precisam ir para um destino autorizado, que aproveita metais e placas.', cost:60000, ph:7, uniq:1, mat:'eletro', ic:'chip'},
   // ---------- NEGÓCIOS
   {id:'mural', cat:'negocios', n:'Educação ambiental na comunidade', d:'Oficinas e mutirões no bairro: +10% na coleta e menos rejeito.', cost:25000, ph:6, uniq:1, ic:'book'},
   {id:'linha_graos', cat:'negocios', n:'Linha de grãos (moedor, lavadora e extrusora)', d:'2 vagas de Prensa e beneficiamento. Transforma PET e plástico duro em grãos, que valem 3x mais.', cost:450000, ph:8, lim:L(0,0,0,0,0,0,0,2,3,5), ic:'machine'},
@@ -474,11 +482,13 @@ const ITEM = {}; ITEMS.forEach(it => ITEM[it.id] = it);
 const ROLES = {
   coleta:  {n:'Coleta',  d:'Sai com carroça, triciclo ou caminhão e traz material misturado.', ph:2, vagaTxt:'1 por carroça, 1 por triciclo, 2 por caminhão'},
   triagem: {n:'Triagem', d:'Separa o material por tipo e descarta o rejeito.', ph:3, vagaTxt:'2 por lona, 4 por mesa, 8 por esteira'},
-  venda:   {n:'Venda',   d:'Pesa e vende o material separado, os fardos e os grãos.', ph:2, vagaTxt:'1 por balança'},
+  venda:   {n:'Venda',   d:'Vende sozinho o material separado, os fardos e os grãos. Dá para pausar a venda automática no botão perto da balança.', ph:2, vagaTxt:'1 por balança'},
   prensa:  {n:'Prensa e beneficiamento', d:'Opera a prensa (fardos) e a linha de grãos de plástico.', ph:7, vagaTxt:'1 por prensa, 2 por linha de grãos'},
 };
 const ROLE_IDS = Object.keys(ROLES);
 
+const SAL_MIN = 1518;          // salário mínimo de referência (2025), por mês
+const MES_S = 300;             // 1 mês no jogo = 5 minutos
 const ACH_CATS = [['rua', 'Rua'], ['triagem', 'Triagem'], ['vendas', 'Vendas'], ['pessoas', 'Pessoas'], ['estrutura', 'Estrutura'],
   ['fases', 'Fases'], ['ambiente', 'Meio ambiente'], ['especiais', 'Especiais']];
 const ACHS = [];
@@ -521,6 +531,9 @@ A_('pessoas', 'coop50', 'Muita gente junta', 'Tenha 50 cooperados.', () => coopC
 A_('pessoas', 'coop100', 'Cem cooperados', 'Tenha 100 cooperados.', () => coopCount(), 100, 'o');
 A_('pessoas', 'funcoes', 'Cada um no seu posto', 'Tenha gente em todas as funções.', () => ROLE_IDS.filter(r => S.roles[r] > 0).length, 4);
 A_('pessoas', 'epi', 'Todos com EPI', 'Tenha luvas, botas, uniforme, óculos e protetor auricular.', () => ['luvas_epi', 'botas', 'uniforme', 'oculos', 'protetor'].filter(has).length, 5);
+A_('pessoas', 'salMin', 'Renda digna', `Renda média por cooperado acima de um salário mínimo (R$ ${SAL_MIN.toLocaleString('pt-BR')}/mês).`, fl('salMin'), 1, 'p');
+A_('pessoas', 'fair1h', 'Repasse justo', 'Mantenha o repasse aos cooperados em 50% ou mais por 1 hora de jogo.', st_('fairTime'), 3600, 'b');
+A_('pessoas', 'reserva', 'Fundo de reserva cheio', 'Encha o fundo de reserva da cooperativa.', fl('reserva'), 1, 'o');
 A_('pessoas', 'bemestar', 'Lugar bom de trabalhar', 'Construa vestiário, refeitório e creche.', () => ['vestiario', 'refeitorio', 'creche'].filter(has).length, 3);
 A_('estrutura', 'lona', 'Teto sobre o material', 'Compre a primeira lona de cobertura.', () => nI('lona'));
 A_('estrutura', 'mesa1', 'Na altura certa', 'Tenha a primeira mesa de triagem.', () => nI('mesa'));
@@ -585,12 +598,12 @@ const HOOK = {toast(){}, sfx(){}, ach(){}, event(){}, tip(){}};
 let S = null;
 function newState(){
   return {
-    v:3, money:0, phase:1, items:{}, roles:{coleta:0, triagem:0, venda:0, prensa:0},
+    v:4, money:0, phase:1, items:{}, roles:{coleta:0, triagem:0, venda:0, prensa:0},
     mixed:{}, sep:{}, bale:{}, pellet:{},
     st:{trips:0, streetKg:0, rejStreet:0, autoKg:0, sorted:0, rejOut:0, recycled:0, earned:0, baleKg:0, pelletKg:0, sales:0, hires:0, sortRounds:0, sortLost:0, sortOk:0, sortErr:0,
-        cleanTrips:0, perfect:0, streak:0, bestStreak:0, packOk:0, rejOkN:0, buys:0, recM:{}},
+        cleanTrips:0, perfect:0, streak:0, bestStreak:0, packOk:0, rejOkN:0, buys:0, recM:{}, repassado:0, fairTime:0},
     ach:{}, flags:{}, ev:[], nextEv:200, nextFact:70, factIdx:0,
-    tut:{step:0, done:false}, tips:{}, set:{music:true, sfx:true}, coop:{name:'', logo:null}, vols:[],
+    tut:{step:0, done:false}, tips:{}, set:{music:true, sfx:true}, coop:{name:'', logo:null}, vols:[], repasse:0.5, autoSell:true, fundRes:0, fundForm:0,
     t:0, lastSave:Date.now(), route:'bairro',
   };
 }
@@ -614,6 +627,7 @@ function prod(){
   b += 0.05 * nI('capacitacao');
   b += 0.03 * nI('painel');
   b += ACH_BONUS * achCount();
+  b += motivation();
   return b;
 }
 function caps(){
@@ -643,7 +657,25 @@ function evOn(id){ return S.ev.some(e => e.id === id); }
 function formal(){ return S.phase >= 5; }
 function routeOn(r){ return r.item ? has(r.item) : S.phase >= r.ph; }
 function kitCost(){ return ITEMS.filter(it => it.kit && has(it.id)).reduce((a, it) => a + it.kit, 0); }
-function hireCost(){ return Math.ceil(40 * Math.pow(1.075, coopCount())) + kitCost(); }
+function hireCost(){ return Math.ceil(40 * Math.pow(1.075, coopCount()) * (shareOn() ? 1 - (S.repasse - 0.5) * 0.6 : 1)) + kitCost(); }
+// ---- caixa do grupo e repasse aos cooperados
+function shareOn(){ return S.phase >= 3; }
+function cashLabel(){ return S.phase >= 5 ? 'Caixa da cooperativa' : S.phase >= 3 ? 'Caixa do grupo' : 'Seu dinheiro'; }
+function motivation(){ return shareOn() ? (S.repasse - 0.5) * 0.4 : 0; }           // de -8% a +12%
+function reservaMeta(){ return S.phase >= 5 ? 5000 * Math.pow(3, S.phase - 5) : 0; }
+// receita de vendas e contratos: parte vai para os fundos (fase 5+), parte para os cooperados (fase 3+), o resto fica no caixa
+function revenue(v){
+  S.st.earned += v;
+  let rest = v;
+  if (S.phase >= 5) {
+    const r = v * 0.05, f = v * 0.03; S.fundRes += r; S.fundForm += f; rest -= r + f;
+    const meta = reservaMeta(); if (S.fundRes > meta) { rest += S.fundRes - meta; S.fundRes = meta; }
+  }
+  if (shareOn()) { const rep = rest * S.repasse; S.st.repassado += rep; S._repBucket = (S._repBucket || 0) + rep; rest -= rep; }
+  S.money += rest; S.st.caixaIn = (S.st.caixaIn || 0) + rest;
+  return rest;
+}
+function rendaMes(){ const w = S._repWin || []; if (!w.length) return 0; return w.reduce((a, v) => a + v, 0) / w.length / (coopCount() + 1) * MES_S; }
 function playerCap(){
   if (has('caminhao')) return 400;
   if (has('triciclo_proprio')) return 120;
@@ -660,12 +692,13 @@ function price(m, form){
   if (form === 'pellet') p *= PELLET_MULT;
   if (m === 'lata' && evOn('lata2')) p *= 2;
   if (m === 'papelao' && evOn('preco')) p *= 0.8;
+  if (!formal() && !has('balanca')) p *= 0.85; // atravessador pesa a menos
   return p * saleMult();
 }
 function mixedValue(){
   let v = 0;
   for (const m in S.mixed) if (m !== 'rej') v += S.mixed[m] * MATS[m].atr;
-  return v * MIXED_FACTOR;
+  return v * MIXED_FACTOR * (has('balanca') ? 1 : 0.85);
 }
 function itemLimit(it){
   if (it.uniq) return 1;
@@ -708,7 +741,7 @@ function rates(){
   tri = tri * p * I + nI('separador') * 20 * I;
   if (evOn('mutirao')) tri *= 2;
   const emp = 1 + 0.2 * nI('empilhadeira');
-  const ven = Math.min(S.roles.venda, nI('balanca')) * 3 * p * I * emp;
+  const ven = S.autoSell ? Math.min(S.roles.venda, nI('balanca')) * 3 * p * I * emp : 0;
   let pr = S.phase >= 7 ? S.roles.prensa : 0;
   const g = Math.min(pr, 2 * nI('linha_graos')); pr -= g;
   const pp = Math.min(pr, nI('prensa'));
@@ -762,19 +795,21 @@ function sellStore(store, form, kg){
   for (const m in out) { money += out[m] * price(m, form); w += out[m]; S.st.recM[m] = (S.st.recM[m] || 0) + out[m]; }
   return {money, w};
 }
-function addMoney(v){ S.money += v; S.st.earned += v; }
+function addMoney(v){ S.money += v; S.st.earned += v; S.st.caixaIn = (S.st.caixaIn || 0) + v; }
 function registerSale(r){
   if (r.w <= 0) return;
-  addMoney(r.money); S.st.recycled += r.w; S.st.sales++;
+  r.kept = revenue(r.money); S.st.recycled += r.w; S.st.sales++; S._lastSale = S.t;
   if (formal()) S.flags.semAtrav = 1;
 }
 function sellAuto(kg){
+  const before = S.money;
   let left = kg, total = {money:0, w:0};
   for (const [store, form] of [[S.pellet,'pellet'], [S.bale,'bale'], [S.sep,'sep']]) {
     if (left <= 0) break;
     const r = sellStore(store, form, left); left -= r.w; total.money += r.money; total.w += r.w;
   }
   registerSale(total);
+  S._autoAcc = (S._autoAcc || 0) + (S.money - before);
   return total;
 }
 function sellAllManual(){
@@ -857,7 +892,12 @@ function tick(dt, offline){
   if (r.gra > 0) makePellets(r.gra * dt);
   if (r.pre > 0) makeBales(r.pre * dt);
   if (r.ven > 0) sellAuto(r.ven * dt);
-  if (r.money > 0) addMoney(r.money * dt);
+  if (r.money > 0) revenue(r.money * dt);
+  if (shareOn() && S.repasse >= 0.5) S.st.fairTime += dt;
+  S._repSec = (S._repSec || 0) + dt;
+  while (S._repSec >= 1) { S._repSec -= 1; S._repWin = S._repWin || []; S._repWin.push(S._repBucket || 0); S._repBucket = 0; if (S._repWin.length > 60) S._repWin.shift(); }
+  if (S.phase >= 5 && S.fundRes >= reservaMeta() - 0.01) S.flags.reserva = 1;
+  if (rendaMes() >= SAL_MIN && (S._repWin || []).length >= 30) S.flags.salMin = 1;
   if (!offline) {
     checkAch();
     if (S.tut.done && S.phase >= 2) {
@@ -875,9 +915,9 @@ function buy(id, q){
   q = Math.min(q, remainingQty(it));
   let bought = 0;
   while (bought < q) {
-    const c = itemCost(it);
-    if (S.money < c) break;
-    S.money -= c; S.items[id] = nI(id) + 1; bought++;
+    const c = itemCost(it), fund = id === 'capacitacao' ? Math.min(S.fundForm, c * 0.5) : 0;
+    if (S.money < c - fund) break;
+    S.fundForm -= fund; S.money -= c - fund; S.items[id] = nI(id) + 1; bought++;
   }
   return bought;
 }
@@ -1004,7 +1044,7 @@ function fmtKg(v){
 // =====================================================================
 // SALVAR / CARREGAR / OFFLINE
 // =====================================================================
-const SAVE_KEY = 'cooperativa-idle-v3';
+const SAVE_KEY = 'cooperativa-idle-v4';
 function save(){
   if (typeof localStorage === 'undefined') return;
   S.lastSave = Date.now();
@@ -1014,7 +1054,7 @@ function load(){
   let d = null;
   try { d = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) {}
   const base = newState();
-  if (d && d.v === 3) {
+  if (d && d.v === 4) {
     for (const k in base) if (d[k] === undefined) d[k] = base[k];
     for (const k in base.st) if (d.st[k] === undefined) d.st[k] = base.st[k];
     for (const k in base.roles) if (d.roles[k] === undefined) d.roles[k] = 0;
@@ -2079,13 +2119,14 @@ function drawBaseDynamic(t){
   if (has('balanca')) {
     const nb = Math.min(nI('balanca'), 3);
     for (let i = 0; i < nb; i++) {
-      const x = 286 + i * 10 - (nb - 1) * 6, y = 160 - i * 8;
+      const x = 262 + i * 10 - (nb - 1) * 6, y = 160 - i * 8;
       shadow(x + 10, y, 22);
       rect(x, y - 3, 20, 3, '#6d7a80'); rect(x, y - 3, 20, 1, '#9aa7ab'); rect(x + 18, y - 16, 2, 13, '#555');
       rect(x + 14, y - 22, 8, 6, '#2a2a2a'); rect(x + 15, y - 21, 6, 3, Math.floor(t * 2 + i) % 4 ? '#62e06a' : '#9cf0a2');
       sellSpots.push([x + 8, y - 3, i % 2 ? 'carry' : 'stand']);
     }
-  } else drawPickup(300, 164);
+  }
+  drawBuyer(t);
   const nbag = Math.min(nI('bag'), 8), sepT = sum(S.sep), capS = caps().sep, sepCols = compColors(S.sep);
   for (let i = 0; i < nbag; i++) { const x = 196 + (i % 4) * 14, y = i < 4 ? 196 : 210; drawBag(x, y, Math.min(1, sepT / Math.max(1, capS) * nbag - i + 0.3), sepCols[i % sepCols.length]); }
   if (nbag === 0 && sepT > 0.5) drawPile(232, 200, Math.min(0.5, Math.sqrt(sepT / 80)), sepCols, 8);
@@ -2147,6 +2188,34 @@ function drawBaseDynamic(t){
   return shown;
 }
 
+// ---------- comprador: chega quando há venda (kombi do atravessador até a fase 4; caminhão da indústria depois)
+let cutscene = null; const buyer = {arr:null, leave:null};
+function drawBuyer(t){
+  const X = 302, Y = 168;
+  if (cutscene) { // fase 5: o atravessador vai embora e chega a indústria
+    const k = (performance.now() - cutscene.t0) / 1000;
+    if (k < 1.8) { drawKombi(X + Math.pow(k / 1.8, 2) * 130, Y); if (Math.random() < 0.4) spawnFx('base', X + k * 60, Y, 'dust'); }
+    else if (k < 3.6) drawIndustryTruck(X - 8 + (1 - (k - 1.8) / 1.8) * 120, Y + 4);
+    else drawIndustryTruck(X - 8, Y + 4);
+    if (k > 3.6 && k < 6) { rect(X - 40, Y - 44, 98, 14, '#fffbe8'); rect(X - 40, Y - 44, 98, 1, '#3a2a1c'); txt('Agora vendemos direto!', X + 9, Y - 34, 6, '#2f7d4a'); }
+    if (k > 6.2) { const cb = cutscene.cb; cutscene = null; cb && cb(); }
+    return;
+  }
+  const recent = S.t - (S._lastSale == null ? -99 : S._lastSale) < 7;
+  if (recent && buyer.arr == null) { buyer.arr = S.t; buyer.leave = null; }
+  if (!recent && buyer.arr != null && buyer.leave == null) buyer.leave = S.t;
+  if (recent && buyer.leave != null) { buyer.arr = S.t - 1.2; buyer.leave = null; }
+  if (buyer.arr == null) return;
+  let off = Math.max(0, 1 - (S.t - buyer.arr) / 1.2) * 110;          // chegando
+  if (buyer.leave != null) {                                          // indo embora
+    const k = (S.t - buyer.leave) / 1.5;
+    if (k >= 1) { buyer.arr = buyer.leave = null; return; }
+    off = k * 110;
+  }
+  if (S.phase >= 5) drawIndustryTruck(X - 8 + off, Y + 4);
+  else drawKombi(X + off, Y);
+  if (off > 0 && off < 100 && Math.random() < 0.3) spawnFx('base', X + off + 30, Y, 'dust');
+}
 // ---------- obra (mudança de fase)
 let buildAnim = null;
 function drawBuild(t){
@@ -2394,6 +2463,164 @@ function drawBin(i, b, hl, flash){
   else txt('♻', cx, y + 21, 9, 'rgba(255,255,255,.9)', 'center', 'sans-serif');
   if (hl) alpha(0.35 + 0.15 * Math.sin(performance.now() / 120), () => rect(x - 3, y - 2, BW + 6, BH + 3, '#ffffff'));
   if (flash) alpha(flash.a, () => rect(x - 3, y - 2, BW + 6, BH + 3, flash.ok ? '#62e06a' : '#e04a3a'));
+}
+
+// =====================================================================
+// VARIEDADE DE DESENHOS: várias versões de cada material, rejeito e embalagem
+// =====================================================================
+const S_ = composeSprite; // atalho: S_(largura, altura, desenho)
+function bottleSpr(w, h, body, edge, cap, label, hi){
+  return S_(w, h, () => {
+    const nw = Math.max(2, Math.round(w / 3)), nx = Math.round((w - nw) / 2);
+    rect(nx, 0, nw, 2, cap); rect(nx, 2, nw, 2, edge);
+    rect(1, 4, w - 2, 1, edge); rect(0, 5, w, h - 6, body); rect(1, h - 1, w - 2, 1, edge);
+    rect(0, 5, 1, h - 6, edge); rect(w - 1, 5, 1, h - 6, edge);
+    if (label) rect(0, Math.round(h * 0.5), w, Math.max(2, Math.round(h * 0.18)), label);
+    rect(1, 6, 1, h - 9, hi || 'rgba(255,255,255,.7)');
+  });
+}
+function canSpr(col, band){
+  return S_(6, 10, () => {
+    rect(1, 0, 4, 1, '#9aa0a8'); rect(0, 1, 6, 1, '#e3e6ea'); rect(0, 2, 6, 6, col); rect(0, 8, 6, 1, '#e3e6ea'); rect(1, 9, 4, 1, '#9aa0a8');
+    rect(0, 4, 6, 2, band); rect(1, 2, 1, 6, 'rgba(255,255,255,.55)'); rect(2, 1, 2, 1, '#6b7078');
+  });
+}
+const MAT_VARS = {
+  papelao:[
+    S_(13, 11, () => { rect(0, 1, 13, 10, '#c99459'); rect(0, 1, 13, 1, '#e0b47a'); rect(5, 1, 3, 10, '#e7d6a0'); rect(0, 10, 13, 1, '#8a5f32'); alpha(0.2, () => rect(10, 1, 3, 10, '#000')); }), // caixa fechada
+    S_(13, 9, () => { rect(1, 2, 11, 6, '#c08a52'); rect(0, 4, 3, 4, '#b07a42'); rect(9, 1, 4, 5, '#d4a066'); rect(3, 3, 1, 4, '#8a5f32'); rect(7, 2, 1, 5, '#8a5f32'); rect(1, 8, 11, 1, '#7a5230'); }), // amassada
+    S_(13, 12, () => { rect(0, 4, 13, 8, '#c99459'); rect(0, 4, 13, 1, '#e0b47a'); rect(0, 0, 3, 5, '#b88449'); rect(10, 0, 3, 5, '#b88449'); rect(2, 5, 9, 3, '#6b4a2a'); alpha(0.2, () => rect(10, 5, 3, 7, '#000')); }), // aberta
+    S_(14, 8, () => { for (let i = 0; i < 3; i++) { rect(i % 2, 6 - i * 2, 13, 2, ['#c99459', '#b88449', '#d4a066'][i]); rect(i % 2, 6 - i * 2, 13, 1, '#e0b47a'); } }), // dobrado
+    S_(12, 9, () => { rect(0, 0, 12, 9, '#d8aa70'); rect(0, 4, 12, 1, '#a8743c'); rect(7, 1, 4, 3, '#ffffff'); rect(8, 2, 2, 1, '#333'); rect(0, 8, 12, 1, '#8a5f32'); }), // caixa de entrega
+  ],
+  pet:[
+    SPR.pet,
+    bottleSpr(6, 13, '#bfe8c4', '#5fae6a', '#2a6a2a', '#e8b631'),         // verde
+    bottleSpr(5, 11, '#c49a6a', '#7a4a22', '#c0392b', '#f0f0e8', 'rgba(255,230,200,.6)'), // marrom
+    S_(11, 6, () => { rect(0, 1, 9, 4, '#c9eefb'); rect(1, 0, 3, 1, '#7cc6e8'); rect(5, 5, 3, 1, '#7cc6e8'); rect(3, 2, 1, 2, '#7cc6e8'); rect(6, 1, 1, 3, '#7cc6e8'); rect(9, 2, 2, 2, '#2a9d3a'); }), // amassada
+    S_(11, 14, () => { rect(4, 0, 3, 2, '#2a6fa8'); rect(1, 2, 9, 12, '#9fd8f2'); rect(0, 4, 11, 9, '#9fd8f2'); rect(1, 4, 1, 8, '#ffffff'); rect(7, 3, 3, 3, '#5fb2dc'); rect(3, 8, 5, 3, '#3a7fc4'); }), // galão de água
+  ],
+  lata:[canSpr('#d23a2a', '#ffffff'), canSpr('#2f6fb8', '#e8b631'), canSpr('#3f8f3a', '#ffffff'), canSpr('#2a2a2a', '#e04a3a'),
+    S_(8, 6, () => { rect(0, 1, 7, 4, '#c9ccd4'); rect(1, 0, 3, 1, '#9aa0a8'); rect(2, 2, 3, 2, '#d23a2a'); rect(5, 5, 3, 1, '#9aa0a8'); px(3, 1, '#fff'); })], // amassada
+  plastico:[
+    SPR.plastico,
+    S_(8, 13, () => { rect(2, 0, 4, 2, '#2a2a2a'); rect(5, 1, 3, 1, '#2a2a2a'); rect(2, 2, 3, 2, '#e8b631'); rect(0, 4, 7, 9, '#e8b631'); rect(1, 6, 5, 4, '#ffffff'); rect(2, 7, 3, 1, '#3a7fc4'); rect(1, 4, 1, 8, '#ffe08a'); }), // frasco de limpeza
+    S_(10, 8, () => { rect(0, 0, 10, 2, '#3a7fc4'); rect(1, 2, 8, 6, '#f2f2ea'); rect(2, 3, 1, 4, '#ffffff'); rect(1, 7, 8, 1, '#c9c9c0'); }), // pote
+    S_(12, 13, () => { rect(2, 0, 8, 6, '#e0574a'); rect(1, 6, 10, 2, '#e0574a'); rect(2, 8, 1, 5, '#b8402f'); rect(9, 8, 1, 5, '#b8402f'); rect(5, 8, 1, 3, '#b8402f'); rect(3, 1, 6, 1, '#ff8a7a'); }), // cadeira quebrada
+    S_(14, 10, () => { rect(0, 0, 14, 2, '#2f6fb8'); rect(1, 2, 12, 8, 'rgba(220,235,245,.95)'); rect(1, 2, 12, 1, '#bcd2e0'); rect(2, 3, 1, 6, '#ffffff'); rect(5, 5, 4, 3, '#e07ab0'); }), // caixa organizadora
+  ],
+  papel:[
+    SPR.papel,
+    S_(11, 13, () => { rect(0, 0, 11, 13, '#e07ab0'); rect(1, 1, 9, 5, '#f4c0dc'); rect(2, 7, 7, 1, '#ffffff'); rect(2, 9, 5, 1, '#ffffff'); rect(7, 2, 3, 3, '#e8b631'); rect(10, 0, 1, 13, '#b8507f'); }), // revista
+    S_(12, 9, () => { for (let i = 0; i < 3; i++) { rect(i, 6 - i * 2, 11, 3, i % 2 ? '#eeeeea' : '#ffffff'); } rect(3, 2, 6, 1, '#b8b8b0'); rect(3, 4, 5, 1, '#b8b8b0'); }), // folhas
+    S_(11, 13, () => { rect(1, 0, 10, 13, '#3a7fc4'); rect(2, 1, 8, 11, '#5b9bd5'); for (let y = 1; y < 13; y += 2) rect(0, y, 2, 1, '#c9ccd4'); rect(4, 4, 5, 2, '#ffffff'); }), // caderno velho
+  ],
+  filme:[SPR.filme],
+  vidro:[
+    SPR.vidro,
+    bottleSpr(5, 14, '#a07040', '#5c3a1e', '#c9a14a', '#efe4c0', 'rgba(255,230,190,.6)'),   // garrafa marrom
+    bottleSpr(5, 14, '#e8f4ee', '#9ab8a8', '#c9a14a', null),                                // garrafa transparente
+    S_(9, 11, () => { rect(1, 0, 7, 2, '#9aa0a8'); rect(0, 2, 9, 9, '#d8efe0'); rect(0, 2, 1, 9, '#9ab8a8'); rect(8, 2, 1, 9, '#9ab8a8'); rect(1, 10, 7, 1, '#9ab8a8'); rect(2, 5, 5, 4, '#e0574a'); rect(2, 3, 1, 6, '#ffffff'); }), // pote de conserva
+    S_(5, 9, () => { rect(1, 0, 3, 2, '#2a2a2a'); rect(0, 2, 5, 7, '#cfe3f2'); rect(1, 3, 1, 5, '#ffffff'); rect(0, 8, 5, 1, '#9ab8c8'); }), // frasco
+  ],
+  sucata:[SPR.sucata, S_(13, 7, () => { rect(0, 2, 13, 3, '#8f7462'); rect(0, 2, 13, 1, '#b09078'); rect(3, 0, 2, 7, '#6e5241'); rect(9, 1, 3, 5, '#7a6252'); px(5, 3, '#b5652f'); px(10, 3, '#b5652f'); })],
+  oleo:[SPR.oleo, S_(9, 12, () => { rect(3, 0, 3, 2, '#c0392b'); rect(6, 1, 3, 3, '#999'); rect(0, 2, 8, 10, '#f2e3a8'); rect(1, 5, 6, 6, '#e8b631'); rect(1, 3, 1, 8, '#fff7d6'); })],
+  eletro:[SPR.eletro, S_(7, 11, () => { rect(0, 0, 7, 11, '#2a2d3e'); rect(1, 1, 5, 6, '#6fa3c9'); rect(1, 8, 5, 2, '#4e5470'); px(3, 9, '#999'); }),
+    S_(15, 6, () => { rect(0, 0, 15, 6, '#4e5470'); for (let i = 0; i < 6; i++) rect(1 + i * 2.3, 1, 2, 1, '#c9ccd4'); for (let i = 0; i < 6; i++) rect(1 + i * 2.3, 3, 2, 1, '#c9ccd4'); })],
+};
+// rejeitos: duas versões de cada tipo (mesma ordem de REJ)
+const REJ_VARS = [
+  [SPR.rej0, S_(11, 6, () => { rect(0, 3, 11, 3, '#e8e8e0'); rect(2, 1, 4, 3, '#f0e8c8'); rect(5, 2, 4, 2, '#7a4a22'); px(3, 2, '#fff'); px(7, 0, '#222'); px(9, 1, '#222'); })], // prato com restos
+  [SPR.rej1, S_(12, 7, () => { rect(0, 2, 12, 4, '#f4f1ea'); rect(0, 1, 3, 2, '#6aa6d8'); rect(9, 1, 3, 2, '#6aa6d8'); rect(4, 3, 4, 2, '#e8d27a'); px(5, 3, '#c9ab3c'); })],
+  [SPR.rej2, S_(7, 9, () => { rect(0, 0, 7, 2, '#f6f6f2'); rect(1, 2, 5, 7, '#f6f6f2'); rect(2, 3, 3, 2, '#7a4a22'); rect(1, 8, 5, 1, '#c9c9c0'); px(4, 6, '#c8402e'); })], // copo de isopor sujo
+  [SPR.rej3, S_(9, 6, () => { rect(1, 1, 7, 4, '#ffffff'); rect(0, 2, 2, 2, '#f0f0ea'); rect(6, 0, 3, 3, '#f0f0ea'); rect(3, 2, 3, 2, '#c8402e'); px(2, 4, '#d8b86a'); })], // papel toalha sujo
+  [SPR.rej4, S_(7, 3, () => { rect(0, 0, 5, 2, '#f2efe6'); rect(5, 0, 2, 2, '#d98a3a'); rect(0, 2, 3, 1, '#888'); })],
+  [SPR.rej5, S_(10, 5, () => { rect(0, 0, 10, 5, '#c79058'); rect(1, 1, 8, 1, '#e4c08a'); rect(2, 2, 3, 2, '#6b4a2a'); rect(6, 2, 2, 1, '#c0392b'); })],
+];
+// embalagens: sacos de cores e caixas de tamanhos diferentes
+function bagPack(col, hi, tie){ return S_(14, 9, () => { rect(1, 2, 12, 6, col); rect(0, 4, 3, 3, col); rect(11, 1, 3, 4, col); rect(3, 3, 6, 1, hi); rect(5, 6, 5, 1, hi); alpha(0.25, () => rect(2, 7, 10, 1, '#000')); rect(6, 0, 2, 2, tie); }); }
+function boxPack(w){ return S_(w, 9, () => { rect(0, 2, w, 6, '#c99459'); rect(0, 2, w, 1, '#e0b47a'); rect(Math.round(w / 3), 0, Math.round(w / 3), 3, '#b88449'); rect(0, 7, w, 1, '#8a5f32'); rect(Math.round(w / 2) - 1, 2, 2, 6, '#e7d6a0'); }); }
+const PACK_VARS = {
+  filme:[PSPR.filme, bagPack('#f2f2ea', '#ffffff', '#e04a3a'), bagPack('#8fcf8a', '#c8f0c4', '#3f8f3a'), bagPack('#f0d24a', '#fff2a8', '#c9a14a'), bagPack('#e8a0c8', '#ffd0ea', '#b8507f')],
+  papelao:[PSPR.papelao, boxPack(12), boxPack(18)],
+};
+// volumes da rua: várias versões para cada tipo
+function sackVar(w, h, body, hi, tie, blobs){
+  return S_(w, h, () => {
+    sackShape(w, h, body, hi, tie);
+    const r = rng(blobs.length * 7 + w);
+    for (let i = 0; i < 6; i++) { const c = blobs[i % blobs.length]; rect(3 + r() * (w - 7), 6 + r() * (h - 10), 3, 3, c); px(3 + r() * (w - 7), 6 + r() * (h - 10), '#fff'); }
+  });
+}
+function boxVar(w, h, tops){
+  return S_(w, h, () => {
+    tops.forEach((t, i) => { const x = 2 + i * Math.floor((w - 4) / tops.length); rect(x, 1, 2, h - 9, t[0]); px(x, 0, t[1]); px(x, 3, 'rgba(255,255,255,.7)'); });
+    boxShape(w, h, Math.max(5, h - 9));
+  });
+}
+function pileVar(w, layers, cols, cord){
+  return S_(w, layers * 3 + 2, () => {
+    for (let i = 0; i < layers; i++) { const y = (layers - 1 - i) * 3 + 1; rect(i % 2, y, w - 1, 3, cols[i % cols.length]); rect(i % 2, y, w - 1, 1, 'rgba(255,255,255,.3)'); }
+    rect(Math.round(w / 3), 0, 1, layers * 3 + 2, cord); rect(Math.round(w * 2 / 3), 0, 1, layers * 3 + 2, cord);
+  });
+}
+const BAG_COLORS = [['#d8e8ef', '#f2fbff'], ['#efe8d8', '#fffaf0'], ['#cfe8c4', '#effaea'], ['#f4e2b0', '#fff6d8']];
+const VOL_VARS = {
+  saco_latas:BAG_COLORS.map(([b, h], i) => sackVar(15 + i % 2, 16, b, h, ['#e8b631', '#3a7fc4', '#e04a3a', '#3f8f3a'][i], ['#d23a2a', '#c9ccd4', '#2f6fb8', '#3f8f3a'])),
+  saco_pet:BAG_COLORS.slice(0, 3).map(([b, h], i) => sackVar(16, 16, b, h, '#3a7fc4', ['#62c0ea', '#9fd8f2', '#7fd18a', '#c49a6a'])),
+  caixa_pet:[VSPR.caixa_pet, boxVar(18, 16, [['#9fd8f2', '#2a9d3a'], ['#bfe8c4', '#2a6a2a'], ['#9fd8f2', '#2a9d3a'], ['#c49a6a', '#c0392b']]), boxVar(14, 15, [['#9fd8f2', '#2a6fa8'], ['#9fd8f2', '#2a9d3a'], ['#9fd8f2', '#e04a3a']])],
+  pilha_papelao:[VSPR.pilha_papelao, pileVar(16, 3, ['#c99459', '#b88449', '#d4a066'], '#5c3a1e'), pileVar(18, 5, ['#c08a52', '#d4a066', '#b07a42'], '#5c3a1e'), MAT_VARS.papelao[0], MAT_VARS.papelao[4]],
+  pilha_jornal:[VSPR.pilha_jornal, pileVar(14, 4, ['#f4f1e6', '#e6e1d2', '#e07ab0', '#f4f1e6'], '#8b5a2b'), pileVar(15, 3, ['#ffffff', '#5b9bd5', '#eeeeea'], '#8b5a2b')],
+  baldes:[VSPR.baldes, MAT_VARS.plastico[3], MAT_VARS.plastico[4], S_(16, 14, g => { g.drawImage(MAT_VARS.plastico[0], 0, 4); g.drawImage(MAT_VARS.plastico[1], 9, 1); })],
+  caixa_vidro:[VSPR.caixa_vidro, boxVar(18, 17, [['#7a4a22', '#c9a14a'], ['#e8f4ee', '#c9a14a'], ['#3f9a4c', '#c9a14a']]), boxVar(15, 15, [['#d8efe0', '#9aa0a8'], ['#d8efe0', '#9aa0a8']])],
+  caixa_sucata:[VSPR.caixa_sucata, S_(16, 12, g => { g.drawImage(MAT_VARS.sucata[1], 1, 0); g.drawImage(MAT_VARS.sucata[0], 1, 5); })],
+  caixa_oleo:[VSPR.caixa_oleo, S_(14, 13, g => { g.drawImage(MAT_VARS.oleo[1], 0, 1); g.drawImage(MAT_VARS.oleo[0], 7, 7); })],
+  caixa_eletro:[VSPR.caixa_eletro, S_(16, 13, g => { g.drawImage(MAT_VARS.eletro[2], 0, 7); g.drawImage(MAT_VARS.eletro[1], 8, 0); })],
+  saco_misto:[VSPR.saco_misto, sackVar(16, 16, '#efe8d8', '#fffaf0', '#8b5a2b', ['#c99459', '#62c0ea', '#d23a2a', '#e6e1d2']), sackVar(15, 15, '#cfe8c4', '#effaea', '#3f8f3a', ['#c99459', '#c9ccd4', '#e8b631'])],
+};
+// pequenas variações: cor levemente diferente, espelhado e um pouco girado
+const tintCache = new Map();
+function tinted(spr, k){
+  if (!k) return spr;
+  let m = tintCache.get(spr); if (!m) tintCache.set(spr, m = {});
+  if (m[k]) return m[k];
+  const c = mkCanvas(spr.width, spr.height), g = c.getContext('2d'); g.drawImage(spr, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), f = [[1.08, 1, 0.94], [0.93, 0.97, 1.06], [1.04, 1.06, 0.95]][k - 1];
+  for (let i = 0; i < d.data.length; i += 4) for (let j = 0; j < 3; j++) d.data[i + j] = Math.min(255, d.data[i + j] * f[j]);
+  g.putImageData(d, 0, 0);
+  return m[k] = c;
+}
+function pick(a){ return a[Math.floor(Math.random() * a.length)]; }
+function varSprite(list){ return tinted(pick(list), Math.floor(Math.random() * 4)); }
+function varLook(it){ it.flip = Math.random() < 0.5; it.rot = (Math.random() - 0.5) * 0.16; return it; }
+// desenha um item com espelho e rotação, apoiado no chão em (x, y)
+function drawVarItem(it, lift){
+  const s = it.spr;
+  if (!it.flip && !it.rot) { CX.drawImage(s, Math.round(it.x - s.width / 2), Math.round(it.y - s.height - (lift || 0))); return; }
+  CX.save(); CX.translate(Math.round(it.x), Math.round(it.y - s.height / 2 - (lift || 0)));
+  if (it.rot) CX.rotate(it.rot); if (it.flip) CX.scale(-1, 1);
+  CX.drawImage(s, -Math.round(s.width / 2), -Math.round(s.height / 2)); CX.restore();
+}
+// item do minigame: 2 ou 3 versões diferentes do material juntas
+function groupVarSprite(m){
+  const list = MAT_VARS[m] || [SPR[m]], a = varSprite(list), b = varSprite(list), c = Math.random() < 0.5 ? varSprite(list) : null;
+  const w = Math.max(a.width, b.width) + 6, h = Math.max(a.height, b.height) + 3;
+  return S_(w, h, g => { g.drawImage(a, 0, h - a.height); g.drawImage(b, w - b.width, h - b.height); if (c) g.drawImage(c, Math.round((w - c.width) / 2), 0); });
+}
+// ---------- comprador: kombi do atravessador e caminhão da indústria
+function drawKombi(x, y){
+  shadow(x + 16, y + 1, 34);
+  rect(x, y - 17, 32, 8, '#f2f2ea'); rect(x, y - 10, 32, 6, '#3a7fc4'); rect(x + 1, y - 18, 30, 1, '#f2f2ea');
+  rect(x + 2, y - 16, 5, 4, '#bfe3f2'); rect(x + 9, y - 16, 5, 4, '#bfe3f2'); rect(x + 16, y - 16, 5, 4, '#bfe3f2'); rect(x + 25, y - 16, 6, 5, '#d8f0fa');
+  rect(x + 3, y - 8, 4, 2, '#f2f2ea'); rect(x, y - 5, 32, 1, '#2a2a2a'); alpha(0.15, () => rect(x + 26, y - 17, 6, 13, '#000'));
+  rect(x + 13, y - 12, 4, 1, '#f2f2ea');
+  wheel(x + 6, y - 2, 3); wheel(x + 26, y - 2, 3);
+  // balança de gancho do atravessador
+  rect(x - 4, y - 24, 1, 12, '#5a4a3a'); rect(x - 8, y - 24, 6, 1, '#5a4a3a'); rect(x - 10, y - 23, 3, 4, '#c9ccd4'); rect(x - 9, y - 19, 1, 3, '#555'); rect(x - 11, y - 16, 5, 2, '#a8743c');
+}
+function drawIndustryTruck(x, y){
+  drawTruck(x, y, '#2f5f9a', true, true);
+  rect(x + 16, y - 15, 24, 5, '#2f5f9a'); txt('INDÚSTRIA', x + 28, y - 11, 4, '#fff');
 }
 
 // =====================================================================
@@ -2646,7 +2873,7 @@ function makeStreetItem(route, force){
   if (force === 'rej' || (!force && Math.random() < route.rej)) {
     let r; do { r = Math.floor(Math.random() * REJ.length); } while (REJ.length > 1 && r === trip.lastRej);
     trip.lastRej = r;
-    it = {kind:'rej', r, kg:(0.8 + Math.random() * 0.8) * Math.max(1, playerCap() / 40), spr:SPR['rej' + r], name:REJ[r].n};
+    it = {kind:'rej', r, kg:(0.8 + Math.random() * 0.8) * Math.max(1, playerCap() / 40), spr:varSprite(REJ_VARS[r]), name:REJ[r].n};
   } else {
     const mix = routeMats(route);
     const mats = Object.keys(mix);
@@ -2658,13 +2885,13 @@ function makeStreetItem(route, force){
       const rejF = Math.random() < 0.35 ? 0.12 : 0, body = kg * (1 - def.pk - rejF);
       pick.forEach(m => parts[m] = (parts[m] || 0) + body / pick.length);
       parts.filme = kg * def.pk; if (rejF) parts.rej = kg * rejF;
-      it = {kind:'vol', vid:def.id, kg, parts, spr:VSPR[def.id], name:def.n + (rejF ? ' (com um pouco de rejeito)' : '')};
+      it = {kind:'vol', vid:def.id, kg, parts, spr:varSprite(VOL_VARS[def.id] || [VSPR[def.id]]), name:def.n + (rejF ? ' (com um pouco de rejeito)' : '')};
     } else {
       const m = force && force !== 'mat' ? force : pickWeighted(mix);
       const opts = VOLS[m]; def = opts[Math.floor(Math.random() * opts.length)];
       const kg = (def.kg[0] + Math.random() * (def.kg[1] - def.kg[0])) * sc;
       if (def.pack) { parts[m] = kg * (1 - def.pk); parts[def.pack] = (parts[def.pack] || 0) + kg * def.pk; } else parts[m] = kg;
-      it = {kind:'vol', vid:def.id, kg, parts, spr:VSPR[def.id], name:def.n};
+      it = {kind:'vol', vid:def.id, kg, parts, spr:varSprite(VOL_VARS[def.id] || [VSPR[def.id]]), name:def.n};
     }
   }
   it.kg = Math.round(it.kg * 10) / 10;
@@ -2674,7 +2901,7 @@ function makeStreetItem(route, force){
     const ok = trip.items.every(o => o.state !== 'ground' || Math.hypot(o.x - x, o.y - y) > 18);
     best = {x, y}; if (ok) break;
   }
-  it.x = best.x; it.y = best.y; it.state = 'ground'; it.id = Math.random();
+  it.x = best.x; it.y = best.y; it.state = 'ground'; it.id = Math.random(); varLook(it);
   trip.items.push(it); trip.spawned++;
   return it;
 }
@@ -2920,7 +3147,7 @@ function drawStreet(t){
   for (const it of list) {
     const s = it.spr, lift = it.state === 'drag' ? 4 : 0;
     if (it.state !== 'fly') shadow(it.x, it.y, s.width + (lift ? -2 : 1));
-    CX.drawImage(s, Math.round(it.x - s.width / 2), Math.round(it.y - s.height - lift));
+    drawVarItem(it, lift);
     if (it.kind === 'rej' && it.r <= 2 && it.state === 'ground') {
       for (let k = 0; k < 2; k++) px(it.x - 2 + Math.round(Math.sin(t * 9 + k * 3 + it.id * 10) * 4), it.y - s.height - 3 + Math.round(Math.cos(t * 7 + k) * 2), '#222');
     }
@@ -2997,9 +3224,10 @@ function startSort(){
   }
   const items = gs.map(g => {
     const it = {m:g.m, kg:g.kg, pack:!!g.pack, state:'table'};
-    if (g.m === 'rej') { it.r = g.r; it.spr = SPR['rej' + g.r]; it.name = REJ[g.r].n; }
-    else if (g.pack) { it.spr = PSPR[g.m] || SPR[g.m]; it.name = g.m === 'filme' ? 'Saco plástico (embalagem)' : 'Caixa de papelão (embalagem)'; }
-    else { it.spr = g.m === 'filme' ? PSPR.filme : groupSprite(g.m); it.name = PLURAL[g.m] || MATS[g.m].n; }
+    if (g.m === 'rej') { it.r = g.r; it.spr = varSprite(REJ_VARS[g.r]); it.name = REJ[g.r].n; }
+    else if (g.pack) { it.spr = varSprite(PACK_VARS[g.m] || [SPR[g.m]]); it.name = g.m === 'filme' ? 'Saco plástico (embalagem)' : 'Caixa de papelão (embalagem)'; }
+    else { it.spr = g.m === 'filme' ? varSprite(PACK_VARS.filme) : groupVarSprite(g.m); it.name = PLURAL[g.m] || MATS[g.m].n; }
+    it.flip = Math.random() < 0.5; it.rot = (Math.random() - 0.5) * 0.12;
     return it;
   });
   for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
@@ -3013,7 +3241,7 @@ function startSort(){
     it.hy = Math.min(SL.y1, Math.max(SL.y0, it.hy)); it.hx = Math.min(SL.w - 10, Math.max(10, it.hx));
     it.x = cx; it.y = cy;
   });
-  const vols = b.opened.slice(0, 4).map(v => v.v === 'rej' ? SPR['rej' + (v.r || 0)] : VSPR[v.v]).filter(Boolean);
+  const vols = b.opened.slice(0, 4).map(v => v.v === 'rej' ? varSprite(REJ_VARS[v.r || 0]) : varSprite(VOL_VARS[v.v] || [VSPR[v.v]])).filter(Boolean);
   sortG = {items, total:items.length, ok:0, err:0, kgOk:0, kgLost:0, rejOk:0, autoKg, errors:[], drag:null, sel:null, flash:{}, ended:false, msgT:0,
            intro:{t:vols.length ? 0 : 0.55, vols, cx, cy}, hasPack:items.some(i => i.pack)};
   AU.sfx('sort');
@@ -3156,7 +3384,7 @@ function drawSort(t){
     const s = it.spr, lift = it.state === 'drag' ? 4 : 0;
     shadow(it.x, it.y, s.width + (lift ? -2 : 1));
     if (it === sortG.sel) alpha(0.5 + 0.3 * Math.sin(t * 8), () => rect(it.x - s.width / 2 - 2, it.y - s.height - 2, s.width + 4, s.height + 3, '#ffe08a'));
-    CX.drawImage(s, Math.round(it.x - s.width / 2), Math.round(it.y - s.height - lift));
+    drawVarItem(it, lift);
   }
   drawFx('sort');
 }
@@ -3185,7 +3413,8 @@ function doSell(){
   const r = sellAllManual();
   if (r.w > 0) {
     AU.sfx('sell');
-    floatText('+' + fmtMoney(r.money), ZONES.sell.x, ZONES.sell.y + 10, 'money');
+    floatText('+' + fmtMoney(r.kept != null ? r.kept : r.money), ZONES.sell.x, ZONES.sell.y + 10, 'money');
+    if (shareOn() && r.kept != null) setTimeout(() => floatText(fmtMoney(r.money - r.kept) + ' aos cooperados', ZONES.sell.x, ZONES.sell.y + 24, 'small'), 250);
     return;
   }
   if (sum(S.mixed) > 0.5) {
@@ -3232,6 +3461,15 @@ function chooseRoute(){
   }});
 }
 
+const NOMES = ['Dona Cida', 'Seu Jorge', 'Rosângela', 'Tião', 'Maria das Dores', 'Jefferson', 'Neide', 'Severino', 'Luana', 'Raimundo',
+  'Josefa', 'Wellington', 'Benedita', 'Carlão', 'Francisca', 'Edvaldo', 'Sônia', 'Marquinhos', 'Lúcia', 'Antônio', 'Kátia', 'Zé Carlos',
+  'Aparecida', 'Renato', 'Irene', 'Joãozinho', 'Vera', 'Paulo', 'Dalva', 'Rogério'];
+function memberName(i){ return NOMES[i % NOMES.length]; }
+function toggleAutoSell(){
+  S.autoSell = !S.autoSell; AU.sfx('click');
+  toast(null, S.autoSell ? '⚖ Venda automática <b>ligada</b>: o material separado é vendido assim que fica pronto.' : '⏸ Venda automática <b>pausada</b>: o material fica guardado até você tocar em <b>Vender agora</b>.', '', 3500, 'autosell');
+  lastSig = ''; updateHud(null);
+}
 // ---------- equipamentos além dos desenhados: [id, rótulo, máx. desenhado, x, y]
 const EQUIP_BADGES = [
   ['mesa', 'Mesas', 4, 132, 138], ['esteira', 'Esteiras', 1, 175, 124], ['bag', 'Bags', 8, 222, 184], ['baia', 'Baias', 6, 70, 206],
@@ -3243,6 +3481,7 @@ function equipCount(id){ return id === 'veiculos' ? nI('carroca') + nI('triciclo
 function setupHots(){
   $('hots').innerHTML = `<button class="hot" id="hotSort" style="left:${ZONES.sort.x / W * 100}%;top:${ZONES.sort.y / H * 100}%">✋ Triar <small id="hotSortKg"></small></button>
   <button class="hot" id="hotSell" style="left:${ZONES.sell.x / W * 100}%;top:${ZONES.sell.y / H * 100}%">⚖ <span id="hotSellLbl">Vender</span></button>
+  <button class="autoPill hidden" id="autoPill" style="left:${ZONES.sell.x / W * 100}%;top:${(ZONES.sell.y + 15) / H * 100}%"></button>
   <div class="badge hidden" id="bdg-triagem" style="left:${150 / W * 100}%;top:${176 / H * 100}%"></div>
   <div class="badge hidden" id="bdg-venda" style="left:${306 / W * 100}%;top:${170 / H * 100}%"></div>
   <div class="badge hidden" id="bdg-prensa" style="left:${232 / W * 100}%;top:${170 / H * 100}%"></div>
@@ -3250,6 +3489,7 @@ function setupHots(){
   EQUIP_BADGES.map(([id, , , x, y]) => `<div class="badge hidden" id="eq-${id}" style="left:${x / W * 100}%;top:${y / H * 100}%"></div>`).join('');
   $('hotSort').onclick = () => startSort();
   $('hotSell').onclick = () => { AU.init(); doSell(); };
+  $('autoPill').onclick = () => { AU.init(); toggleAutoSell(); };
 }
 
 // =====================================================================
@@ -3318,6 +3558,20 @@ function renderCoop(){
     h += `<button class="btn wide ${canAdvance() ? 'yellow glow' : ''}" data-act="advance" ${canAdvance() ? '' : 'disabled'}>${canAdvance() ? '🏗 Avançar para a fase ' + (S.phase + 1) : 'Complete os marcos acima para avançar'}</button>`;
   } else h += `<p>Vocês chegaram ao topo: a cooperativa é referência regional! Continue crescendo, liberando os últimos itens e conquistas.</p>`;
   h += `</div>`;
+  if (shareOn()) {
+    const mot = motivation();
+    h += `<div class="card"><h3>💰 ${cashLabel()} e repasse</h3>
+      <div class="muted">Numa cooperativa, o dinheiro é de todos. Parte de cada venda vai para os cooperados; o resto fica no caixa para investir.</div>
+      <div class="repRow"><span>Repasse aos cooperados</span><b id="repVal">${Math.round(S.repasse * 100)}%</b></div>
+      <input type="range" id="repRange" min="30" max="80" step="5" value="${Math.round(S.repasse * 100)}" aria-label="Repasse aos cooperados">
+      <div class="repScale"><span>30%: mais caixa</span><span>80%: mais motivação</span></div>
+      <div class="req"><span>👥 Renda média por cooperado</span><span class="v">${fmtMoney(rendaMes())}/mês${rendaMes() >= SAL_MIN ? ' ✔' : ''}</span></div>
+      <div class="req"><span>Motivação do grupo</span><span class="v" id="repMot">${mot >= 0 ? '+' : ''}${fmtNum(mot * 100)}% de produtividade</span></div>
+      <div class="req"><span>Total já repassado</span><span class="v">${fmtMoney(S.st.repassado)}</span></div>
+      <div class="muted">Salário mínimo de referência: ${fmtMoney(SAL_MIN)}/mês. No jogo, 1 mês = 5 minutos.</div>
+      ${S.phase >= 5 ? `<div class="req" style="margin-top:6px"><span>🛟 Fundo de reserva (5% das vendas)</span><span class="v">${fmtMoney(S.fundRes)} / ${fmtMoney(reservaMeta())}</span></div>${stockBar(S.fundRes, reservaMeta())}
+      <div class="req"><span>📚 Fundo de formação (3% das vendas)</span><span class="v">${fmtMoney(S.fundForm)}</span></div><div class="muted">O fundo de formação paga até metade de cada capacitação.</div>` : ''}</div>`;
+  }
   h += `<div class="card"><h3>Estoque</h3>
     <div class="stockRow"><div class="stockHead"><span>📦 Misturado</span><span>${fmtKg(mixT)} / ${fmtKg(cap.mixed)}</span></div>${stockBar(mixT, cap.mixed)}
     ${chipsOf(S.mixed, true)}${mixT > cap.mixed ? '<div class="warnTxt">Estoque cheio: a coleta automática parou. Faça a triagem!</div>' : S._blkCol ? '<div class="warnTxt">Estoque cheio: a coleta automática parou.</div>' : ''}
@@ -3404,6 +3658,7 @@ function renderPeople(){
 function renderShop(){
   let h = '<div id="cats">' + CATS.map(c => `<button class="cat ${c.id === curCat ? 'on' : ''}" data-cat="${c.id}">${c.n}${catHasBuyable(c.id) ? '<span class="dot"></span>' : ''}</button>`).join('') + '</div>';
   if (curCat === 'pessoas') return h + renderPeople();
+  if (curCat === 'materiais') h += `<div class="card note">♻️ Para aproveitar um novo material, a cooperativa precisa de <b>quem compre</b>, de <b>onde guardar</b> e de <b>saber separar</b>. Antes disso, ele não aparece na rua nem na triagem.</div>`;
   const list = ITEMS.filter(it => it.cat === curCat);
   const order = {avail:0, limit:1, locked:2, hidden:3, done:4};
   const sorted = list.filter(it => itemStatus(it) !== 'done').sort((a, b) => {
@@ -3418,10 +3673,10 @@ function renderShop(){
   if (done.length) h += `<details class="done"><summary>✔ Concluídos (${done.length})</summary>${done.map(it => `<div class="doneItem">✔ ${it.n}${it.uniq ? '' : ' · ' + nI(it.id)}</div>`).join('')}</details>`;
   return h;
 }
-const ACH_FMT = {kgRua1t:'kg', kgRua10t:'kg', graos10t:'kg', t1:'kg', t10:'kg', t100:'kg', rejOut100:'kg', vidro1t:'kg', mil_t:'kg',
+const ACH_FMT = {fair1h:'time', kgRua1t:'kg', kgRua10t:'kg', graos10t:'kg', t1:'kg', t10:'kg', t100:'kg', rejOut100:'kg', vidro1t:'kg', mil_t:'kg',
   ganho1k:'money', ganho100k:'money', milhao:'money', dezMilhoes:'money'};
 const TIER = {b:['🥉', 'Bronze'], p:['🥈', 'Prata'], o:['🥇', 'Ouro']};
-function achVal(a, v){ const f = ACH_FMT[a.id]; return f === 'kg' ? fmtKg(v) : f === 'money' ? fmtMoney(v) : fmtNum(Math.floor(v)); }
+function achVal(a, v){ const f = ACH_FMT[a.id]; return f === 'time' ? Math.floor(v / 60) + ' min' : f === 'kg' ? fmtKg(v) : f === 'money' ? fmtMoney(v) : fmtNum(Math.floor(v)); }
 function achCard(a){
   const on = !!S.ach[a.id], tier = a.tier ? TIER[a.tier] : null;
   if (!on && a.secret) return `<div class="ach off secret"><div class="an">❔ Conquista secreta</div><div>Continue jogando para descobrir.</div></div>`;
@@ -3487,6 +3742,12 @@ function renderPanel(force){
   if (openDetails) { const d = body.querySelector('details.done'); if (d) d.open = true; }
   body.scrollTop = st;
 }
+$('tabBody').addEventListener('input', e => {
+  if (e.target.id !== 'repRange') return;
+  S.repasse = +e.target.value / 100;
+  $('repVal').textContent = e.target.value + '%';
+  const mot = motivation(); $('repMot').textContent = (mot >= 0 ? '+' : '') + fmtNum(mot * 100) + '% de produtividade';
+});
 $('tabBody').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b || b.disabled) return;
   AU.init();
@@ -3523,7 +3784,13 @@ function onBought(it, q){
   const tips = {
     lona:['Lona de cobertura', 'Material coberto não estraga com a chuva e cabe mais coisa no monte.'],
     bag:['Bags', 'Bags guardam o material separado. Se o espaço de separado encher, a triagem para.'],
-    balanca:['Balança', 'Cada balança abre 1 vaga de Venda. Quem vende pesa e vende o material separado automaticamente.'],
+    balanca:['Balança própria', 'Agora o peso é justo: o atravessador não consegue mais pagar por menos quilos (antes eram 15% a menos). A balança também abre 1 vaga de Venda.'],
+    mat_papel:['Novo material: papel e jornal', 'Jornais, revistas, cadernos e folhas começam a aparecer na rua. Na triagem, vão para a lixeira azul.'],
+    mat_plastico:['Novo material: plástico duro', 'Baldes, potes, frascos e até cadeiras quebradas. Na triagem, lixeira vermelha.'],
+    mat_vidro:['Novo material: vidro', 'Garrafas, potes de conserva e frascos. Pesado e barato, mas infinitamente reciclável. Lixeira verde.'],
+    mat_sucata:['Novo material: sucata', 'Panelas, ferragens e canos. Na triagem, lixeira amarela (metal).'],
+    mat_oleo:['Novo material: óleo de cozinha', 'Garrafas e galões de óleo usado vão direto para as bombonas.'],
+    mat_eletro:['Novo material: eletrônicos', 'Rádios, celulares e teclados seguem para a recicladora parceira.'],
     carroca:['Carroça para coletor', 'Cada carroça abre 1 vaga de Coleta. Admita um(a) cooperado(a) na Loja › Pessoas para sair com ela.'],
     lona_triagem:['Triagem no chão', 'Cada lona abre 2 vagas de Triagem. Os triadores separam o misturado sozinhos.'],
     mesa:['Mesa de triagem', 'A mesa abre 4 vagas e é bem mais rápida que triar no chão.'],
@@ -3555,7 +3822,7 @@ function openHire(){
       const R = ROLES[b.dataset.role];
       toast('Bem-vindo(a) à cooperativa!', `Nova pessoa na função ${R.n}.`, 'good');
       if (b.dataset.role === 'coleta') tipOnce('hire_col', 'Coleta automática', 'O coletor sai com a carroça e traz material misturado para a base, mesmo quando você não está na rua.');
-      if (b.dataset.role === 'venda') tipOnce('hire_ven', 'Venda automática', 'Quem trabalha na venda vende o material separado sozinho.');
+      if (b.dataset.role === 'venda' && !S.tips.hire_ven) { S.tips.hire_ven = 1; toast('💡 Venda automática', `Agora <b>${memberName(S.st.hires - 1)}</b> vende o material separado automaticamente. Você pode pausar a venda para guardar estoque e vender quando o preço subir: use o botão perto da balança.`, 'fact', 10000); }
       if (b.dataset.role === 'triagem') tipOnce('hire_tri', 'Triagem automática', 'Agora a triagem acontece sozinha. Você ainda pode jogar a mesa de triagem para ganhar um bônus de capricho.');
       lastSig = ''; renderPanel(true);
     }
@@ -3571,11 +3838,17 @@ function doAdvance(){
   busy = true; AU.sfx('hammer');
   bgCache.sig = 'x'; sortCache.c = null;
   buildAnim = {t0:performance.now(), dur:3200, oldBg, cb:() => {
+    if (info.phase === 5 && !cutscene) { cutscene = {t0:performance.now(), cb:() => buildAnim_done(info)}; AU.sfx('go'); return; }
+    buildAnim_done(info);
+  }};
+}
+function buildAnim_done(info){ {
     busy = false; AU.sfx('phase');
     const P = PHASES[info.phase - 1];
     let extra = '';
     if (info.converted) extra += `<p class="note">🪑 <b>Melhoria!</b> As ${info.converted} lonas de triagem viraram ${info.converted} mesas de triagem. Ninguém perdeu a vaga: cada mesa tem 4 lugares e todo mundo trabalha em pé, na altura certa.</p>`;
-    if (info.phase === 5) extra += `<p>🏭 <b>Venda direta:</b> agora a balança vende para a indústria, por um preço melhor.</p>`;
+    if (info.phase === 5) extra += `<p class="note">🏭 <b>Adeus, atravessador!</b> Com CNPJ, a cooperativa vende direto para a indústria: o caminhão vem buscar o material e paga um preço bem melhor, pelo peso justo.</p><p>💰 O dinheiro agora é o <b>Caixa da cooperativa</b>. 5% de cada venda vai para o <b>fundo de reserva</b> e 3% para o <b>fundo de formação</b>, que paga metade da capacitação.</p>`;
+    if (info.phase === 3) extra += `<p class="note">💰 Agora o dinheiro é do grupo: vira o <b>Caixa do grupo</b>. Em <b>Cooperativa › Caixa e repasse</b> você escolhe quanto de cada venda vai para os cooperados. Repasse alto motiva o grupo; repasse baixo deixa mais dinheiro para investir.</p>`;
     if (info.phase === 7) extra += `<p>🗜 <b>Nova função: Prensa e beneficiamento.</b> Compre uma prensa e coloque alguém nessa função para produzir fardos.</p>`;
     if (info.phase === 8) extra += `<p>🔹 A linha de grãos usa a função <b>Prensa e beneficiamento</b> (2 pessoas por linha).</p>`;
     const N = PHASES[info.phase];
@@ -3583,7 +3856,7 @@ function doAdvance(){
       <p class="muted">Pessoas na fase: até ${P.max} (com você). Os equipamentos têm novos limites.${N ? ' O <b>Próximo objetivo</b> já mostra o que falta para a fase ' + (info.phase + 1) + '.' : ''}</p>`, [{t:info.phase === 5 && !S.coop.logo ? 'Criar a identidade ➜' : 'Vamos trabalhar!', fn:() => { if (info.phase === 5 && !S.coop.logo) openLogoIntro(); }}]);
     if (info.phase === 7) tipOnce('prensaRole', 'Nova função liberada', 'Prensa e beneficiamento: opera a prensa e a linha de grãos. Mude a função de alguém na Loja › Pessoas.');
     lastSig = ''; renderPanel(true); renderGoal(true); save();
-  }};
+  }
 }
 
 // ---------- som
@@ -3886,7 +4159,7 @@ HOOK.event = ev => {
 // =====================================================================
 // LAÇO PRINCIPAL
 // =====================================================================
-let lastFrame = performance.now(), acc = 0, incomeHist = [], uiT = 0;
+let lastFrame = performance.now(), acc = 0, incomeHist = [], uiT = 0, autoT = 0;
 function catchUp(secs){
   const before = S.money;
   const steps = Math.min(7200, Math.floor(secs));
@@ -3908,10 +4181,11 @@ function render(t){
 }
 function updateHud(shown){
   $('money').textContent = fmtMoney(S.money);
+  $('cashLbl').textContent = cashLabel();
   const now = performance.now();
-  incomeHist.push([now, S.st.earned]); while (incomeHist.length > 2 && now - incomeHist[0][0] > 10000) incomeHist.shift();
-  const [t0, e0] = incomeHist[0]; const rate = now - t0 > 1500 ? (S.st.earned - e0) / ((now - t0) / 1000) : 0;
-  $('rate').textContent = '+' + fmtMoney(Math.max(0, rate)) + '/s';
+  incomeHist.push([now, S.st.caixaIn || 0]); while (incomeHist.length > 2 && now - incomeHist[0][0] > 10000) incomeHist.shift();
+  const [t0, e0] = incomeHist[0]; const rate = now - t0 > 1500 ? ((S.st.caixaIn || 0) - e0) / ((now - t0) / 1000) : 0;
+  $('rate').innerHTML = '+' + fmtMoney(Math.max(0, rate)) + '/s' + (shareOn() ? ` · <span title="Renda média por cooperado, no ritmo atual">👥 ${fmtMoney(rendaMes())}/mês</span>` : '');
   $('phaseChip').textContent = window.innerWidth < 600 ? `Fase ${S.phase}/10` : `Fase ${S.phase}/10 · ${PHASES[S.phase - 1].name}`;
   renderGoal();
   if (G_mode === 'street') { updateStreetHud(); return; }
@@ -3921,6 +4195,9 @@ function updateHud(shown){
   $('goSub').textContent = open.length > 1 ? 'Escolher rota' : open[0].n;
   $('sortSub').textContent = S.roles.triagem > 0 ? 'automática ✓ · jogar' : fmtKg(mixT) + ' misturado';
   $('sellSub').textContent = sv > 0 ? fmtMoney(sv) : (mixT > 0 ? 'só misturado' : 'nada a vender');
+  $('btnSellLbl').textContent = S.roles.venda > 0 ? 'Vender agora' : 'Vender';
+  const ap = $('autoPill');
+  if (ap) { ap.classList.toggle('hidden', !(S.roles.venda > 0)); ap.classList.toggle('off', !S.autoSell); ap.innerHTML = S.autoSell ? '⚖ Venda automática: <b>ligada</b> <span>⏸</span>' : '⏸ Venda automática: <b>pausada</b> <span>▶</span>'; }
   const sp = S.phase <= 2 ? {x:56, y:128} : ZONES.sort, hb = $('hotSort');
   if (hb) { hb.style.left = (sp.x / W * 100) + '%'; hb.style.top = (sp.y / H * 100) + '%'; }
   const hs = $('hotSortKg'); if (hs) hs.textContent = mixT > 0 ? fmtKg(mixT) : '';
@@ -3949,6 +4226,8 @@ function frame(now){
   if (G_mode === 'street') updateStreet(dt);
   if (G_mode === 'sort') updateSort(dt);
   updateFx(dt);
+  autoT += dt;
+  if (autoT > 2.5) { autoT = 0; if ((S._autoAcc || 0) > 0.005 && G_mode === 'base' && !busy) floatText('+' + fmtMoney(S._autoAcc), ZONES.sell.x + 18, ZONES.sell.y + 30, 'money small'); S._autoAcc = 0; }
   const shown = render(now / 1000);
   uiT += dt;
   if (uiT > 0.25) { uiT = 0; updateHud(shown); renderPanel(); }
