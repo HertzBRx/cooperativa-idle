@@ -24,7 +24,30 @@ button:disabled{cursor:not-allowed;opacity:.5}
 /* ---------- topo */
 #top{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);color:var(--paper);border-bottom:3px solid #1d150f;position:sticky;top:0;z-index:30;flex-wrap:wrap}
 #logo{font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:6px;font-size:15px}
-#logo .rc{display:inline-block;width:22px;height:22px;border-radius:6px;background:var(--green);text-align:center;line-height:22px}
+#logo .rc,.coopHead .rc{display:inline-block;width:24px;height:24px;border-radius:6px;background:var(--green);text-align:center;line-height:24px;color:#fff}
+#logo{min-width:0}#logoEmb{display:flex;flex-shrink:0}
+#logo .txt{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.emb{display:block;filter:drop-shadow(0 1px 0 rgba(0,0,0,.35))}
+.brk{display:none}
+.coopHead{display:flex;align-items:center;gap:10px;margin:2px 0 8px;font-size:17px}
+.coopHead b{font-family:"Fredoka","Nunito",sans-serif;font-weight:600}
+.nameRow{display:flex;gap:6px;margin:8px 0 4px}
+.nameRow input,#leSigla{flex:1;min-width:0;font:inherit;font-size:17px;padding:9px 10px;border:2px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.nameRow input:focus,#leSigla:focus{outline:none;border-color:var(--green)}
+#modal.wide{max-width:780px}
+.logoEd{display:flex;gap:14px;align-items:flex-start}
+.lePrev{flex:0 0 200px;position:sticky;top:-16px;z-index:2;text-align:center;background:#fffaf0;border:2px solid var(--line);border-radius:12px;padding:10px}
+.lePrev canvas{width:180px;height:215px;display:block;margin:0 auto 4px}
+.leOpts{flex:1;min-width:0}
+.leOpts h4{margin:8px 0 5px}
+.leRow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.leOpt{background:#fffaf0;border:2px solid var(--line);color:var(--ink);padding:4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;min-width:58px}
+.leOpt canvas{width:40px;height:40px}
+.leOpt b{font-size:20px;line-height:1.1}
+.leOpt.on,.leSw.on{border-color:var(--green);box-shadow:0 0 0 2px var(--green)}
+.leSw{width:30px;height:30px;border-radius:50%;border:2px solid rgba(0,0,0,.25);padding:0}
+#leSigla{flex:0 1 110px;font-size:15px;padding:6px 8px;text-transform:uppercase}
+#leSigla:disabled{opacity:.45}
 #money{font-weight:800;font-size:18px;color:#ffe08a;font-variant-numeric:tabular-nums}
 #rate{font-size:12px;color:#d9c7a3}
 #phaseChip{background:#5a4230;border-radius:20px;padding:3px 10px;font-size:12px;white-space:nowrap}
@@ -199,8 +222,14 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
   #stage{position:relative;top:0;width:100%}
   #panel{width:100%;max-height:none}
   #tabBody{overflow:visible}
-  #logo .txt{display:none}
-  #top{flex-wrap:nowrap;gap:6px;padding:6px 8px}
+  #top{flex-wrap:wrap;gap:4px 6px;padding:6px 8px}
+  #logo{order:1;flex:1 1 auto;font-size:14px}#logo .txt{max-width:none}
+  #btnMusic,#btnSfx,#btnHelp,#btnCfg{order:2}
+  .brk{display:block;order:3;flex-basis:100%;height:0}
+  #moneyBox{order:4}#phaseChip{order:5}#top .sp{order:6}
+  .logoEd{flex-direction:column;align-items:stretch}
+  .lePrev{position:sticky;top:-16px;z-index:2;flex:none;display:flex;align-items:center;justify-content:center;gap:10px;padding:6px;box-shadow:0 4px 8px rgba(0,0,0,.15)}
+  .lePrev canvas{width:92px;height:110px;margin:0}
   .ibtn{width:30px;height:30px;font-size:15px}
   #phaseChip{max-width:34vw;overflow:hidden;text-overflow:ellipsis}
 
@@ -214,13 +243,15 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
 </head>
 <body>
 <header id="top">
-  <div id="logo"><span class="rc">♻</span><span class="txt">Cooperativa</span></div>
-  <div><div id="money">R$ 0,00</div><div id="rate">+R$ 0,00/s</div></div>
+  <div id="logo"><span id="logoEmb"><span class="rc">♻</span></span><span class="txt" id="coopName">Cooperativa</span></div>
+  <div class="brk"></div>
+  <div id="moneyBox"><div id="money">R$ 0,00</div><div id="rate">+R$ 0,00/s</div></div>
   <div id="phaseChip">Fase 1</div>
   <div class="sp"></div>
   <button class="ibtn" id="btnMusic" title="Música" aria-label="Ligar ou desligar música">♪</button>
   <button class="ibtn" id="btnSfx" title="Efeitos sonoros" aria-label="Ligar ou desligar efeitos">🔊</button>
   <button class="ibtn" id="btnHelp" title="Como jogar" aria-label="Como jogar">?</button>
+  <button class="ibtn" id="btnCfg" title="Configurações" aria-label="Configurações">⚙</button>
 </header>
 <div id="app">
   <section id="stage">
@@ -489,7 +520,7 @@ function newState(){
     mixed:{}, sep:{}, bale:{}, pellet:{},
     st:{trips:0, streetKg:0, rejStreet:0, autoKg:0, sorted:0, rejOut:0, recycled:0, earned:0, baleKg:0, pelletKg:0, sales:0, hires:0, sortRounds:0, sortLost:0, sortOk:0, sortErr:0},
     ach:{}, flags:{}, ev:[], nextEv:200, nextFact:70, factIdx:0,
-    tut:{step:0, done:false}, tips:{}, set:{music:true, sfx:true},
+    tut:{step:0, done:false}, tips:{}, set:{music:true, sfx:true}, coop:{name:'', logo:null},
     t:0, lastSave:Date.now(), route:'bairro',
   };
 }
@@ -1127,6 +1158,12 @@ function shadow(cx, y, w){ // sombra oval suave no chão
   alpha(0.22, () => { rect(cx - w / 2, y, w, 1, '#000'); rect(cx - w / 2 + 1, y + 1, w - 2, 1, '#000'); });
   alpha(0.1, () => rect(cx - w / 2 - 1, y, w + 2, 1, '#000'));
 }
+function fitTxt(s, cx, y, maxW, size, col){ // diminui a letra (e corta) até caber na placa
+  CX.font = `bold ${size}px monospace`;
+  while (CX.measureText(s).width > maxW && size > 3.5) { size -= 0.5; CX.font = `bold ${size}px monospace`; }
+  while (CX.measureText(s).width > maxW && s.length > 3) s = s.slice(0, -2) + '…';
+  txt(s, cx, y, size, col);
+}
 function txt(s, x, y, size, col, align, font){
   CX.fillStyle = col; CX.font = `bold ${size}px ${font || 'monospace'}`; CX.textAlign = align || 'center'; CX.fillText(s, x, y);
 }
@@ -1413,7 +1450,11 @@ function drawPerson(x, y, look, pose, t, epi, flip){
   if (!uni && look.ts === 'stripe') { rect(tx - 3, ty + 1, 6, 1, look.stripe); rect(tx - 3, ty + 3, 6, 1, look.stripe); }
   if (!uni && look.ts === 'overall') { rect(tx - 2, ty + 2, 4, 3, pants); rect(tx - 2, ty, 1, 2, pants); rect(tx + 1, ty, 1, 2, pants); }
   if (!uni && look.ts === 'tank') { rect(tx - 3, ty, 1, 2, look.skin); rect(tx + 2, ty, 1, 2, look.skin); }
-  if (uni) { rect(tx - 3, ty + 3, 6, 1, '#e8e05a'); px(tx - 2, ty + 1, '#fff'); }
+  if (uni) {
+    rect(tx - 3, ty + 3, 6, 1, '#e8e05a');
+    const L = S.coop && S.coop.logo;
+    if (L) { rect(flip ? tx : tx - 2, ty + 1, 2, 2, L.bg); px(flip ? tx : tx - 2, ty + 1, L.sym); } else px(tx - 2, ty + 1, '#fff');
+  }
   alpha(0.18, () => rect(flip ? tx - 3 : tx + 2, ty, 1, 5, '#000'));        // sombra lateral
   alpha(0.15, () => rect(flip ? tx + 2 : tx - 3, ty, 1, 4, '#fff'));        // luz
   // braços
@@ -1489,7 +1530,9 @@ function drawTruck(x, y, color, flip, load, t){
   rect(x + o, y - 21, 30, 16, '#7d8a8f'); rect(x + o, y - 21, 30, 2, '#a7b4b8'); rect(x + o, y - 6, 30, 1, '#5d686c');
   for (let i = 0; i < 5; i++) rect(x + o + 3 + i * 6, y - 18, 1, 11, '#6b777b');
   if (load) { rect(x + o + 2, y - 24, 26, 3, '#c79058'); rect(x + o + 8, y - 26, 12, 2, '#62b8e0'); rect(x + o + 20, y - 25, 6, 1, '#d23a2a'); }
-  rect(x + o + 4, y - 15, 22, 5, '#f0f0e8'); txt('♻', x + o + 9, y - 10.5, 5, '#3f8f3a');
+  rect(x + o + 4, y - 16, 22, 7, '#f0f0e8');
+  if (S.coop && S.coop.logo) { CX.imageSmoothingEnabled = true; CX.drawImage(emblemPixel(14), x + o + 5, y - 16, 7, 7); CX.imageSmoothingEnabled = false; rect(x + o + 13, y - 14, 11, 1, S.coop.logo.bg); rect(x + o + 13, y - 12, 8, 1, S.coop.logo.bg); }
+  else txt('♻', x + o + 9, y - 10.5, 5, '#3f8f3a');
   // cabine
   rect(x + cab, y - 17, 12, 12, c); rect(x + cab, y - 17, 12, 1, 'rgba(255,255,255,.35)');
   rect(x + cab + (flip ? 2 : 3), y - 15, 7, 5, '#bfe3f2'); rect(x + cab + (flip ? 2 : 3), y - 15, 2, 5, '#e6f6fc');
@@ -1558,7 +1601,7 @@ function drawBale(x, y, col){ // fardo
 // =====================================================================
 const bgCache = {sig:'', c:null}, skyCache = {c:null};
 function baseSig(){
-  return [S.phase, ...['lona','bag','balanca','lona_triagem','banheiro','mesa','baia','galpao','prensa','esteira','empilhadeira',
+  return [S.phase, logoSig(), ...['lona','bag','balanca','lona_triagem','banheiro','mesa','baia','galpao','prensa','esteira','empilhadeira',
     'separador','painel','cisterna','terreno','vestiario','refeitorio','creche','mural','linha_graos','centro_edu','rede','caminhao','logistica'].map(nI)].join(',');
 }
 function buildSky(){
@@ -1685,7 +1728,7 @@ function drawBarracao(){
   alpha(0.4, () => rect(x + 20, y + 22, w - 40, 6, '#000'));
   rect(x + 2, y + 9, 3, h - 9, '#4a301a'); rect(x + w - 5, y + 9, 3, h - 9, '#4a301a');
   alpha(0.2, () => rect(x + w - 30, y + 9, 30, h - 9, '#000')); // lado na sombra
-  if (S.phase >= 4) { rect(x + w / 2 - 24, y + 11, 48, 9, '#f0e6cc'); rect(x + w / 2 - 24, y + 19, 48, 1, '#a88a5a'); txt('ASSOCIAÇÃO', x + w / 2, y + 18, 6, '#3a2a1c'); }
+  if (S.phase >= 4) { rect(x + w / 2 - 24, y + 11, 48, 9, '#f0e6cc'); rect(x + w / 2 - 24, y + 19, 48, 1, '#a88a5a'); fitTxt('ASSOC. ' + coopName().toUpperCase(), x + w / 2, y + 18, 46, 6, '#3a2a1c'); }
 }
 function drawGalpao(){
   const x = 92, y = 26, w = 214, h = 92;
@@ -1714,8 +1757,12 @@ function drawGalpao(){
   for (let i = 0; i < 4; i++) { const cx = x + 10 + i * (w - 20) / 3 - 1; rect(cx, y + 34, 3, h - 34, '#c8bba3'); rect(cx, y + 34, 1, h - 34, '#e0d6c2'); }
   for (let i = 0; i < 3; i++) alpha(0.2, () => rect(x + 30 + i * 60, y + 40, 20, 2, '#fff6c8')); // luminárias
   // placa
-  rect(x + w / 2 - 52, y + 21, 104, 12, '#1f5a34'); rect(x + w / 2 - 50, y + 22, 100, 10, '#2f7d4a'); rect(x + w / 2 - 50, y + 22, 100, 1, '#4fa06a');
-  txt(S.phase >= 10 ? 'CENTRAL DE RECICLAGEM' : 'COOPERATIVA RECICLA', x + w / 2, y + 30, 7, '#fff');
+  const L = S.coop && S.coop.logo, sb = L ? L.bg : '#2f7d4a', st = L ? (L.txt === L.bg ? L.sym : L.txt) : '#fff';
+  rect(x + w / 2 - 54, y + 20, 108, 13, '#1d150f'); rect(x + w / 2 - 53, y + 21, 106, 11, sb); alpha(0.25, () => rect(x + w / 2 - 53, y + 21, 106, 1, '#fff'));
+  let tl = x + w / 2 - 50, tw = 100;
+  if (L) { CX.imageSmoothingEnabled = true; CX.drawImage(emblemPixel(20), x + w / 2 - 52, y + 21.5, 10, 10); CX.imageSmoothingEnabled = false; tl += 11; tw -= 11; }
+  fitTxt(coopName().toUpperCase(), tl + tw / 2, y + 29.5, tw, 7, st);
+  if (S.phase >= 10) { rect(x + w / 2 - 34, y + 33, 68, 6, '#efe6d2'); txt('CENTRAL DE RECICLAGEM', x + w / 2, y + 37.5, 3.6, '#3a2a1c'); }
   if (S.phase >= 7) { rect(x + w - 50, y + 20, 40, 14, '#efe6d2'); for (let i = 0; i < 4; i++) { rect(x + w - 46 + i * 9, y + 23, 6, 6, '#8fc6e0'); rect(x + w - 46 + i * 9, y + 23, 2, 2, '#d8f0fa'); } }
 }
 function drawSmallBuilding(x, y, w, h, wall, roof, label){
@@ -2182,6 +2229,153 @@ function drawBin(i, b, hl, flash){
 }
 
 // =====================================================================
+// NOME E LOGO DA COOPERATIVA (desenho vetorial no próprio código)
+// =====================================================================
+const NAME_IDEAS = ['Recicla Vida', 'Mãos que Reciclam', 'Catadores Unidos', 'Nova Esperança', 'Terra Viva', 'Reciclar é Viver',
+  'Raízes do Bairro', 'Sol Nascente', 'Força Coletiva', 'Mulheres que Reciclam', 'Verde Esperança', 'União Recicla',
+  'Coleta Solidária', 'Recomeço', 'Semente Verde', 'Vida Nova', 'Bairro Limpo', 'Reciclando Sonhos', 'Garra e União', 'Mutirão Verde'];
+const LOGO_SHAPES = [['circle', 'Círculo'], ['shield', 'Escudo'], ['leaf', 'Folha'], ['hex', 'Hexágono'], ['square', 'Quadrado']];
+const LOGO_SYMBOLS = [['recycle', 'Reciclagem'], ['hands', 'Mãos dadas'], ['leaf', 'Folha'], ['tree', 'Árvore'], ['cart', 'Carrinho'],
+  ['bottle', 'Garrafa'], ['planet', 'Planeta'], ['heart', 'Coração']];
+const LOGO_COLORS = ['#2f7d4a', '#62b356', '#2f6fb8', '#2f8f8a', '#e8b631', '#e07a2a', '#c2412d', '#e07ab0', '#7a4fa0', '#8b5a2b', '#2a2a2a', '#ffffff'];
+const LOGO_FONTS = [['"Fredoka", "Nunito", sans-serif', 'Arredondada', 600], ['"Nunito", "Trebuchet MS", sans-serif', 'Suave', 800],
+  ['Georgia, "Times New Roman", serif', 'Clássica', 700], ['"Courier New", monospace', 'Máquina', 700], ['"Trebuchet MS", Verdana, sans-serif', 'Moderna', 700]];
+const NAME_SMALL = ['de', 'da', 'do', 'das', 'dos', 'e', 'que', 'é', 'a', 'o'];
+
+function coopName(){ return (S && S.coop && S.coop.name) || 'Cooperativa'; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c])); }
+function suggestName(not){ let n; do { n = NAME_IDEAS[Math.floor(Math.random() * NAME_IDEAS.length)]; } while (n === not); return n; }
+function makeSigla(name){
+  const words = name.trim().split(/\s+/).filter(w => w && !NAME_SMALL.includes(w.toLowerCase()));
+  let s = words.map(w => w[0]).join('').toUpperCase();
+  if (s.length < 2) s = (words[0] || name).slice(0, 4).toUpperCase();
+  return s.slice(0, 5);
+}
+function randomLogo(){
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const bg = pick(['#2f7d4a', '#2f6fb8', '#2f8f8a', '#c2412d', '#7a4fa0', '#8b5a2b']);
+  return {shape:pick(LOGO_SHAPES)[0], symbol:pick(LOGO_SYMBOLS)[0], bg, sym:pick(['#ffffff', '#e8b631']), txt:bg, text:'name', font:0, sigla:makeSigla(coopName())};
+}
+
+// ---------- formas do fundo (coordenadas de 0 a 1)
+function logoShapePath(g, k){
+  g.beginPath();
+  if (k === 'circle') g.arc(0.5, 0.5, 0.47, 0, Math.PI * 2);
+  else if (k === 'shield') { g.moveTo(0.5, 0.03); g.lineTo(0.93, 0.15); g.lineTo(0.89, 0.55); g.quadraticCurveTo(0.82, 0.84, 0.5, 0.98); g.quadraticCurveTo(0.18, 0.84, 0.11, 0.55); g.lineTo(0.07, 0.15); g.closePath(); }
+  else if (k === 'leaf') { g.moveTo(0.08, 0.93); g.bezierCurveTo(-0.02, 0.38, 0.32, 0.05, 0.94, 0.05); g.bezierCurveTo(0.97, 0.62, 0.64, 0.98, 0.08, 0.93); g.closePath(); }
+  else if (k === 'hex') { for (let i = 0; i < 6; i++) { const a = (i * 60 - 90) * Math.PI / 180; g[i ? 'lineTo' : 'moveTo'](0.5 + Math.cos(a) * 0.48, 0.5 + Math.sin(a) * 0.48); } g.closePath(); }
+  else { const r = 0.18; g.moveTo(0.04 + r, 0.04); g.arcTo(0.96, 0.04, 0.96, 0.96, r); g.arcTo(0.96, 0.96, 0.04, 0.96, r); g.arcTo(0.04, 0.96, 0.04, 0.04, r); g.arcTo(0.04, 0.04, 0.96, 0.04, r); g.closePath(); }
+}
+// ---------- símbolos (centro em 0.5, 0.5)
+function logoSymbol(g, k, col, bg){
+  g.fillStyle = col; g.strokeStyle = col; g.lineCap = 'round'; g.lineJoin = 'round';
+  const C = (x, y, r) => { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); };
+  if (k === 'recycle') {
+    for (let i = 0; i < 3; i++) {
+      const a0 = -Math.PI / 2 + i * 2 * Math.PI / 3 + 0.35, a1 = a0 + 1.45, r = 0.21;
+      g.lineWidth = 0.085; g.lineCap = 'butt'; g.beginPath(); g.arc(0.5, 0.5, r, a0, a1); g.stroke();
+      const px0 = 0.5 + Math.cos(a1) * r, py0 = 0.5 + Math.sin(a1) * r, tx = -Math.sin(a1), ty = Math.cos(a1), nx = Math.cos(a1), ny = Math.sin(a1);
+      g.beginPath(); g.moveTo(px0 + tx * 0.1, py0 + ty * 0.1); g.lineTo(px0 + nx * 0.085, py0 + ny * 0.085); g.lineTo(px0 - nx * 0.085, py0 - ny * 0.085); g.closePath(); g.fill();
+    }
+  } else if (k === 'hands') {
+    g.lineWidth = 0.12;
+    g.beginPath(); g.moveTo(0.16, 0.72); g.lineTo(0.42, 0.5); g.stroke();
+    g.beginPath(); g.moveTo(0.84, 0.72); g.lineTo(0.58, 0.5); g.stroke();
+    g.beginPath(); g.ellipse(0.5, 0.47, 0.13, 0.1, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = bg; g.lineWidth = 0.022;
+    for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(0.44 + i * 0.05, 0.4); g.lineTo(0.44 + i * 0.05, 0.53); g.stroke(); }
+    g.fillStyle = col; C(0.5, 0.25, 0.06); C(0.38, 0.29, 0.05); C(0.62, 0.29, 0.05); // corações/pessoas acima
+  } else if (k === 'leaf') {
+    g.save(); g.translate(0.5, 0.5); g.rotate(-0.6); g.beginPath(); g.moveTo(0, -0.3); g.bezierCurveTo(0.24, -0.15, 0.22, 0.18, 0, 0.3); g.bezierCurveTo(-0.22, 0.18, -0.24, -0.15, 0, -0.3); g.fill();
+    g.strokeStyle = bg; g.lineWidth = 0.025; g.beginPath(); g.moveTo(0, -0.24); g.lineTo(0, 0.36); g.stroke();
+    for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(0, -0.12 + i * 0.12); g.lineTo(0.1, -0.2 + i * 0.12); g.moveTo(0, -0.12 + i * 0.12); g.lineTo(-0.1, -0.2 + i * 0.12); g.stroke(); }
+    g.restore();
+  } else if (k === 'tree') {
+    g.fillRect(0.46, 0.5, 0.08, 0.28); g.fillRect(0.36, 0.76, 0.28, 0.04);
+    C(0.5, 0.32, 0.15); C(0.37, 0.43, 0.12); C(0.63, 0.43, 0.12); C(0.5, 0.48, 0.1);
+  } else if (k === 'cart') {
+    g.beginPath(); g.moveTo(0.2, 0.38); g.lineTo(0.72, 0.38); g.lineTo(0.66, 0.62); g.lineTo(0.26, 0.62); g.closePath(); g.fill();
+    g.lineWidth = 0.05; g.beginPath(); g.moveTo(0.72, 0.38); g.lineTo(0.84, 0.28); g.stroke();
+    C(0.33, 0.72, 0.075); C(0.6, 0.72, 0.075);
+    g.fillRect(0.27, 0.26, 0.1, 0.11); g.fillRect(0.4, 0.22, 0.08, 0.15); g.fillRect(0.51, 0.28, 0.12, 0.09);
+    g.fillStyle = bg; C(0.33, 0.72, 0.03); C(0.6, 0.72, 0.03);
+  } else if (k === 'bottle') {
+    g.fillRect(0.45, 0.14, 0.1, 0.06);
+    g.beginPath(); g.moveTo(0.46, 0.2); g.lineTo(0.54, 0.2); g.lineTo(0.54, 0.3); g.quadraticCurveTo(0.66, 0.36, 0.66, 0.46); g.lineTo(0.66, 0.8); g.quadraticCurveTo(0.66, 0.86, 0.6, 0.86);
+    g.lineTo(0.4, 0.86); g.quadraticCurveTo(0.34, 0.86, 0.34, 0.8); g.lineTo(0.34, 0.46); g.quadraticCurveTo(0.34, 0.36, 0.46, 0.3); g.closePath(); g.fill();
+    g.fillStyle = bg; g.fillRect(0.34, 0.54, 0.32, 0.12);
+    g.fillStyle = col; g.globalAlpha *= 0.6; g.fillRect(0.4, 0.58, 0.2, 0.04); g.globalAlpha /= 0.6;
+  } else if (k === 'planet') {
+    C(0.5, 0.5, 0.25);
+    g.fillStyle = bg;
+    g.beginPath(); g.ellipse(0.42, 0.42, 0.09, 0.06, 0.5, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(0.6, 0.56, 0.08, 0.11, -0.3, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(0.4, 0.62, 0.05, 0.04, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = col; g.lineWidth = 0.035; g.beginPath(); g.ellipse(0.5, 0.5, 0.4, 0.11, -0.35, Math.PI * 0.95, Math.PI * 2.05); g.stroke();
+  } else if (k === 'heart') {
+    g.beginPath(); g.moveTo(0.5, 0.8); g.bezierCurveTo(0.12, 0.56, 0.18, 0.22, 0.38, 0.24); g.bezierCurveTo(0.46, 0.25, 0.5, 0.32, 0.5, 0.36);
+    g.bezierCurveTo(0.5, 0.32, 0.54, 0.25, 0.62, 0.24); g.bezierCurveTo(0.82, 0.22, 0.88, 0.56, 0.5, 0.8); g.fill();
+    g.fillStyle = bg; g.globalAlpha *= 0.35; g.beginPath(); g.ellipse(0.37, 0.36, 0.05, 0.03, -0.6, 0, Math.PI * 2); g.fill(); g.globalAlpha /= 0.35;
+  }
+}
+// emblema (forma + símbolo, e a sigla dentro quando escolhida) num quadrado
+function drawEmblem(g, x, y, s, L){
+  g.save(); g.translate(x, y); g.scale(s, s);
+  logoShapePath(g, L.shape); g.fillStyle = L.bg; g.fill();
+  g.lineWidth = 0.035; g.strokeStyle = 'rgba(0,0,0,.25)'; g.stroke();
+  g.save(); logoShapePath(g, L.shape); g.clip();
+  g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(0, 0, 1, 0.42);
+  if (L.text === 'sigla') {
+    g.save(); g.translate(0.5, 0.36); g.scale(0.62, 0.62); g.translate(-0.5, -0.5); logoSymbol(g, L.symbol, L.sym, L.bg); g.restore();
+    const f = LOGO_FONTS[L.font] || LOGO_FONTS[0], sg = (L.sigla || makeSigla(coopName())).slice(0, 5);
+    g.fillStyle = L.txt === L.bg ? L.sym : L.txt; g.textAlign = 'center'; g.textBaseline = 'middle';
+    let fs = 0.2; g.font = `${f[2]} ${fs}px ${f[0]}`;
+    while (g.measureText(sg).width > 0.7 && fs > 0.08) { fs -= 0.01; g.font = `${f[2]} ${fs}px ${f[0]}`; }
+    g.fillText(sg, 0.5, 0.75);
+  } else logoSymbol(g, L.symbol, L.sym, L.bg);
+  g.restore(); g.restore();
+}
+// logo completa: emblema + nome embaixo (no modo "nome completo")
+function drawFullLogo(g, w, h, L, name){
+  g.clearRect(0, 0, w, h);
+  const withName = L.text !== 'sigla';
+  const s = withName ? Math.min(w, h * 0.72) : Math.min(w, h);
+  drawEmblem(g, (w - s) / 2, withName ? 0 : (h - s) / 2, s, L);
+  if (withName) {
+    const f = LOGO_FONTS[L.font] || LOGO_FONTS[0];
+    g.fillStyle = L.txt; g.textAlign = 'center'; g.textBaseline = 'middle';
+    let fs = h * 0.13; g.font = `${f[2]} ${fs}px ${f[0]}`;
+    while (g.measureText(name).width > w * 0.98 && fs > h * 0.06) { fs -= 1; g.font = `${f[2]} ${fs}px ${f[0]}`; }
+    if (g.measureText(name).width > w * 0.98) {
+      // nome comprido: quebra em duas linhas
+      const words = name.split(' '); let a = '', b = '';
+      words.forEach(wd => { if (g.measureText((a + ' ' + wd).trim()).width < w * 0.96 && !b) a = (a + ' ' + wd).trim(); else b = (b + ' ' + wd).trim(); });
+      g.fillText(a, w / 2, s + (h - s) * 0.3); g.fillText(b, w / 2, s + (h - s) * 0.72);
+    } else g.fillText(name, w / 2, s + (h - s) / 2);
+  }
+}
+// versão pequena em pixel (placa, caminhões) e imagem para o HTML
+const logoCache = {};
+function logoSig(){ return S.coop && S.coop.logo ? JSON.stringify(S.coop.logo) + coopName() : ''; }
+function emblemPixel(px){
+  const key = 'p' + px + logoSig();
+  if (logoCache[key]) return logoCache[key];
+  const c = mkCanvas(px * 4, px * 4), g = c.getContext('2d');
+  drawEmblem(g, 0, 0, px * 4, S.coop.logo);
+  const d = mkCanvas(px, px), dg = d.getContext('2d'); dg.imageSmoothingEnabled = true; dg.drawImage(c, 0, 0, px, px);
+  return logoCache[key] = d;
+}
+function emblemURL(size){
+  const key = 'u' + size + logoSig();
+  if (logoCache[key]) return logoCache[key];
+  const c = mkCanvas(size * 2, size * 2); drawEmblem(c.getContext('2d'), 0, 0, size * 2, S.coop.logo);
+  return logoCache[key] = c.toDataURL();
+}
+function coopBadgeHTML(size){
+  return S.coop && S.coop.logo ? `<img class="emb" src="${emblemURL(size)}" width="${size}" height="${size}" alt="">` : `<span class="rc">♻</span>`;
+}
+
+// =====================================================================
 // INTERFACE E JOGO
 // =====================================================================
 const $ = id => document.getElementById(id);
@@ -2231,6 +2425,7 @@ function showModal(title, html, buttons, opts){
     e.onclick = () => { AU.sfx('click'); if (!b.keep) hideModal(); b.fn && b.fn(); };
     bb.appendChild(e);
   });
+  m.classList.toggle('wide', !!(opts && opts.wide));
   $('modalBg').classList.remove('hidden');
   if (opts && opts.onShow) opts.onShow(m);
 }
@@ -2975,7 +3170,12 @@ function renderAch(){
 }
 function renderMore(){
   const acc = S.st.sortOk + S.st.sortErr ? Math.round(S.st.sortOk / (S.st.sortOk + S.st.sortErr) * 100) + '%' : '–';
-  return `<div class="card"><h3>Ajustes</h3>
+  const idCard = `<div class="card"><h3>Identidade da cooperativa</h3>
+    <div class="coopHead">${coopBadgeHTML(48)}<b>${esc(coopName())}</b></div>
+    <div class="row" style="flex-wrap:wrap"><button class="btn" data-act="rename">✏️ Mudar o nome</button>
+    ${S.phase >= 5 ? `<button class="btn blue" data-act="logo">🎨 ${S.coop.logo ? 'Editar a logo' : 'Criar a logo'}</button>` : ''}</div>
+    ${S.phase >= 5 ? '' : '<div class="muted" style="margin-top:6px">🔒 A logo é criada na fase 5, quando a cooperativa se formaliza.</div>'}</div>`;
+  return idCard + `<div class="card"><h3>Ajustes</h3>
     <div class="row" style="flex-wrap:wrap"><button class="btn ${S.set.music ? '' : 'alt'}" data-act="music">♪ Música: ${S.set.music ? 'ligada' : 'desligada'}</button>
     <button class="btn ${S.set.sfx ? '' : 'alt'}" data-act="sfx">🔊 Efeitos: ${S.set.sfx ? 'ligados' : 'desligados'}</button></div></div>
     <div class="card"><h3>Ajuda</h3><div class="row" style="flex-wrap:wrap"><button class="btn blue" data-act="help">❓ Como jogar</button><button class="btn blue" data-act="retut">🎓 Rever tutorial</button></div></div>
@@ -3000,7 +3200,7 @@ function panelSig(){
     return s;
   }
   if (curTab === 'ach') return 'a' + achCount();
-  return 'm' + S.set.music + S.set.sfx + Math.round(S.st.earned) + S.st.trips + S.st.sortRounds;
+  return 'm' + S.set.music + S.set.sfx + Math.round(S.st.earned) + S.st.trips + S.st.sortRounds + logoSig() + coopName() + S.phase;
 }
 function renderPanel(force){
   if (!force && panelPressed) return;
@@ -3034,6 +3234,8 @@ $('tabBody').addEventListener('click', e => {
   else if (act === 'sfx') toggleSfx();
   else if (act === 'help') showHelp();
   else if (act === 'retut') restartTutorial();
+  else if (act === 'rename') openNameModal(false);
+  else if (act === 'logo') openLogoEditor();
   else if (act === 'reset') showModal('Reiniciar do zero?', '<p>Todo o progresso será apagado: dinheiro, fases, cooperados e conquistas. Isso não pode ser desfeito.</p>',
     [{t:'Cancelar', cls:'alt'}, {t:'Apagar e recomeçar', cls:'red', fn:() => { resetting = true; try { localStorage.removeItem(SAVE_KEY); } catch (e) {} location.reload(); }}]);
   lastSig = ''; renderPanel(true);
@@ -3103,8 +3305,8 @@ function doAdvance(){
     if (info.phase === 7) extra += `<p>🗜 <b>Nova função: Prensa e beneficiamento.</b> Compre uma prensa e coloque alguém nessa função para produzir fardos.</p>`;
     if (info.phase === 8) extra += `<p>🔹 A linha de grãos usa a função <b>Prensa e beneficiamento</b> (2 pessoas por linha).</p>`;
     const N = PHASES[info.phase];
-    showModal(`Fase ${info.phase}: ${P.name}`, `<p>${P.msg}</p>${extra}<p><b>O que esta fase libera:</b></p><ul>${(P.libera || []).map(x => '<li>' + x + '</li>').join('')}</ul>
-      <p class="muted">Pessoas na fase: até ${P.max} (com você). Os equipamentos têm novos limites.${N ? ' O <b>Próximo objetivo</b> já mostra o que falta para a fase ' + (info.phase + 1) + '.' : ''}</p>`, [{t:'Vamos trabalhar!'}]);
+    showModal(`Fase ${info.phase}: ${P.name}`, `<div class="coopHead">${coopBadgeHTML(44)}<b>${esc(coopName())}</b></div><p>${P.msg}</p>${extra}<p><b>O que esta fase libera:</b></p><ul>${(P.libera || []).map(x => '<li>' + x + '</li>').join('')}</ul>
+      <p class="muted">Pessoas na fase: até ${P.max} (com você). Os equipamentos têm novos limites.${N ? ' O <b>Próximo objetivo</b> já mostra o que falta para a fase ' + (info.phase + 1) + '.' : ''}</p>`, [{t:info.phase === 5 && !S.coop.logo ? 'Criar a identidade ➜' : 'Vamos trabalhar!', fn:() => { if (info.phase === 5 && !S.coop.logo) openLogoIntro(); }}]);
     if (info.phase === 7) tipOnce('prensaRole', 'Nova função liberada', 'Prensa e beneficiamento: opera a prensa e a linha de grãos. Mude a função de alguém na Loja › Pessoas.');
     lastSig = ''; renderPanel(true); renderGoal(true); save();
   }};
@@ -3193,6 +3395,86 @@ function updateTutorial(){
     arr.classList.add('hidden');
     bub.style.left = Math.max(6, vw / 2 - bw / 2) + 'px'; bub.style.top = (vh - bh - 12) + 'px';
   }
+}
+
+// =====================================================================
+// NOME E LOGO DA COOPERATIVA
+// =====================================================================
+function updateCoopHeader(){
+  $('logoEmb').innerHTML = coopBadgeHTML(26);
+  $('coopName').textContent = coopName();
+  bgCache.sig = '';
+}
+function openNameModal(first, after){
+  const cur = S.coop.name || suggestName();
+  showModal(first ? 'Qual é o nome do grupo?' : 'Mudar o nome', `
+    <p>${first ? 'Todo grupo de catadores tem um nome. Ele vai aparecer no topo da tela, na placa do terreno e, mais tarde, na logo da cooperativa.' : 'O novo nome aparece no topo da tela, na placa e na logo.'}</p>
+    <div class="nameRow"><input id="nameIn" maxlength="30" value="${esc(cur)}" autocomplete="off" aria-label="Nome do grupo">
+    <button class="btn alt" id="nameDice" title="Outra sugestão">🎲 Sugerir</button></div>
+    <div class="muted" id="nameHint">Até 30 caracteres.</div>`,
+    [...(first ? [] : [{t:'Cancelar', cls:'alt'}]), {t:'Confirmar', keep:true, fn:() => {
+      const v = $('nameIn').value.replace(/\s+/g, ' ').trim().slice(0, 30);
+      if (!v) { $('nameHint').innerHTML = '<b style="color:var(--red)">Escreva um nome para o grupo.</b>'; return; }
+      const L = S.coop.logo; if (L && L.sigla === makeSigla(S.coop.name || '')) L.sigla = makeSigla(v);
+      S.coop.name = v; hideModal(); updateCoopHeader(); lastSig = ''; save();
+      AU.sfx('buy'); toast(first ? 'Bem-vindos!' : 'Nome atualizado', `<b>${esc(v)}</b>`, 'good', 3000);
+      after && after();
+    }}], {onShow:m => {
+      const inp = $('nameIn'); inp.focus(); inp.select();
+      inp.onkeydown = e => { if (e.key === 'Enter') m.querySelector('.mBtns .btn:last-child').click(); };
+      $('nameDice').onclick = () => { AU.sfx('click'); inp.value = suggestName(inp.value); };
+    }});
+}
+function openLogoIntro(){
+  showModal('Identidade da cooperativa', `
+    <div class="coopHead"><span class="rc">♻</span><b>${esc(coopName())}</b></div>
+    <p>Com o CNPJ na mão, chegou a hora de criar a <b>identidade da cooperativa</b>: uma logo para a placa do galpão, os uniformes e os caminhões.</p>
+    <p class="muted">Monte com formatos, símbolos, cores e letras prontos. Dá para mudar quando quiser, em <b>Mais › Identidade</b>.</p>`,
+    [{t:'Depois', cls:'alt', fn:() => { if (!S.coop.logo) { S.coop.logo = randomLogo(); updateCoopHeader(); save(); toast('Logo provisória criada', 'Você pode editar quando quiser em Mais › Identidade.', 'fact', 5000); } }},
+     {t:'🎨 Criar a logo', fn:() => openLogoEditor()}]);
+}
+function openLogoEditor(){
+  const L = Object.assign(randomLogo(), S.coop.logo || {});
+  if (!L.sigla) L.sigla = makeSigla(coopName());
+  const opt = (k, v, label, extra) => `<button class="leOpt" data-k="${k}" data-v="${v}">${extra || ''}<span>${label}</span></button>`;
+  const sw = k => LOGO_COLORS.map(c => `<button class="leSw" data-k="${k}" data-v="${c}" style="background:${c}" aria-label="cor ${c}"></button>`).join('');
+  const html = `<div class="logoEd">
+    <div class="lePrev"><canvas id="lePrev" width="360" height="430"></canvas><div class="muted">Prévia ao vivo</div></div>
+    <div class="leOpts">
+      <h4>Formato do fundo</h4><div class="leRow">${LOGO_SHAPES.map(([v, n]) => opt('shape', v, n, `<canvas width="56" height="56" data-th="shape" data-v="${v}"></canvas>`)).join('')}</div>
+      <h4>Símbolo</h4><div class="leRow">${LOGO_SYMBOLS.map(([v, n]) => opt('symbol', v, n, `<canvas width="56" height="56" data-th="symbol" data-v="${v}"></canvas>`)).join('')}</div>
+      <h4>Cor do fundo</h4><div class="leRow">${sw('bg')}</div>
+      <h4>Cor do símbolo</h4><div class="leRow">${sw('sym')}</div>
+      <h4>Cor do texto</h4><div class="leRow">${sw('txt')}</div>
+      <h4>Texto</h4><div class="leRow">${opt('text', 'name', 'Nome completo')}${opt('text', 'sigla', 'Sigla')}
+        <input id="leSigla" maxlength="5" value="${esc(L.sigla)}" aria-label="Sigla"></div>
+      <h4>Fonte</h4><div class="leRow">${LOGO_FONTS.map((f, i) => opt('font', i, f[1], `<b style="font-family:${f[0].replace(/"/g, "'")};font-weight:${f[2]}">Aa</b>`)).join('')}</div>
+    </div></div>`;
+  const paint = m => {
+    const g = $('lePrev').getContext('2d'); drawFullLogo(g, 360, 430, L, coopName());
+    m.querySelectorAll('[data-th]').forEach(c => {
+      const t = c.getContext('2d'); t.clearRect(0, 0, 56, 56);
+      const tmp = Object.assign({}, L, {text:'name'}); tmp[c.dataset.th] = c.dataset.v;
+      if (c.dataset.th === 'shape') { t.save(); t.scale(56, 56); logoShapePath(t, c.dataset.v); t.fillStyle = L.bg; t.fill(); t.restore(); }
+      else drawEmblem(t, 2, 2, 52, tmp);
+    });
+    m.querySelectorAll('[data-k]').forEach(b => b.classList.toggle('on', String(L[b.dataset.k]) === b.dataset.v));
+    $('leSigla').disabled = L.text !== 'sigla';
+  };
+  showModal('🎨 Logo da cooperativa', html, [{t:'Cancelar', cls:'alt'}, {t:'Sorteio 🎲', cls:'blue', keep:true, fn:() => { Object.assign(L, randomLogo(), {text:L.text, sigla:L.sigla, font:L.font}); paint($('modal')); }},
+    {t:'Salvar logo', fn:() => {
+      L.sigla = ($('leSigla').value || makeSigla(coopName())).toUpperCase().slice(0, 5);
+      const first = !S.coop.logo; S.coop.logo = L; updateCoopHeader(); lastSig = ''; save();
+      AU.sfx('ach'); toast(first ? 'Logo criada!' : 'Logo atualizada!', 'Ela já aparece na placa, nos uniformes e nos caminhões.', 'good', 4000);
+    }}], {wide:true, onShow:m => {
+      m.querySelector('.logoEd').addEventListener('click', e => {
+        const b = e.target.closest('[data-k]'); if (!b) return;
+        const k = b.dataset.k; L[k] = k === 'font' ? +b.dataset.v : b.dataset.v; AU.sfx('click'); paint(m);
+      });
+      $('leSigla').oninput = e => { L.sigla = e.target.value.toUpperCase().slice(0, 5); e.target.value = L.sigla; paint(m); };
+      paint(m);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if ($('lePrev')) paint(m); });
+    }});
 }
 
 // =====================================================================
@@ -3311,7 +3593,8 @@ function boot(){
     if (left === 0) return finishSort(false);
     finishSort(true); toast(null, `Você saiu da mesa. ${left} ${left === 1 ? 'item voltou' : 'itens voltaram'} para o monte de misturado.`, '', 3500);
   };
-  updateSoundBtns();
+  updateSoundBtns(); updateCoopHeader();
+  $('btnCfg').onclick = () => { AU.init(); AU.sfx('click'); selectTab('mais'); $('panel').scrollIntoView({behavior:'smooth', block:'start'}); };
   document.addEventListener('pointerdown', () => AU.init(), {once:true});
   setInterval(() => { if (!resetting) save(); }, 5000);
   window.addEventListener('beforeunload', () => { if (!resetting) save(); });
@@ -3323,7 +3606,8 @@ function boot(){
       <p>Você é um(a) catador(a) e guarda seu carrinho num terreno baldio do bairro.</p>
       <p>Cada garrafa, latinha e caixa de papelão que você recolhe deixa de ir para o lixão e volta para a indústria como matéria-prima. Seu trabalho é <b>essencial</b> para a cidade e para o meio ambiente.</p>
       <p>Com o tempo, outros catadores vão se juntar a você. Juntos, vocês vão transformar este terreno numa grande central de reciclagem.</p>`,
-      [{t:'Pular tutorial', cls:'alt', fn:() => { S.tut.done = true; S.tut.step = TUT.length; }}, {t:'Começar!', fn:() => {}}]);
+      [{t:'Pular tutorial', cls:'alt', fn:() => { S.tut.done = true; S.tut.step = TUT.length; openNameModal(true); }}, {t:'Começar!', fn:() => openNameModal(true)}]);
+  } else if (!S.coop.name) { openNameModal(true);
   } else if (off && (off.money > 0.01 || off.col > 1)) {
     const h = Math.floor(off.secs / 3600), m = Math.floor(off.secs % 3600 / 60);
     showModal('Enquanto você estava fora...', `<p>Você ficou fora por ${h ? h + ' h ' : ''}${m} min${off.secs >= 7200 ? ' (a cooperativa conta até 2 horas)' : ''}. A cooperativa continuou trabalhando:</p>
