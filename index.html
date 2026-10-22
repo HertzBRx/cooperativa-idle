@@ -257,6 +257,26 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
   .big{min-width:90px;font-size:15px;padding:10px 6px}
 }
 @media (max-width:420px){ .achGrid{grid-template-columns:1fr} #money{font-size:16px} }
+.tmRow{display:flex;gap:10px;align-items:flex-start;padding:8px;border-bottom:1px solid var(--line)}
+.tmRow:last-child{border-bottom:0}
+.tmPic{width:40px;height:52px;image-rendering:pixelated;background:var(--paper2);border:2px solid var(--line);border-radius:8px;flex:none}
+.tmInfo{flex:1;min-width:0}
+.tmName{font-family:"Fredoka","Nunito",system-ui,sans-serif;font-weight:600;font-size:15px}
+.tmRole{font-size:13px;font-weight:700;color:var(--ink2)}
+.tmEpi{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0}
+.tmEpi span{font-size:11px;background:var(--paper2);border:1px solid var(--line);border-radius:6px;padding:0 5px}
+.tmEpi .none{opacity:.7}
+.tmDays{font-size:12px}
+.tmActs{display:flex;flex-direction:column;gap:4px;flex:none}
+.tmActs .btn{padding:5px 8px;font-size:12px}
+.teamList{background:var(--paper);border:2px solid var(--line);border-radius:12px;max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.filtRow{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 8px}
+.filtRow .cat{flex:none}
+.filtRow .cat:disabled{opacity:.45}
+.vagaGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.vagaBox{border:2px solid var(--line);border-radius:8px;padding:4px 7px;font-size:12px;display:flex;flex-direction:column;background:var(--paper2)}
+.vagaBox.free{border-color:var(--green)}
+@media (max-width:420px){.tab{font-size:12.5px;padding:10px 2px}.tmActs .btn{font-size:11.5px;padding:5px 6px}}
 </style>
 </head>
 <body>
@@ -303,6 +323,7 @@ details.done summary{cursor:pointer;font-weight:700;color:var(--ink2);padding:6p
     <nav id="tabs">
       <button class="tab on" data-tab="coop" id="tab-coop">Cooperativa</button>
       <button class="tab" data-tab="loja" id="tab-loja">Loja<span class="dot hidden" id="dotLoja"></span></button>
+      <button class="tab" data-tab="equipe" id="tab-equipe">Equipe</button>
       <button class="tab" data-tab="ach" id="tab-ach">Conquistas</button>
       <button class="tab" data-tab="mais" id="tab-mais">Mais</button>
     </nav>
@@ -598,7 +619,7 @@ const HOOK = {toast(){}, sfx(){}, ach(){}, event(){}, tip(){}};
 let S = null;
 function newState(){
   return {
-    v:4, money:0, phase:1, items:{}, roles:{coleta:0, triagem:0, venda:0, prensa:0},
+    v:4, money:0, phase:1, items:{}, roles:{coleta:0, triagem:0, venda:0, prensa:0}, members:[], memSeq:0,
     mixed:{}, sep:{}, bale:{}, pellet:{},
     st:{trips:0, streetKg:0, rejStreet:0, autoKg:0, sorted:0, rejOut:0, recycled:0, earned:0, baleKg:0, pelletKg:0, sales:0, hires:0, sortRounds:0, sortLost:0, sortOk:0, sortErr:0,
         cleanTrips:0, perfect:0, streak:0, bestStreak:0, packOk:0, rejOkN:0, buys:0, recM:{}, repassado:0, fairTime:0},
@@ -881,6 +902,7 @@ function makePellets(kg){
 // SIMULAÇÃO
 // =====================================================================
 function tick(dt, offline){
+  syncMembers();
   S.t += dt;
   if (S.ev.length) S.ev = S.ev.filter(e => e.until > S.t);
   const r = rates(), cap = caps();
@@ -935,11 +957,42 @@ function hire(role){
   if (!canHire() || !roleOpen(role) || freeVaga(role) <= 0) return false;
   const c = hireCost(); if (S.money < c) return false;
   S.money -= c; S.roles[role]++; S.st.hires++;
-  return true;
+  const m = {id:S.memSeq++, role, joined:S.t}; S.members.push(m);
+  return m;
 }
-function moveRole(from, to){
-  if (S.roles[from] <= 0 || !roleOpen(to) || freeVaga(to) <= 0) return false;
-  S.roles[from]--; S.roles[to]++; return true;
+// ---- equipe: cada cooperado(a) é uma pessoa; S.roles guarda só as contagens
+function membersOf(role){ return S.members.filter(m => m.role === role); }
+function syncMembers(){ // mantém a lista igual às contagens (saves antigos, ajustes diretos)
+  if (!S.members) S.members = [];
+  if (S.memSeq == null) S.memSeq = S.members.reduce((a, m) => Math.max(a, m.id + 1), 0);
+  for (const r of ROLE_IDS) {
+    let have = 0; for (const m of S.members) if (m.role === r) have++;
+    while (have < S.roles[r]) { S.members.push({id:S.memSeq++, role:r, joined:S.t}); have++; }
+    while (have > S.roles[r]) { const i = S.members.map(m => m.role).lastIndexOf(r); S.members.splice(i, 1); have--; }
+  }
+}
+function setMemberRole(id, to){
+  const m = S.members.find(x => x.id === id);
+  if (!m || m.role === to || !roleOpen(to) || freeVaga(to) <= 0) return false;
+  S.roles[m.role]--; S.roles[to]++; m.role = to; return true;
+}
+function dismissMember(id){
+  const i = S.members.findIndex(x => x.id === id); if (i < 0) return false;
+  S.roles[S.members[i].role]--; S.members.splice(i, 1); S.st.dismissed = (S.st.dismissed || 0) + 1; return true;
+}
+const DIA_S = MES_S / 30; // 1 dia de jogo = 10 segundos
+function memberDays(m){ return Math.max(0, Math.floor((S.t - m.joined) / DIA_S)); }
+// EPIs que a pessoa usa: os comprados para todos; o protetor auricular só perto da prensa e da esteira
+function memberEpis(role){
+  const l = [];
+  if (role === 'coleta' && has('luvas_coleta')) l.push('luvas_coleta');
+  ['luvas_epi', 'botas', 'uniforme', 'oculos'].forEach(id => has(id) && l.push(id));
+  if (has('protetor') && (role === 'prensa' || role === 'triagem' && nI('esteira') > 0)) l.push('protetor');
+  return l;
+}
+function moveRole(from, to){ // muda a pessoa que entrou por último nessa função
+  const l = membersOf(from); if (!l.length) return false;
+  return setMemberRole(l[l.length - 1].id, to);
 }
 function epiFull(){ return ['luvas_epi','botas','uniforme','oculos'].every(has); }
 function reqList(){
@@ -1067,7 +1120,7 @@ function load(){
     for (const k in base) if (d[k] === undefined) d[k] = base[k];
     for (const k in base.st) if (d.st[k] === undefined) d.st[k] = base.st[k];
     for (const k in base.roles) if (d.roles[k] === undefined) d.roles[k] = 0;
-    S = d; return true;
+    S = d; syncMembers(); return true;
   }
   S = base; return false;
 }
@@ -2061,12 +2114,13 @@ function insideStock(x0, x1, floorY, big){
   if (g.vidro > 1 && x < x1 - 10) { rect(x, floorY - 11, 9, 11, '#3f8f3a'); rect(x, floorY - 11, 9, 1, '#6cb04f'); rect(x, floorY - 6, 9, 1, '#2f6f2a'); for (let i = 0; i < 3; i++) px(x + 2 + i * 2, floorY - 12, '#9ad7a0'); x += 12; }
   return x;
 }
-function insideWorkers(n, x0, x1, y, t, seed){
+function memberLook(m){ return personLook(1000 + m.id); } // o mesmo visual no cenário e no painel Equipe
+function insideWorkers(list, x0, x1, y, t){
   const epi = curEpi();
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < list.length; i++) {
     const span = x1 - x0, sp = 5 + i * 2, ph = (t / sp + i * 0.37) % 2, k = ph < 1 ? ph : 2 - ph;
     const walking = (t * 0.5 + i) % 6 < 4;
-    drawPerson(x0 + k * span, y + (i % 2) * 2, personLook(seed + i), walking ? 'carry' : 'work', t + i, epi, ph >= 1);
+    drawPerson(x0 + k * span, y + (i % 2) * 2, memberLook(list[i]), walking ? 'carry' : 'work', t + i, epi, ph >= 1);
   }
 }
 function drawBarracaoInside(t, workers){
@@ -2089,7 +2143,7 @@ function drawBarracaoInside(t, workers){
   for (let i = 0; i < 3; i++) drawBag(x + 20 + i * 14, y + 34, Math.min(1, sepT / 60 - i * 0.6 + 0.3), sepCols[i % sepCols.length]);
   insideStock(x + 64, x + w - 4, y + 36, false);
   insideLamp(x + w / 2, y, y + 4);
-  insideWorkers(Math.min(workers, 2), x + 18, x + w - 18, fy - 1, t, 300);
+  insideWorkers(workers.slice(0, 2), x + 18, x + w - 18, fy - 1, t);
   alpha(0.18, () => rect(x, y, w, h, '#1a0f06')); // penumbra
   alpha(0.3, () => rect(x, y, w, 4, '#000'));
 }
@@ -2119,7 +2173,7 @@ function drawGalpaoInside(t, workers){
   for (let i = 0; i < nbl; i++) drawBale(x + w - 34 + (i % 3) * 10, y + 40 - Math.floor(i / 3) * 7, bc[i % bc.length]);
   insideStock(x + 160 - (nbl ? 36 : 0) - 60, x + w - (nbl ? 38 : 4), y + 46, true);
   for (let i = 0; i < 3; i++) insideLamp(x + 30 + i * 66, y, y + 3);
-  insideWorkers(Math.min(workers, 5), x + 20, x + w - 20, fy - 2, t, 320);
+  insideWorkers(workers.slice(0, 5), x + 20, x + w - 20, fy - 2, t);
   alpha(0.12, () => rect(x, y, w, h, '#1a1410'));
   alpha(0.3, () => rect(x, y, w, 5, '#000'));
   // pilares na frente do interior
@@ -2131,11 +2185,12 @@ function outsideSpots(){
   const tri = ne > 0 ? 10 + Math.min(nm, 2) : nm > 0 ? 2 * Math.min(nm, 4) : 2 * Math.min(nl, 2);
   return {triagem:tri, prensa:Math.min(nI('prensa'), 2) + (nI('linha_graos') > 0 ? 2 : 0), venda:has('balanca') ? Math.min(nI('balanca'), 3) : 0};
 }
-function insideCount(){
-  const o = outsideSpots();
-  let n = ['triagem', 'prensa', 'venda'].reduce((a, r) => a + Math.max(0, (S.roles[r] || 0) - o[r]), 0);
-  if (coopCount() >= 3) n++; // alguém organizando o estoque
-  return n;
+function insideMembers(){ // quem não cabe nos postos de fora trabalha lá dentro
+  const o = outsideSpots(), l = [];
+  ['triagem', 'prensa', 'venda'].forEach(r => l.push(...membersOf(r).slice(o[r])));
+  const extraCol = membersOf('coleta')[3]; // alguém descarregando e organizando o estoque
+  if (extraCol) l.unshift(extraCol);
+  return l;
 }
 function buildBaseBg(){
   const sig = baseSig();
@@ -2169,9 +2224,10 @@ function buildBaseBg(){
 const ZONES = {sort:{x:52, y:130}, sell:{x:288, y:126}, press:{x:232, y:116}, pile:{x:52, y:166}}; // sort e sell seguem o cenário a cada quadro
 let rainUntil = 0;
 function drawBaseDynamic(t){
+  syncMembers();
   const ph = S.phase, epi = curEpi();
-  if (ph >= 3 && ph <= 4) drawBarracaoInside(t, G_mode === 'base' ? insideCount() : 0);
-  if (ph >= 5) drawGalpaoInside(t, G_mode === 'base' ? insideCount() : 0);
+  if (ph >= 3 && ph <= 4) drawBarracaoInside(t, G_mode === 'base' ? insideMembers() : []);
+  if (ph >= 5) drawGalpaoInside(t, G_mode === 'base' ? insideMembers() : []);
   // árvores (balançam ao vento)
   if (!has('terreno')) drawTree(354, 112, 1.2, t, 'base');
   if (ph <= 4) drawTree(372, 200, 1, t, 'base');
@@ -2297,16 +2353,16 @@ function drawBaseDynamic(t){
     } else drawPerson(ph <= 2 ? 92 : 102, ph <= 2 ? 172 : 192, PLAYER_LOOK, ph <= 2 && mixT > 0 ? 'bend' : 'stand', t, pe, false);
     drawn++;
   }
-  let pid = 0;
-  const putRole = (n, spots, pose) => {
-    const k = Math.min(n, spots.length, MAXP - drawn);
-    for (let i = 0; i < k; i++) { const s = spots[i]; drawPerson(s[0], s[1], personLook(pid++), s[2] || pose, t + i * 0.37, epi, i % 2 === 1); }
+  const putRole = (role, spots, pose) => {
+    const ms = membersOf(role), k = Math.min(ms.length, spots.length, MAXP - drawn);
+    for (let i = 0; i < k; i++) { const s = spots[i]; drawPerson(s[0], s[1], memberLook(ms[i]), s[2] || pose, t + i * 0.37, epi, i % 2 === 1); }
     drawn += k; return k;
   };
   const shown = {};
-  shown.triagem = putRole(S.roles.triagem, triSpots, 'work');
-  shown.prensa = putRole(S.roles.prensa, pressSpots, 'work');
-  shown.venda = putRole(S.roles.venda, sellSpots, 'stand');
+  shown.triagem = putRole('triagem', triSpots, 'work');
+  shown.prensa = putRole('prensa', pressSpots, 'work');
+  shown.venda = putRole('venda', sellSpots, 'stand');
+  const colMs = membersOf('coleta');
   const nCol = S.roles.coleta, ncam = Math.min(nI('caminhao'), 2);
   const colShown = Math.min(nCol, 3, MAXP - drawn);
   for (let i = 0; i < colShown; i++) {
@@ -2321,7 +2377,7 @@ function drawBaseDynamic(t){
     const moving = tt < 8 || (tt >= 11 && tt < 19);
     if (veh === 'truck') drawTruck(x - 10, yy + 4, '#2f7d4a', flip, fill > 0.3, moving ? t : null);
     else {
-      drawPerson(flip ? x + 11 : x - 11, yy, personLook(100 + i), moving ? 'push' : 'bend', t, epi, flip);
+      drawPerson(flip ? x + 11 : x - 11, yy, memberLook(colMs[i]), moving ? 'push' : 'bend', t, epi, flip);
       if (veh === 'tri') drawTriciclo(x, yy, fill, cols, flip); else drawCarroca(x, yy, fill, cols, flip);
       if (moving && Math.random() < 0.08) spawnFx('base', x, yy, 'dust');
     }
@@ -3630,8 +3686,85 @@ function chooseRoute(ok){
 
 const NOMES = ['Dona Cida', 'Seu Jorge', 'Rosângela', 'Tião', 'Maria das Dores', 'Jefferson', 'Neide', 'Severino', 'Luana', 'Raimundo',
   'Josefa', 'Wellington', 'Benedita', 'Carlão', 'Francisca', 'Edvaldo', 'Sônia', 'Marquinhos', 'Lúcia', 'Antônio', 'Kátia', 'Zé Carlos',
-  'Aparecida', 'Renato', 'Irene', 'Joãozinho', 'Vera', 'Paulo', 'Dalva', 'Rogério'];
-function memberName(i){ return NOMES[i % NOMES.length]; }
+  'Aparecida', 'Renato', 'Irene', 'Joãozinho', 'Vera', 'Paulo', 'Dalva', 'Rogério', 'Rosa', 'Cícero', 'Elaine', 'Damião', 'Graça', 'Adriano',
+  'Jussara', 'Valdir', 'Tânia', 'Robson', 'Marlene', 'Gilberto', 'Cleide', 'Nivaldo', 'Patrícia', 'Moisés', 'Solange', 'Domingos', 'Simone',
+  'Valdemar', 'Ivone', 'Leandro', 'Conceição', 'Sebastião', 'Rita', 'Juninho', 'Fátima', 'Alemão', 'Bete', 'Osvaldo'];
+const INICIAIS = 'SAMPCRLBFGNOTV';
+function memberName(i){ // depois de usar todos os nomes, aparecem sobrenomes abreviados
+  const k = Math.floor(i / NOMES.length);
+  return NOMES[i % NOMES.length] + (k ? ' ' + INICIAIS[(k - 1) % INICIAIS.length] + '.' : '');
+}
+// ---------- equipe
+const EPI_NM = {luvas_coleta:'🧤 Luvas de coleta', luvas_epi:'🧤 Luvas', botas:'🥾 Botas', uniforme:'🦺 Uniforme', oculos:'🥽 Óculos', protetor:'🎧 Protetor auricular'};
+const ROLE_IC = {coleta:'🛒', triagem:'✋', venda:'⚖', prensa:'🧱'};
+const portraitCache = {};
+function portraitURL(key, look, epis){
+  const k = key + '|' + epis.join();
+  if (portraitCache[k]) return portraitCache[k];
+  const c = mkCanvas(20, 26), g = c.getContext('2d'), old = CX; CX = g;
+  drawPerson(10, 24, look, 'stand', 0.3, {gloves:epis.includes('luvas_epi') || epis.includes('luvas_coleta'), boots:epis.includes('botas'),
+    uniform:epis.includes('uniforme'), goggles:epis.includes('oculos'), ear:epis.includes('protetor')}, false);
+  CX = old;
+  return portraitCache[k] = c.toDataURL();
+}
+function daysTxt(d){ return d === 0 ? 'entrou hoje' : d === 1 ? 'há 1 dia' : `há ${fmtNum(d)} dias`; }
+let teamFilter = 'all';
+function teamRow(o){
+  return `<div class="tmRow"><img class="tmPic" src="${o.pic}" alt=""><div class="tmInfo"><div class="tmName">${o.name}</div>
+    <div class="tmRole">${o.role}</div><div class="tmEpi">${o.epis.length ? o.epis.map(e => `<span>${EPI_NM[e]}</span>`).join('') : '<span class="none">Sem EPI ainda</span>'}</div>
+    <div class="muted tmDays">${o.days}</div></div>${o.acts || ''}</div>`;
+}
+function renderTeam(){
+  const v = vagas(), n = coopCount(), open = ROLE_IDS.filter(roleOpen);
+  let h = `<div class="card"><h3>👥 Equipe: ${n + 1} pessoa${n ? 's' : ''}</h3>
+    <div class="muted">Você e ${n} cooperado${n === 1 ? '' : 's'}${S.phase >= 2 ? ` · limite da fase: ${maxCoop()}` : ''}.</div>`;
+  if (open.length) h += `<div class="vagaGrid">${open.map(r => { const f = Math.max(0, v[r] - S.roles[r]);
+    return `<div class="vagaBox ${f ? 'free' : ''}"><b>${ROLE_IC[r]} ${ROLES[r].n}</b><span>${S.roles[r]} / ${v[r]} · ${f ? f + ' vaga' + (f > 1 ? 's livres' : ' livre') : 'sem vaga'}</span></div>`; }).join('')}</div>`;
+  else h += `<p class="muted">Na fase 1 você trabalha sozinho(a). Na fase 2 dá para chamar os primeiros colegas.</p>`;
+  if (S.phase >= 2) h += `<button class="btn wide" data-act="hire" style="margin-top:8px" ${canHire() && ROLE_IDS.some(r => roleOpen(r) && freeVaga(r) > 0) && S.money >= hireCost() ? '' : 'disabled'}>➕ Admitir cooperado(a) · ${fmtMoney(hireCost())}</button>`;
+  h += `</div>`;
+  if (open.length) h += `<div class="filtRow"><button class="cat ${teamFilter === 'all' ? 'on' : ''}" data-filt="all">Todos</button>${ROLE_IDS.map(r =>
+    `<button class="cat ${teamFilter === r ? 'on' : ''}" data-filt="${r}" ${roleOpen(r) ? '' : 'disabled'}>${ROLE_IC[r]} ${r === 'prensa' ? 'Prensa' : ROLES[r].n} (${S.roles[r]})</button>`).join('')}</div>`;
+  const rows = [];
+  const youEp = memberEpis('coleta');
+  if (teamFilter === 'all') rows.push(teamRow({pic:portraitURL('voce', PLAYER_LOOK, youEp), name:'Você',
+    role:S.phase >= 2 ? 'Fundador(a) · vai para a rua e faz a triagem' : 'Catador(a) · vai para a rua e faz a triagem',
+    epis:youEp, days:'desde o começo · ' + daysTxt(Math.floor(S.t / DIA_S)).replace('entrou hoje', 'hoje')}));
+  const list = S.members.filter(m => teamFilter === 'all' || m.role === teamFilter);
+  list.forEach(m => {
+    const ep = memberEpis(m.role);
+    rows.push(teamRow({pic:portraitURL('m' + m.id, memberLook(m), ep), name:esc(memberName(m.id)), role:`${ROLE_IC[m.role]} ${ROLES[m.role].n}`, epis:ep,
+      days:'Na cooperativa ' + daysTxt(memberDays(m)),
+      acts:`<div class="tmActs"><button class="btn alt" data-swap="${m.id}">🔁 Trocar função</button><button class="btn red" data-fire="${m.id}">Desligar</button></div>`}));
+  });
+  if (!list.length && teamFilter !== 'all') rows.push(`<p class="muted" style="padding:8px">Ninguém nesta função ainda.</p>`);
+  h += `<div class="teamList">${rows.join('')}</div>`;
+  return h;
+}
+function openSwap(id){
+  const m = S.members.find(x => x.id === id); if (!m) return;
+  const nm = esc(memberName(m.id));
+  const html = `<p>Função atual de <b>${nm}</b>: ${ROLES[m.role].n}. Escolha a nova função:</p>` + ROLE_IDS.map(r => {
+    const open = roleOpen(r), fv = open ? freeVaga(r) : 0, cur = r === m.role;
+    return `<button class="roleChoice" data-to="${r}" ${!cur && open && fv > 0 ? '' : 'disabled'}><b>${open ? ROLE_IC[r] : '🔒'} ${ROLES[r].n}</b> <span class="muted">· ${cur ? 'função atual' : !open ? 'libera na fase ' + ROLES[r].ph : fv > 0 ? fv + ' vaga' + (fv > 1 ? 's livres' : ' livre') : 'sem vaga livre'}</span></button>`;
+  }).join('') + `<p class="muted" style="margin-top:6px">As vagas dependem da estrutura: carroças, lonas, mesas, balanças e prensas.</p>`;
+  showModal('Trocar função', html, [{t:'Cancelar', cls:'alt'}], {onShow:md => md.querySelectorAll('[data-to]').forEach(b => b.onclick = () => {
+    hideModal();
+    if (setMemberRole(id, b.dataset.to)) { AU.sfx('click'); toast(null, `<b>${nm}</b> agora trabalha na ${ROLES[b.dataset.to].n}.`, '', 2600); }
+    lastSig = ''; renderPanel(true);
+  })});
+}
+function openDismiss(id){
+  const m = S.members.find(x => x.id === id); if (!m) return;
+  const nm = esc(memberName(m.id));
+  showModal('Desligar da cooperativa?', `<p>Tem certeza de que <b>${nm}</b> (${ROLES[m.role].n}, ${daysTxt(memberDays(m)).replace('entrou hoje', 'entrou hoje')} na cooperativa) vai deixar o grupo?</p>
+    <div class="card note">💡 Numa cooperativa, os cooperados são <b>sócios</b>, não empregados. Por isso, o desligamento normalmente é decidido em <b>assembleia</b>, seguindo as regras do estatuto.</div>
+    <p class="muted">A vaga fica livre e não há devolução do custo de admissão.</p>`,
+    [{t:'Cancelar', cls:'alt'}, {t:'Desligar', cls:'red', fn:() => {
+      if (dismissMember(id)) { AU.sfx('deny'); toast(null, `${nm} saiu da cooperativa. A vaga de ${ROLES[m.role].n} ficou livre.`, '', 3200); }
+      lastSig = ''; renderPanel(true);
+    }}]);
+}
 function toggleAutoSell(){
   S.autoSell = !S.autoSell; AU.sfx('click');
   toast(null, S.autoSell ? '⚖ Venda automática <b>ligada</b>: o material separado é vendido assim que fica pronto.' : '⏸ Venda automática <b>pausada</b>: o material fica guardado até você tocar em <b>Vender agora</b>.', '', 3500, 'autosell');
@@ -3815,7 +3948,7 @@ function renderPeople(){
       <button class="btn wide" data-act="hire" ${canHire() && anyVaga && S.money >= c ? '' : 'disabled'}>➕ Admitir cooperado(a) · ${fmtMoney(c)}</button>`;
     if (!canHire()) h += `<div class="limitMsg" style="margin-top:6px">Limite de pessoas da fase atingido (${maxCoop()}). A próxima fase libera mais espaço.</div>`;
     else if (!anyVaga) h += `<div class="lockMsg" style="margin-top:6px">Sem vagas livres. Compre uma carroça, balança, lona de triagem ou mesa para abrir vagas.</div>`;
-    h += `</div>`;
+    h += `<button class="btn blue wide" data-act="team" style="margin-top:6px">👥 Ver a equipe: nomes, funções e EPIs</button></div>`;
     ROLE_IDS.forEach(r => {
       const R = ROLES[r];
       if (!roleOpen(r)) { h += `<div class="card locked"><div class="roleRow"><div><div class="rn">🔒 ${S.phase + 1 >= R.ph ? R.n : '???'}</div><div class="muted">Libera na fase ${R.ph}.</div></div></div></div>`; return; }
@@ -3899,6 +4032,8 @@ function panelSig(){
     else ITEMS.forEach(it => { if (it.cat === curCat) s += maxAffordable(it) + ',' + (S.money >= itemCost(it) ? 1 : 0) + ';'; });
     return s;
   }
+  if (curTab === 'equipe') return 'e' + teamFilter + JSON.stringify(S.roles) + S.members.map(m => m.id + m.role[0]).join() + JSON.stringify(vagas()) + S.phase
+    + memberEpis('prensa').join() + (S.money >= hireCost()) + hireCost() + Math.floor(S.t / DIA_S);
   if (curTab === 'ach') return 'a' + achCount() + nearAch(3).map(x => Math.round(x.p * 50)).join() + ACHS.filter(a => a.need > 1 && !S.ach[a.id]).map(a => Math.round(achProgress(a) * 25)).join('');
   return 'm' + S.set.music + S.set.sfx + Math.round(S.st.earned) + S.st.trips + S.st.sortRounds + logoSig() + coopName() + S.phase;
 }
@@ -3909,7 +4044,9 @@ function renderPanel(force){
   lastSig = sig;
   const body = $('tabBody'), st = body.scrollTop;
   const openDetails = body.querySelector('details.done')?.open;
-  body.innerHTML = curTab === 'coop' ? renderCoop() : curTab === 'loja' ? renderShop() : curTab === 'ach' ? renderAch() : renderMore();
+  const tl = body.querySelector('.teamList'), tst = tl ? tl.scrollTop : 0;
+  body.innerHTML = curTab === 'coop' ? renderCoop() : curTab === 'loja' ? renderShop() : curTab === 'equipe' ? renderTeam() : curTab === 'ach' ? renderAch() : renderMore();
+  const tl2 = body.querySelector('.teamList'); if (tl2) tl2.scrollTop = tst;
   if (openDetails) { const d = body.querySelector('details.done'); if (d) d.open = true; }
   body.scrollTop = st;
 }
@@ -3923,6 +4060,9 @@ $('tabBody').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b || b.disabled) return;
   AU.init();
   if (b.dataset.cat) { AU.sfx('click'); curCat = b.dataset.cat; lastSig = ''; renderPanel(true); return; }
+  if (b.dataset.filt) { AU.sfx('click'); teamFilter = b.dataset.filt; lastSig = ''; renderPanel(true); const tl = $('tabBody').querySelector('.teamList'); if (tl) tl.scrollTop = 0; return; }
+  if (b.dataset.swap) { AU.sfx('click'); openSwap(+b.dataset.swap); return; }
+  if (b.dataset.fire) { AU.sfx('click'); openDismiss(+b.dataset.fire); return; }
   if (b.dataset.buy) {
     const q = +b.dataset.q; const it = ITEM[b.dataset.buy];
     const got = buy(it.id, q);
@@ -3936,6 +4076,7 @@ $('tabBody').addEventListener('click', e => {
   else if (act === 'sell') doSell();
   else if (act === 'sellMixed') showModal('Vender misturado?', `<p>O atravessador paga <b>${fmtMoney(mixedValue())}</b> por todo o material misturado (30% do valor). Triando antes, você ganha bem mais.</p>`, [{t:'Cancelar', cls:'alt'}, {t:'Vender misturado', cls:'red', fn:sellMixedNow}]);
   else if (act === 'hire') openHire();
+  else if (act === 'team') { selectTab('equipe'); return; }
   else if (act === 'music') toggleMusic();
   else if (act === 'sfx') toggleSfx();
   else if (act === 'help') showHelp();
@@ -3988,12 +4129,13 @@ function openHire(){
   }).join('');
   showModal('Admitir cooperado(a)', html, [{t:'Cancelar', cls:'alt'}], {onShow:m => m.querySelectorAll('[data-role]').forEach(b => b.onclick = () => {
     hideModal();
-    if (hire(b.dataset.role)) {
+    const nm = hire(b.dataset.role);
+    if (nm) {
       AU.sfx('buy');
       const R = ROLES[b.dataset.role];
-      toast('Bem-vindo(a) à cooperativa!', `Nova pessoa na função ${R.n}.`, 'good');
+      toast(`Bem-vindo(a), ${esc(memberName(nm.id))}!`, `Nova pessoa na função ${R.n}. Veja todos na aba Equipe.`, 'good');
       if (b.dataset.role === 'coleta') tipOnce('hire_col', 'Coleta automática', 'O coletor sai com a carroça e traz material misturado para a base, mesmo quando você não está na rua.');
-      if (b.dataset.role === 'venda' && !S.tips.hire_ven) { S.tips.hire_ven = 1; toast('💡 Venda automática', `Agora <b>${memberName(S.st.hires - 1)}</b> vende o material separado automaticamente. Você pode pausar a venda para guardar estoque e vender quando o preço subir: use o botão perto da balança.`, 'fact', 10000); }
+      if (b.dataset.role === 'venda' && !S.tips.hire_ven) { S.tips.hire_ven = 1; toast('💡 Venda automática', `Agora <b>${esc(memberName(nm.id))}</b> vende o material separado automaticamente. Você pode pausar a venda para guardar estoque e vender quando o preço subir: use o botão perto da balança.`, 'fact', 10000); }
       if (b.dataset.role === 'triagem') tipOnce('hire_tri', 'Triagem automática', 'Agora a triagem acontece sozinha. Você ainda pode fazer a triagem você mesmo(a) para ganhar um bônus de capricho.');
       lastSig = ''; renderPanel(true);
     }
