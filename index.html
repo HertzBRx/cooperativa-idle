@@ -641,6 +641,10 @@ function caps(){
   return {mixed, sep};
 }
 function sepUsed(){ return sum(S.sep) + 0.5 * (sum(S.bale) + sum(S.pellet)); }
+// espaço já prometido a material que ainda vai entrar (carrinho na rua, itens na mesa de triagem); não vai para o save
+const STOCK_RES = {mixed:0, sep:0};
+function mixedSpace(){ return Math.max(0, caps().mixed - sum(S.mixed) - STOCK_RES.mixed); }
+function sepSpace(){ return Math.max(0, caps().sep - sepUsed() - STOCK_RES.sep); }
 function vagas(){
   return {
     coleta: nI('carroca') + nI('triciclo') + 2 * nI('caminhao'),
@@ -779,7 +783,7 @@ function sortKg(amount){
   const tot = sum(S.mixed); if (tot <= 1e-6) return 0;
   amount = Math.min(amount, tot);
   const matShare = (tot - (S.mixed.rej || 0)) / tot;
-  const space = caps().sep - sepUsed();
+  const space = sepSpace();
   if (amount * matShare > space) { if (space <= 0.01) { S._blkTri = true; return 0; } amount = space / Math.max(matShare, 1e-6); S._blkTri = true; }
   const out = takeProp(S.mixed, Object.keys(S.mixed), amount);
   for (const k in out) {
@@ -845,7 +849,7 @@ function takeSortBatch(){
   const tot = sum(S.mixed); if (tot <= 0.05) return null;
   let batch = Math.min(tot, sortBatchKg());
   const matShare = (tot - (S.mixed.rej || 0)) / tot;
-  const space = caps().sep - sepUsed();
+  const space = sepSpace();
   if (batch * matShare > space) { if (space <= 0.5) return {full:true}; batch = space / Math.max(matShare, 1e-6); }
   return takeProp(S.mixed, Object.keys(S.mixed), batch);
 }
@@ -853,10 +857,14 @@ function takeSortBatch(){
 function sortItem(m, kg, ok){
   S.st.sorted += kg;
   if (m === 'rej') { S.st.rejOut += kg; return; }
-  if (ok) S.sep[m] = (S.sep[m] || 0) + kg;
+  if (ok) { // se o separado lotou nesse meio tempo, o que não cabe volta para o misturado
+    const room = Math.max(0, caps().sep - sepUsed() - Math.max(0, STOCK_RES.sep - kg)), put = Math.min(kg, room);
+    if (put > 0) S.sep[m] = (S.sep[m] || 0) + put;
+    if (kg - put > 1e-6) { S.st.sorted -= kg - put; returnToMixed(m, kg - put); }
+  }
   else { S.st.rejOut += kg; S.st.sortLost += kg; }
 }
-function returnToMixed(m, kg){ S.mixed[m] = (S.mixed[m] || 0) + kg; }
+function returnToMixed(m, kg){ const put = Math.min(kg, Math.max(0, caps().mixed - sum(S.mixed))); if (put > 0) S.mixed[m] = (S.mixed[m] || 0) + put; }
 function makeBales(kg){
   const keys = MAT_IDS.filter(m => MATS[m].bale && !(MATS[m].pellet && S.roles.prensa > 0 && nI('linha_graos') > 0));
   const out = takeProp(S.sep, keys, kg); let w = 0;
@@ -879,8 +887,8 @@ function tick(dt, offline){
   S._blkCol = false; S._blkTri = false;
   const inflow = (r.col + r.extra) * dt;
   if (inflow > 0) {
-    const space = cap.mixed - sum(S.mixed);
-    if (space <= 0) S._blkCol = true;
+    const space = mixedSpace();
+    if (space <= 0.001) S._blkCol = true;
     else {
       const a = Math.min(inflow, space); if (a < inflow) S._blkCol = true;
       const fc = r.col / (r.col + r.extra);
@@ -998,8 +1006,9 @@ function fireEvent(forceId){
   const ev = {id:e.id, t:e.t, d:e.d, good:e.good};
   const r = rates();
   if (e.id === 'doacao') {
-    const kg = Math.max(15, Math.round((r.col + r.extra) * 40));
-    addMixed(kg, 0.05); ev.d = `Um comércio do bairro doou ${fmtKg(kg)} de material para a cooperativa.`;
+    const kg = Math.min(Math.max(15, Math.round((r.col + r.extra) * 40)), Math.floor(mixedSpace()));
+    if (kg >= 1) { addMixed(kg, 0.05); ev.d = `Um comércio do bairro doou ${fmtKg(kg)} de material para a cooperativa.`; }
+    else ev.d = 'Um comércio do bairro quis doar material, mas o estoque de misturado está cheio. Faça a triagem para abrir espaço!';
   } else if (e.id === 'escola') {
     const v = Math.max(40, Math.round(incomeEstimate() * 25));
     addMoney(v); ev.d = `Uma escola visitou a cooperativa para aprender sobre reciclagem e deixou uma doação de ${fmtMoney(v)}.`;
@@ -3059,7 +3068,9 @@ function startTrip(routeId){
   S.route = route.id;
   let total = Math.round(route.items * (1 + 0.15 * nI('conhecimento')));
   if (route.id === 'feira' && evOn('feira2')) total *= 2;
-  trip = {route, items:[], cart:{}, cartKg:0, cap:playerCap(), time:tripTime(), left:tripTime(), elapsed:0, total, spawned:0,
+  const space = Math.floor(mixedSpace());
+  if (space < 1) { toast(null, FULL_MSG, 'bad', 3500, 'full'); return; }
+  trip = {route, items:[], cart:{}, cartKg:0, cap:Math.min(playerCap(), space), fullCap:playerCap(), time:tripTime(), left:tripTime(), elapsed:0, total, spawned:0,
           got:0, rejN:0, drag:null, flying:[], helpers:[], lastSec:99, ended:false, cartRect:{x:140, y:60, w:46, h:40},
           tut:!S.tut.done && S.st.trips === 0, bend:0, vols:[], lastRej:-1};
   if (route.id === 'feira' && evOn('feira2')) S.flags.feiraDia = 1;
@@ -3168,8 +3179,9 @@ function endTrip(timeout){
   if (timeout) { AU.sfx('end'); floatText('Tempo esgotado!', SW / 2, SH / 2, 'bad', true); }
   const t = trip;
   setTimeout(() => {
-    let matKg = 0;
-    for (const k in t.cart) { S.mixed[k] = (S.mixed[k] || 0) + t.cart[k]; if (k !== 'rej') matKg += t.cart[k]; }
+    let matKg = 0; t.unloaded = true;
+    const room = Math.max(0, caps().mixed - sum(S.mixed)), f = t.cartKg > room ? room / t.cartKg : 1; // nunca passa do limite
+    for (const k in t.cart) { S.mixed[k] = (S.mixed[k] || 0) + t.cart[k] * f; if (k !== 'rej') matKg += t.cart[k]; }
     S.st.trips++; S.st.streetKg += t.cartKg; S.st.rejStreet += (t.cart.rej || 0);
     if (matKg >= 10 && !(t.cart.rej > 0)) { S.flags.limpa = 1; S.st.cleanTrips++; }
     S.vols.push(...t.vols); if (S.vols.length > 60) S.vols.splice(0, S.vols.length - 60);
@@ -3306,15 +3318,16 @@ const PLURAL = {papelao:'Papelão', papel:'Papel e jornal', pet:'Garrafas PET', 
 function takeSortVolumes(){
   const tot = sum(S.mixed); if (tot <= 0.05) return null;
   let target = Math.min(tot, sortBatchKg());
-  const matShare = (tot - (S.mixed.rej || 0)) / tot, space = caps().sep - sepUsed();
-  if (target * matShare > space) { if (space <= 0.5) return {full:true}; target = space / Math.max(matShare, 1e-6); }
+  const matShare = (tot - (S.mixed.rej || 0)) / tot, space = sepSpace();
+  let over = 1.15;
+  if (target * matShare > space) { if (space <= 0.5) return {full:true}; target = space / Math.max(matShare, 1e-6); over = 1; }
   const groups = {}, opened = []; let took = 0;
   const add = (key, m, kg, extra) => { const g = groups[key] || (groups[key] = Object.assign({m, kg:0}, extra)); g.kg += kg; };
   while (S.vols.length && took < target) {
     const v = S.vols[0];
     let vk = 0; for (const m in v.p) vk += Math.min(v.p[m], S.mixed[m] || 0);
     if (vk < 0.05) { S.vols.shift(); continue; }
-    if (took > 0 && took + vk > target * 1.15) break;
+    if (took > 0 && took + vk > target * over) break;
     // no máximo 8 tipos diferentes por rodada: o resto fica para o próximo lote
     const pk0 = v.v === 'rej' ? null : (VOL_DEF[v.v] || {}).pack;
     const newKeys = Object.keys(v.p).map(m => m === 'rej' ? 'rej' + v.r : m === pk0 ? 'pack_' + m : m).filter(k => !groups[k]);
@@ -3573,9 +3586,24 @@ function drawRoutePreview(c, r){
     g.fillStyle = gr; g.fillRect(0, 0, 144, 40); g.drawImage(drawStreetBg(r), 0, 0, 144, 80);
   } else { g.fillStyle = '#3a2a1c'; g.fillRect(0, 0, 144, 80); }
 }
-function chooseRoute(){
+function sortActTxt(){ // o nome da ação combina com onde a triagem acontece
+  if (nI('esteira') > 0) return 'Ir para a esteira de triagem';
+  if (nI('mesa') > 0) return 'Ir para a mesa de triagem';
+  if (nI('lona_triagem') > 0) return 'Triar na lona';
+  return 'Fazer triagem';
+}
+const FULL_MSG = 'Estoque cheio: faça a triagem ou venda antes de sair.';
+function chooseRoute(ok){
   if (busy || G_mode !== 'base') return;
   AU.init();
+  const space = Math.floor(mixedSpace());
+  if (space < 1) { toast(null, '📦 ' + FULL_MSG, 'bad', 3500, 'full'); return; }
+  if (!ok && space < playerCap()) {
+    showModal('Pouco espaço no estoque', `<p><b>Só cabem mais ${fmtKg(space)} no estoque</b> de material misturado.</p>
+      <p class="muted">Nesta saída, o carrinho vai levar no máximo ${fmtKg(space)} (em vez de ${fmtKg(playerCap())}). Para aproveitar a saída inteira, faça a triagem ou venda antes.</p>`,
+      [{t:'Voltar', cls:'alt'}, {t:'Sair mesmo assim', fn:() => chooseRoute(true)}]);
+    return;
+  }
   const open = ROUTES.filter(routeOn);
   if (open.length === 1 || !S.tut.done && S.st.trips === 0) { startTrip(open[0].id); return; }
   const html = ROUTES.map(r => {
@@ -3594,7 +3622,7 @@ function chooseRoute(){
       <div><div class="rnm">${on ? '' : '🔒 '}${on || S.phase + 1 >= r.ph ? r.n : '???'}</div>
       <div class="muted">${on ? r.d + feira + '<br>Materiais: ' + mats + ' · Rejeito: ' + (r.rej >= 0.25 ? 'alto' : r.rej >= 0.12 ? 'médio' : r.rej >= 0.05 ? 'baixo' : 'quase nenhum') : lock}</div></div></button>`;
   }).join('');
-  showModal('Para onde vamos?', `<p class="muted">Tempo: ${tripTime()} s · Carrinho: ${playerCap()} kg</p>${html}`, [{t:'Cancelar', cls:'alt'}], {onShow:m => {
+  showModal('Para onde vamos?', `<p class="muted">Tempo: ${tripTime()} s · Carrinho: ${Math.min(playerCap(), space)} kg</p>${html}`, [{t:'Cancelar', cls:'alt'}], {onShow:m => {
     m.querySelectorAll('[data-route]').forEach(b => b.onclick = () => { hideModal(); startTrip(b.dataset.route); });
     m.querySelectorAll('[data-prev]').forEach(c => drawRoutePreview(c, routeById(c.dataset.prev)));
   }});
@@ -3688,15 +3716,19 @@ function sellableValue(){
 function renderCoop(){
   const P = PHASES[S.phase - 1], N = PHASES[S.phase];
   const cap = caps(), mixT = sum(S.mixed), sepU = sepUsed(), r = rates();
-  let h = `<div class="card"><h3>Fase ${S.phase} de 10 · ${P.name}</h3>`;
-  if (N) {
-    const prog = phaseProgress();
-    h += `<div class="pbar"><div style="width:${prog * 100}%"></div></div>
-      <div class="muted" style="margin:6px 0 4px">Próxima fase: <b>${N.name}</b></div>`;
-    goalLines().forEach(l => { h += `<div class="req"><span class="${l.ok ? 'ok' : 'no'}">${l.ok ? '✔' : '✘'}</span><span>${l.txt}</span>${l.v ? `<span class="v">${l.v}</span>` : ''}</div>`; });
-    h += `<button class="btn wide ${canAdvance() ? 'yellow glow' : ''}" data-act="advance" ${canAdvance() ? '' : 'disabled'}>${canAdvance() ? '🏗 Avançar para a fase ' + (S.phase + 1) : 'Complete os marcos acima para avançar'}</button>`;
-  } else h += `<p>Vocês chegaram ao topo: a cooperativa é referência regional! Continue crescendo, liberando os últimos itens e conquistas.</p>`;
-  h += `</div>`;
+  // o objetivo da próxima fase fica só no painel abaixo do cenário; aqui vai um retrato da cooperativa
+  const line = (lb, v) => `<div class="req"><span>${lb}</span><span class="v">${v}</span></div>`;
+  let h = `<div class="card"><h3>🏠 ${coopName()} · fase ${S.phase} de 10</h3>
+    <div class="muted" style="margin-bottom:4px">${P.name}${N ? ` · próxima: <b>${N.name}</b> (veja o objetivo abaixo do cenário)` : ' · topo da jornada!'}</div>
+    ${line('👥 Pessoas trabalhando', `${1 + coopCount()}${S.phase >= 2 ? ' / ' + (maxCoop() + 1) : ''}`)}
+    ${line('♻ Material reciclado (vendido)', fmtKg(S.st.recycled))}
+    ${line('🛒 Saídas para a rua', fmtNum(S.st.trips) + ' · ' + fmtKg(S.st.streetKg))}
+    ${line('✋ Material triado', fmtKg(S.st.sorted))}
+    ${line('🚫 Rejeito encaminhado', fmtKg(S.st.rejOut))}
+    ${line('⚖ Vendas feitas', fmtNum(S.st.sales))}
+    ${line('💵 Total ganho', fmtMoney(S.st.earned))}
+    ${line('🏆 Conquistas', `${achCount()} / ${ACHS.length}`)}
+  </div>`;
   if (shareOn()) {
     const mot = motivation();
     h += `<div class="card"><h3>💰 ${cashLabel()} e repasse</h3>
@@ -3713,8 +3745,8 @@ function renderCoop(){
   }
   h += `<div class="card"><h3>Estoque</h3>
     <div class="stockRow"><div class="stockHead"><span>📦 Misturado</span><span>${fmtKg(mixT)} / ${fmtKg(cap.mixed)}</span></div>${stockBar(mixT, cap.mixed)}
-    ${chipsOf(S.mixed, true)}${mixT > cap.mixed ? '<div class="warnTxt">Estoque cheio: a coleta automática parou. Faça a triagem!</div>' : S._blkCol ? '<div class="warnTxt">Estoque cheio: a coleta automática parou.</div>' : ''}
-    <div class="row" style="margin-top:6px"><button class="btn alt" data-act="sort" style="flex:1" ${mixT > 0.05 ? '' : 'disabled'}>✋ Ir para a mesa de triagem</button>
+    ${chipsOf(S.mixed, true)}${mixedSpace() < 1 ? '<div class="warnTxt">Estoque cheio: a coleta parou e não dá para sair para a rua. Faça a triagem ou venda!</div>' : S._blkCol ? '<div class="warnTxt">Estoque quase cheio: a coleta automática está parando.</div>' : ''}
+    <div class="row" style="margin-top:6px"><button class="btn alt" data-act="sort" style="flex:1" ${mixT > 0.05 ? '' : 'disabled'}>✋ ${sortActTxt()}</button>
     <button class="btn red" data-act="sellMixed" style="flex:1" ${mixT > 0.1 ? '' : 'disabled'}>Vender misturado · ${fmtMoney(mixedValue())}</button></div></div>
     <div class="stockRow"><div class="stockHead"><span>🗂 Separado${S.phase >= 7 ? ' + fardos + grãos' : ''}</span><span>${fmtKg(sepU)} / ${fmtKg(cap.sep)}</span></div>${stockBar(sepU, cap.sep)}
     ${chipsOf(S.sep)}${S._blkTri ? '<div class="warnTxt">Espaço cheio: a triagem parou. Venda ou amplie o estoque!</div>' : ''}</div>`;
@@ -3962,7 +3994,7 @@ function openHire(){
       toast('Bem-vindo(a) à cooperativa!', `Nova pessoa na função ${R.n}.`, 'good');
       if (b.dataset.role === 'coleta') tipOnce('hire_col', 'Coleta automática', 'O coletor sai com a carroça e traz material misturado para a base, mesmo quando você não está na rua.');
       if (b.dataset.role === 'venda' && !S.tips.hire_ven) { S.tips.hire_ven = 1; toast('💡 Venda automática', `Agora <b>${memberName(S.st.hires - 1)}</b> vende o material separado automaticamente. Você pode pausar a venda para guardar estoque e vender quando o preço subir: use o botão perto da balança.`, 'fact', 10000); }
-      if (b.dataset.role === 'triagem') tipOnce('hire_tri', 'Triagem automática', 'Agora a triagem acontece sozinha. Você ainda pode jogar a mesa de triagem para ganhar um bônus de capricho.');
+      if (b.dataset.role === 'triagem') tipOnce('hire_tri', 'Triagem automática', 'Agora a triagem acontece sozinha. Você ainda pode fazer a triagem você mesmo(a) para ganhar um bônus de capricho.');
       lastSig = ''; renderPanel(true);
     }
   })});
@@ -4067,7 +4099,7 @@ function sortGuide(){
 function earnGuide(reason){
   if (G_mode === 'street') return streetGuide(reason);
   if (G_mode === 'sort') return sortGuide();
-  if (sum(S.mixed) > 0.5) return {txt:reason + 'Leve o material para a mesa de triagem: toque em <b>Triar</b>.', el:$('hotSort')};
+  if (sum(S.mixed) > 0.5) return {txt:reason + 'Separe o material misturado: toque em <b>Triar</b>.', el:$('hotSort')};
   if (sellableValue() > 0.01) return {txt:reason + 'Venda o material separado: toque em <b>Vender</b>.', el:$('hotSell')};
   return {txt:reason + 'Faça mais uma saída: toque em <b>Ir para a rua</b>.', el:$('btnGo')};
 }
@@ -4331,7 +4363,8 @@ function updateHud(shown){
   if (G_mode !== 'base') return;
   const mixT = sum(S.mixed), sv = sellableValue();
   const open = ROUTES.filter(routeOn);
-  $('goSub').textContent = open.length > 1 ? 'Escolher rota' : open[0].n;
+  const full = mixedSpace() < 1;
+  $('goSub').textContent = full ? FULL_MSG : open.length > 1 ? 'Escolher rota' : open[0].n;
   $('sortSub').textContent = S.roles.triagem > 0 ? 'automática ✓ · jogar' : fmtKg(mixT) + ' misturado';
   $('sellSub').textContent = sv > 0 ? fmtMoney(sv) : (mixT > 0 ? 'só misturado' : 'nada a vender');
   $('btnSellLbl').textContent = S.roles.venda > 0 ? 'Vender agora' : 'Vender';
@@ -4347,7 +4380,7 @@ function updateHud(shown){
   const hl = $('hotSellLbl'); if (hl) hl.textContent = has('balanca') ? 'Vender' : 'Atravessador';
   $('hotSort')?.classList.toggle('pulse', mixT > 0.5 && S.phase <= 3 && S.roles.triagem === 0);
   $('hotSell')?.classList.toggle('pulse', sv > 0.5 && S.phase <= 3);
-  $('btnGo').disabled = busy;
+  $('btnGo').disabled = busy || full;
   if (shown) ROLE_IDS.forEach(r => {
     const b = $('bdg-' + r); if (!b) return;
     const n = S.roles[r];
@@ -4361,11 +4394,17 @@ function updateHud(shown){
   });
   $('dotLoja').classList.toggle('hidden', !CATS.some(c => catHasBuyable(c.id)));
 }
+// espaço guardado para o que está no carrinho e na mesa de triagem, para a coleta automática não ocupar
+function reserveStock(){
+  STOCK_RES.mixed = trip && !trip.unloaded ? trip.cap : 0; STOCK_RES.sep = 0;
+  if (sortG) for (const it of sortG.items) if (it.state !== 'gone') { STOCK_RES.mixed += it.kg; if (it.m !== 'rej') STOCK_RES.sep += it.kg; }
+}
 function frame(now){
   let dt = (now - lastFrame) / 1000; lastFrame = now;
   if (dt > 5) { catchUp(dt); dt = 0; }
   dt = Math.min(dt, 0.25);
   acc += dt;
+  reserveStock();
   while (acc >= 0.2) { tick(0.2); acc -= 0.2; }
   if (G_mode === 'street') updateStreet(dt);
   if (G_mode === 'sort') updateSort(dt);
