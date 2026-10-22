@@ -2008,6 +2008,126 @@ function drawRightLot(){
   } else { for (let i = 0; i < 3; i++) { rect(x + 10 + i * 22, y - 3, 16, 4, '#2f5f9a'); rect(x + 11 + i * 22, y - 2, 4, 1, '#9fc4f0'); } }
   if (has('cisterna')) { rect(x - 14, 92, 12, 22, '#3a7fc4'); rect(x - 14, 92, 12, 2, '#5b9bd5'); rect(x - 12, 96, 8, 1, '#5b9bd5'); alpha(0.2, () => rect(x - 5, 92, 3, 22, '#000')); }
 }
+// ---------- interior do barracão (fases 3-4) e do galpão (5+): desenhado a cada quadro, pois mostra o estoque e as pessoas
+function stockGroups(){
+  const g = {papel:0, plastico:0, metal:0, vidro:0, outro:0};
+  for (const m in S.sep) { const k = BIN_OF[m]; g[g[k] != null ? k : 'outro'] += S.sep[m] || 0; }
+  return g;
+}
+function insideTools(x, y){ // pá, rastelo e vassoura encostados na parede
+  rect(x, y - 24, 1, 22, '#8b6a45'); rect(x - 2, y - 4, 5, 4, '#8a9ca6'); rect(x - 2, y - 4, 5, 1, '#b5c3ca');
+  rect(x + 5, y - 26, 1, 24, '#8b6a45'); rect(x + 2, y - 27, 7, 1, '#6d787c'); for (let i = 0; i < 4; i++) px(x + 2 + i * 2, y - 26, '#6d787c');
+  rect(x + 10, y - 22, 1, 16, '#a8743c'); rect(x + 8, y - 6, 5, 4, '#d8b25a'); for (let i = 0; i < 5; i++) px(x + 8 + i, y - 2, '#b8923a');
+}
+function insideLamp(x, y0, y1){
+  rect(x, y0, 1, y1 - y0, '#2a2a2a'); rect(x - 2, y1, 5, 2, '#3a3a3a'); rect(x - 1, y1 + 2, 3, 2, '#fff3b0');
+  alpha(0.12, () => { rect(x - 10, y1 + 4, 21, 6, '#fff3b0'); rect(x - 16, y1 + 10, 33, 14, '#fff3b0'); });
+}
+function insideStock(x0, x1, floorY, big){
+  const g = stockGroups(), r = rng(91);
+  let x = x0;
+  // pilha de papelão amassado e amarrado
+  const np = Math.min(big ? 6 : 4, Math.ceil(g.papel / 25));
+  for (let i = 0; i < np && x < x1 - 14; i++) {
+    const h = 2 + Math.floor(r() * 2);
+    rect(x, floorY - (i + 1) * 3, 14, h, i % 2 ? '#b8864b' : '#c99a5e'); rect(x, floorY - (i + 1) * 3, 14, 1, '#dcb47a');
+    if (i === np - 1) { rect(x + 4, floorY - np * 3, 1, np * 3, '#5c3a1e'); rect(x + 10, floorY - np * 3, 1, np * 3, '#5c3a1e'); }
+  }
+  if (np) x += 18;
+  // sacos de plástico amarrados
+  const ns = Math.min(big ? 5 : 3, Math.ceil(g.plastico / 15));
+  for (let i = 0; i < ns && x < x1 - 10; i++) {
+    const c = ['#62b8e0', '#e8e4d8', '#7fc28a', '#e0574a', '#efe2a0'][i % 5];
+    rect(x, floorY - 9, 9, 9, '#f0efe8'); rect(x + 1, floorY - 8, 7, 3, c); rect(x + 3, floorY - 11, 3, 2, '#d6d4c8'); alpha(0.15, () => rect(x + 7, floorY - 9, 2, 9, '#000'));
+    x += 10;
+  }
+  if (ns) x += 3;
+  // caixote de latas e sucata
+  if (g.metal > 1 && x < x1 - 14) {
+    rect(x, floorY - 8, 13, 8, '#8b5a2b'); rect(x, floorY - 8, 13, 1, '#b07a42'); rect(x, floorY - 4, 13, 1, '#6b4422');
+    for (let i = 0; i < Math.min(6, Math.ceil(g.metal / 5)); i++) rect(x + 1 + i * 2, floorY - 10, 2, 2, i % 2 ? '#c9ccd4' : '#e0b84a');
+    x += 16;
+  }
+  // tambor de vidro
+  if (g.vidro > 1 && x < x1 - 10) { rect(x, floorY - 11, 9, 11, '#3f8f3a'); rect(x, floorY - 11, 9, 1, '#6cb04f'); rect(x, floorY - 6, 9, 1, '#2f6f2a'); for (let i = 0; i < 3; i++) px(x + 2 + i * 2, floorY - 12, '#9ad7a0'); x += 12; }
+  return x;
+}
+function insideWorkers(n, x0, x1, y, t, seed){
+  const epi = curEpi();
+  for (let i = 0; i < n; i++) {
+    const span = x1 - x0, sp = 5 + i * 2, ph = (t / sp + i * 0.37) % 2, k = ph < 1 ? ph : 2 - ph;
+    const walking = (t * 0.5 + i) % 6 < 4;
+    drawPerson(x0 + k * span, y + (i % 2) * 2, personLook(seed + i), walking ? 'carry' : 'work', t + i, epi, ph >= 1);
+  }
+}
+function drawBarracaoInside(t, workers){
+  const x = 132, y = 72, w = 110, h = 44, fy = y + h; // vão da porta
+  // parede do fundo (tábuas com frestas de luz)
+  rect(x, y, w, 28, '#4a3220');
+  for (let i = 0; i < w; i += 7) { rect(x + i, y, 6, 28, i % 14 ? '#523824' : '#4a3220'); alpha(0.5, () => rect(x + i + 6, y + 2, 1, 22, '#f0d9a0')); }
+  rect(x, y + 8, w, 2, '#3a2616'); // travessa
+  // chão de terra batida
+  rect(x, y + 28, w, h - 28, '#8a6a44');
+  const r = rng(77); for (let i = 0; i < 50; i++) rect(x + r() * w, y + 29 + r() * (h - 30), 2, 1, r() < 0.5 ? '#7a5c3a' : '#9c7c52');
+  alpha(0.35, () => rect(x, y + 28, w, 2, '#000'));
+  insideTools(x + 4, y + 30);
+  // prateleira com luvas, botas e caixas
+  rect(x + w - 26, y + 12, 22, 2, '#8b6a45'); rect(x + w - 26, y + 22, 22, 2, '#8b6a45');
+  rect(x + w - 24, y + 8, 5, 4, '#e8a531'); rect(x + w - 17, y + 8, 6, 4, '#c99a5e'); rect(x + w - 9, y + 9, 4, 3, '#1e1e1e');
+  rect(x + w - 24, y + 18, 8, 4, '#3a7fc4'); rect(x + w - 14, y + 17, 8, 5, '#c99a5e'); rect(x + w - 14, y + 17, 8, 1, '#dcb47a');
+  // big bags no fundo, com o material guardado
+  const sepCols = compColors(S.sep), sepT = sum(S.sep);
+  for (let i = 0; i < 3; i++) drawBag(x + 20 + i * 14, y + 34, Math.min(1, sepT / 60 - i * 0.6 + 0.3), sepCols[i % sepCols.length]);
+  insideStock(x + 64, x + w - 4, y + 36, false);
+  insideLamp(x + w / 2, y, y + 4);
+  insideWorkers(Math.min(workers, 2), x + 18, x + w - 18, fy - 1, t, 300);
+  alpha(0.18, () => rect(x, y, w, h, '#1a0f06')); // penumbra
+  alpha(0.3, () => rect(x, y, w, 4, '#000'));
+}
+function drawGalpaoInside(t, workers){
+  const x = 102, y = 60, w = 194, h = 58, fy = y + h;
+  // parede do fundo em blocos
+  rect(x, y, w, 30, '#8a7f72');
+  for (let yy = y, row = 0; yy < y + 30; yy += 5, row++) { for (let xx = x + (row % 2) * 6; xx < x + w; xx += 12) rect(xx, yy, 11, 4, (xx + yy) % 3 ? '#948a7c' : '#887d70'); }
+  // piso de concreto liso, com faixa amarela de circulação
+  rect(x, y + 30, w, h - 30, '#b3ab9c'); for (let i = 0; i < w; i += 24) rect(x + i, y + 30, 1, h - 30, '#a39b8c');
+  rect(x, y + 50, w, 1, '#e8c531'); alpha(0.35, () => rect(x, y + 30, w, 2, '#000'));
+  // estante de EPI e ferramentas
+  rect(x + 4, y + 8, 26, 22, '#5a6a74'); for (let k = 0; k < 3; k++) rect(x + 4, y + 14 + k * 7, 26, 1, '#3a4a54');
+  rect(x + 6, y + 10, 5, 4, '#e8a531'); rect(x + 13, y + 10, 6, 4, '#2f7d4a'); rect(x + 21, y + 11, 6, 3, '#e8e8e8');
+  rect(x + 6, y + 17, 7, 4, '#c99a5e'); rect(x + 15, y + 17, 5, 4, '#1e1e1e'); rect(x + 22, y + 17, 6, 4, '#3a7fc4');
+  rect(x + 6, y + 24, 20, 4, '#c99a5e'); rect(x + 6, y + 24, 20, 1, '#dcb47a');
+  insideTools(x + 34, y + 32);
+  // placa de segurança e extintor
+  rect(x + 52, y + 8, 20, 9, '#2f7d4a'); rect(x + 53, y + 9, 18, 7, '#3f9a5c'); txt('USE EPI', x + 62, y + 14.5, 3.6, '#fff');
+  rect(x + 76, y + 20, 4, 8, '#c0392b'); rect(x + 77, y + 18, 2, 2, '#333'); px(x + 76, y + 21, '#e05a4a');
+  // relógio
+  rect(x + w - 30, y + 6, 7, 7, '#efeee6'); rect(x + w - 27, y + 7, 1, 3, '#333'); rect(x + w - 27, y + 9, 2, 1, '#333');
+  // big bags e estoque ao fundo
+  const sepCols = compColors(S.sep), sepT = sum(S.sep);
+  for (let i = 0; i < 5; i++) drawBag(x + 86 + i * 14, y + 38, Math.min(1, sepT / 150 - i * 0.5 + 0.3), sepCols[i % sepCols.length]);
+  const nbl = Math.min(6, Math.ceil(sum(S.bale) / BALE_KG)), bc = compColors(S.bale);
+  for (let i = 0; i < nbl; i++) drawBale(x + w - 34 + (i % 3) * 10, y + 40 - Math.floor(i / 3) * 7, bc[i % bc.length]);
+  insideStock(x + 160 - (nbl ? 36 : 0) - 60, x + w - (nbl ? 38 : 4), y + 46, true);
+  for (let i = 0; i < 3; i++) insideLamp(x + 30 + i * 66, y, y + 3);
+  insideWorkers(Math.min(workers, 5), x + 20, x + w - 20, fy - 2, t, 320);
+  alpha(0.12, () => rect(x, y, w, h, '#1a1410'));
+  alpha(0.3, () => rect(x, y, w, 5, '#000'));
+  // pilares na frente do interior
+  for (let i = 0; i < 4; i++) { const cx = x + i * (w) / 3 - 1; rect(cx, y, 3, h, '#c8bba3'); rect(cx, y, 1, h, '#e0d6c2'); }
+}
+// quantas pessoas de cada função cabem nos postos desenhados do lado de fora
+function outsideSpots(){
+  const nm = nI('mesa'), ne = nI('esteira'), nl = nI('lona_triagem');
+  const tri = ne > 0 ? 10 + Math.min(nm, 2) : nm > 0 ? 2 * Math.min(nm, 4) : 2 * Math.min(nl, 2);
+  return {triagem:tri, prensa:Math.min(nI('prensa'), 2) + (nI('linha_graos') > 0 ? 2 : 0), venda:has('balanca') ? Math.min(nI('balanca'), 3) : 0};
+}
+function insideCount(){
+  const o = outsideSpots();
+  let n = ['triagem', 'prensa', 'venda'].reduce((a, r) => a + Math.max(0, (S.roles[r] || 0) - o[r]), 0);
+  if (coopCount() >= 3) n++; // alguém organizando o estoque
+  return n;
+}
 function buildBaseBg(){
   const sig = baseSig();
   if (bgCache.sig === sig && bgCache.c) return bgCache.c;
@@ -2023,6 +2143,11 @@ function buildBaseBg(){
     rect(284, 100, 6, 6, '#b5492f'); rect(285, 96, 4, 4, '#5fa04a'); px(287, 95, '#e07ab0');
   }
   if (S.phase >= 3 && S.phase <= 4) drawBarracao();
+  if (!has('balanca') && S.phase < 5) { // ponto onde o atravessador para
+    shadow(276, 166, 10); rect(275, 144, 2, 22, '#6b4a2a'); rect(275, 144, 1, 22, '#8b6a45');
+    rect(260, 140, 32, 12, '#f0e6cc'); rect(260, 140, 32, 1, '#fffbe8'); rect(260, 151, 32, 1, '#a88a5a');
+    txt('COMPRO', 276, 145.5, 4, '#c0392b'); txt('RECICLÁVEL', 276, 150, 3.4, '#3a2a1c');
+  }
   if (S.phase >= 5) drawGalpao();
   drawLeftBuildings(); drawRightLot();
   const nb = Math.min(nI('baia'), 6);
@@ -2032,10 +2157,12 @@ function buildBaseBg(){
   return c;
 }
 
-const ZONES = {sort:{x:150, y:118}, sell:{x:306, y:118}, press:{x:232, y:116}, pile:{x:52, y:166}};
+const ZONES = {sort:{x:52, y:130}, sell:{x:288, y:126}, press:{x:232, y:116}, pile:{x:52, y:166}}; // sort e sell seguem o cenário a cada quadro
 let rainUntil = 0;
 function drawBaseDynamic(t){
   const ph = S.phase, epi = curEpi();
+  if (ph >= 3 && ph <= 4) drawBarracaoInside(t, G_mode === 'base' ? insideCount() : 0);
+  if (ph >= 5) drawGalpaoInside(t, G_mode === 'base' ? insideCount() : 0);
   // árvores (balançam ao vento)
   if (!has('terreno')) drawTree(354, 112, 1.2, t, 'base');
   if (ph <= 4) drawTree(372, 200, 1, t, 'base');
@@ -2083,6 +2210,13 @@ function drawBaseDynamic(t){
       triSpots.push([x + 8, y + 4, 'bend'], [x + 26, y + 4, 'bend']);
     }
   }
+  // onde a triagem acontece de verdade (para o botão Triar)
+  if (ne > 0) ZONES.sort = {x:150, y:100};
+  else if (nm > 0) { const k = Math.min(nm, 4), ps = mesaPos.slice(0, k); ZONES.sort = {x:ps.reduce((a, p) => a + p[0] + 15, 0) / k, y:Math.min(...ps.map(p => p[1])) - 28}; }
+  else if (nl > 0) { const k = Math.min(nl, 2); ZONES.sort = {x:108 + (k - 1) * 21 + 18, y:136}; }
+  else ZONES.sort = {x:52, y:130};
+  // triagem no chão: sem lona nem mesa, alguém separa ao lado do monte
+  const floorSort = nl === 0 && nm === 0 && ne === 0;
   if (nsep > 0) {
     for (let i = 0; i < Math.min(nsep, 2); i++) {
       const x = 106 + i * 34, y = 92;
@@ -2126,6 +2260,8 @@ function drawBaseDynamic(t){
       sellSpots.push([x + 8, y - 3, i % 2 ? 'carry' : 'stand']);
     }
   }
+  if (sellSpots.length) { const nb = Math.min(nI('balanca'), 3); ZONES.sell = {x:262 - (nb - 1) * 6 + 12, y:126}; }
+  else ZONES.sell = {x:276, y:124};
   drawBuyer(t);
   const nbag = Math.min(nI('bag'), 8), sepT = sum(S.sep), capS = caps().sep, sepCols = compColors(S.sep);
   for (let i = 0; i < nbag; i++) { const x = 196 + (i % 4) * 14, y = i < 4 ? 196 : 210; drawBag(x, y, Math.min(1, sepT / Math.max(1, capS) * nbag - i + 0.3), sepCols[i % sepCols.length]); }
@@ -2146,7 +2282,10 @@ function drawBaseDynamic(t){
     else if (has('triciclo_proprio')) drawTriciclo(90, 192, 0, cc, false);
     else if (has('carroca_propria')) drawCarroca(88, 192, 0, cc, false);
     else drawCarrinho(ph <= 2 ? 108 : 80, 192, 0, cc);
-    drawPerson(ph <= 2 ? 92 : 102, ph <= 2 ? 172 : 192, PLAYER_LOOK, ph <= 2 && mixT > 0 ? 'bend' : 'stand', t, pe, false);
+    if (ph >= 3 && S.roles.triagem === 0 && mixT > 0.5) { // você mesmo(a) separa onde a triagem acontece
+      if (floorSort || !triSpots.length) drawPerson(76, 174, PLAYER_LOOK, 'bend', t, pe, true);
+      else { const s0 = triSpots[0]; drawPerson(s0[0], s0[1], PLAYER_LOOK, s0[2], t, pe, false); }
+    } else drawPerson(ph <= 2 ? 92 : 102, ph <= 2 ? 172 : 192, PLAYER_LOOK, ph <= 2 && mixT > 0 ? 'bend' : 'stand', t, pe, false);
     drawn++;
   }
   let pid = 0;
@@ -3623,7 +3762,7 @@ function itemCard(it){
     // só mostra as quantidades que ainda cabem no limite; Máx = quanto o dinheiro permite
     const rem = remainingQty(it), mx = maxAffordable(it);
     const opts = [1, 5, 10].filter(q => q <= rem).map(q => { const c = costFor(it, q); return `<button class="btn" data-buy="${it.id}" data-q="${q}" ${S.money >= c ? '' : 'disabled'}>${q}x<small>${fmtMoney(c)}</small></button>`; });
-    if (rem > 1) opts.push(`<button class="btn blue" data-buy="${it.id}" data-q="${mx}" ${mx > 0 ? '' : 'disabled'}>Máx (${mx})<small>${mx > 0 ? fmtMoney(costFor(it, mx)) : 'sem dinheiro'}</small></button>`);
+    if (rem > 1 && !(mx > 0 && [1, 5, 10].includes(mx) && mx <= rem)) opts.push(`<button class="btn blue" data-buy="${it.id}" data-q="${mx}" ${mx > 0 ? '' : 'disabled'}>Máx (${mx})<small>${mx > 0 ? fmtMoney(costFor(it, mx)) : 'sem dinheiro'}</small></button>`);
     act = `<div class="buyRow">${opts.join('')}</div>`;
   }
   return `<div class="card item ${st === 'locked' ? 'locked' : ''}"><div class="ic">${IC[it.ic] || '📦'}</div>
@@ -4198,8 +4337,12 @@ function updateHud(shown){
   $('btnSellLbl').textContent = S.roles.venda > 0 ? 'Vender agora' : 'Vender';
   const ap = $('autoPill');
   if (ap) { ap.classList.toggle('hidden', !(S.roles.venda > 0)); ap.classList.toggle('off', !S.autoSell); ap.innerHTML = S.autoSell ? '⚖ Venda automática: <b>ligada</b> <span>⏸</span>' : '⏸ Venda automática: <b>pausada</b> <span>▶</span>'; }
-  const sp = S.phase <= 2 ? {x:56, y:128} : ZONES.sort, hb = $('hotSort');
-  if (hb) { hb.style.left = (sp.x / W * 100) + '%'; hb.style.top = (sp.y / H * 100) + '%'; }
+  // botões e rótulos seguem o lugar onde a triagem e a venda acontecem no cenário
+  const place = (id, x, y) => { const e = $(id); if (e) { e.style.left = (x / W * 100) + '%'; e.style.top = (y / H * 100) + '%'; } };
+  place('hotSort', ZONES.sort.x, ZONES.sort.y); place('hotSell', ZONES.sell.x, ZONES.sell.y);
+  // a pílula e o rótulo ficam logo acima do botão, medidos em pixels (no celular o botão ocupa mais do cenário)
+  const above = (id, refId) => { const e = $(id), ref = $(refId); if (!e || !ref || e.classList.contains('hidden')) return;
+    e.style.left = ref.style.left; e.style.top = (ref.offsetTop - ref.offsetHeight / 2 - e.offsetHeight * (e.classList.contains('badge') ? 0.5 : 1) - 3) + 'px'; }; place('bdg-venda', ZONES.sell.x + 30, 178);
   const hs = $('hotSortKg'); if (hs) hs.textContent = mixT > 0 ? fmtKg(mixT) : '';
   const hl = $('hotSellLbl'); if (hl) hl.textContent = has('balanca') ? 'Vender' : 'Atravessador';
   $('hotSort')?.classList.toggle('pulse', mixT > 0.5 && S.phase <= 3 && S.roles.triagem === 0);
@@ -4210,6 +4353,7 @@ function updateHud(shown){
     const n = S.roles[r];
     if (n > 0 && n > (shown[r] || 0)) { b.textContent = `${ROLES[r].n} x${n}`; b.classList.remove('hidden'); } else b.classList.add('hidden');
   });
+  above('autoPill', 'hotSell'); above('bdg-triagem', 'hotSort');
   EQUIP_BADGES.forEach(([id, lb, mx]) => {
     const b = $('eq-' + id); if (!b) return;
     const n = equipCount(id), show = n > mx && !(id === 'mesa' && nI('esteira') > 0 && n <= 2);
