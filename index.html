@@ -402,31 +402,31 @@ const ROUTES = [
 const PHASES = [
   {name:'Catador(a) sozinho(a)', max:1, cost:0, reqs:[],
    msg:''},
-  {name:'Ponto de acúmulo', max:4, cost:80, costName:'Limpar o terreno', goal:'limpar o terreno', reqs:[['trips',3]],
+  {name:'Ponto de acúmulo', max:4, cost:100, costName:'Limpar o terreno', goal:'limpar o terreno', reqs:[['trips',3]],
    msg:'Você limpou o terreno! Agora dá para cobrir o material com uma lona, guardar em bags, ter uma balança e chamar os primeiros colegas.',
    libera:['Lona, bags e balança','Primeiros colegas (até 3)','Rota da feira livre','Plástico duro e papel branco/jornal']},
-  {name:'Grupo informal', max:8, cost:250, costName:'Construir o barracão de madeira', goal:'construir o barracão de madeira', reqs:[['working',3],['recycled',200]],
+  {name:'Grupo informal', max:8, cost:230, costName:'Construir o barracão de madeira', goal:'construir o barracão de madeira', reqs:[['working',3],['recycled',200]],
    msg:'O grupo levantou um barracão de madeira. Agora vocês trabalham juntos e fazem a triagem no chão, sobre lonas.',
    libera:['Barracão de madeira','Triagem no chão (lonas)','Primeiros EPIs: luvas','Capacitação do grupo','Rota do centro comercial','Vidro']},
-  {name:'Associação', max:14, cost:1500, costName:'Organizar a associação', goal:'organizar a associação', reqs:[['working',7],['item','luvas_epi'],['recycled',1500]],
+  {name:'Associação', max:14, cost:1100, costName:'Organizar a associação', goal:'organizar a associação', reqs:[['working',7],['item','luvas_epi'],['recycled',1200]],
    msg:'O grupo virou uma associação! Tem mesa de triagem, banheiro, baias para separar os materiais e mais equipamentos de proteção.',
    libera:['Mesas de triagem','Baias','Banheiro','Botas, uniforme e óculos','Triciclos']},
-  {name:'Cooperativa formalizada', max:22, cost:5800, costName:'Formalização (CNPJ, estatuto e assembleia)', goal:'pagar a formalização (CNPJ, estatuto e assembleia)', reqs:[['coop',10],['epiFull']],
+  {name:'Cooperativa formalizada', max:22, cost:8500, costName:'Formalização (CNPJ, estatuto e assembleia)', goal:'pagar a formalização (CNPJ, estatuto e assembleia)', reqs:[['coop',10],['epiFull']],
    msg:'Com CNPJ, estatuto e assembleia, a cooperativa é oficial! O galpão de alvenaria está de pé e agora vocês vendem direto para a indústria, sem atravessador.',
    libera:['Venda direta à indústria','Galpão de alvenaria','Condomínios parceiros','Sucata de metal']},
-  {name:'Parceria com a prefeitura', max:35, cost:68000, costName:'Contrato de coleta seletiva', goal:'fechar o contrato de coleta seletiva', reqs:[['coop',18],['recycled',7500]],
+  {name:'Parceria com a prefeitura', max:35, cost:118000, costName:'Contrato de coleta seletiva', goal:'fechar o contrato de coleta seletiva', reqs:[['coop',18],['recycled',7500]],
    msg:'A prefeitura contratou a cooperativa para a coleta seletiva! Ela paga pelo serviço, e os Pontos de Entrega Voluntária trazem material todos os dias.',
    libera:['Pagamento da prefeitura','Caminhão de coleta','Pontos de Entrega Voluntária','Educação ambiental','Óleo de cozinha']},
-  {name:'Estrutura profissional', max:55, cost:210000, costName:'Obra da estrutura profissional', goal:'fazer a obra da estrutura profissional', reqs:[['coop',30],['recycled',22000]],
+  {name:'Estrutura profissional', max:55, cost:340000, costName:'Obra da estrutura profissional', goal:'fazer a obra da estrutura profissional', reqs:[['coop',30],['recycled',22000]],
    msg:'Chegaram a prensa, a esteira e a empilhadeira. E também vestiário, refeitório e creche para os filhos dos cooperados.',
    libera:['Prensa enfardadeira','Função Prensa e beneficiamento','Esteira e empilhadeira','Vestiário, refeitório e creche','Eletrônicos']},
-  {name:'Beneficiamento', max:80, cost:400000, costName:'Licença de beneficiamento', goal:'tirar a licença de beneficiamento', reqs:[['coop',50],['item','refeitorio'],['item','creche'],['recycled',60000],['bales',75]],
+  {name:'Beneficiamento', max:80, cost:420000, costName:'Licença de beneficiamento', goal:'tirar a licença de beneficiamento', reqs:[['coop',50],['item','refeitorio'],['item','creche'],['recycled',60000],['bales',75]],
    msg:'A cooperativa agora beneficia o plástico: moedor, lavadora e extrusora transformam PET e plástico duro em grãos, que valem muito mais.',
    libera:['Linha de grãos de plástico','Contratos de logística reversa','Painéis solares']},
-  {name:'Indústria sustentável', max:110, cost:2900000, costName:'Projeto de indústria sustentável', goal:'tocar o projeto de indústria sustentável', reqs:[['coop',75],['pellets',7500]],
+  {name:'Indústria sustentável', max:110, cost:6800000, costName:'Projeto de indústria sustentável', goal:'tocar o projeto de indústria sustentável', reqs:[['coop',75],['pellets',7500]],
    msg:'A cooperativa virou uma indústria sustentável: separador automático, painéis solares, cisterna e espaço para crescer no terreno vizinho.',
    libera:['Separador automático','Mais painéis solares','Cisterna','Terreno vizinho']},
-  {name:'Referência regional', max:160, cost:7500000, costName:'Rede regional de cooperativas', goal:'formar a rede regional de cooperativas', reqs:[['coop',105],['recycled',450000],['logistica',3]],
+  {name:'Referência regional', max:160, cost:17000000, costName:'Rede regional de cooperativas', goal:'formar a rede regional de cooperativas', reqs:[['coop',105],['recycled',450000],['logistica',3]],
    msg:'Vocês são referência na região! A cooperativa lidera uma rede, tem grandes contratos e um centro de educação ambiental. Da carrocinha à central de reciclagem: que caminhada!',
    libera:['Rede de cooperativas','Centro de educação ambiental']},
 ];
@@ -446,13 +446,13 @@ const ITEMS = [
   // ---------- RUA E COLETA
   {id:'carrinho2', cat:'rua', n:'Carrinho maior', d:'Seu carrinho passa a levar 40 kg.', cost:15, ph:1, uniq:1, ic:'cart'},
   {id:'luvas_coleta', cat:'rua', n:'Luvas de coleta', d:'Com as mãos protegidas, é só tocar no material para jogá-lo no carrinho.', cost:25, ph:1, uniq:1, ic:'glove'},
-  {id:'sacos', cat:'rua', n:'Sacolões de ráfia', d:'Você amarra volumes maiores: +20% de kg em cada volume encontrado na rua.', cost:35, ph:1, max:5, ic:'bag'},
-  {id:'tempo', cat:'rua', n:'Mais tempo na rua', d:'+5 segundos em cada saída (começa com 25 s). As saídas continuam curtas: o ganho maior vem da capacidade.', cost:20, ph:1, max:3, ic:'clock'},
+  {id:'sacos', cat:'rua', n:'Sacolões de ráfia', d:'Você amarra volumes maiores: +20% de kg em cada volume encontrado na rua.', cost:35, g:1.08, ph:1, max:5, ic:'bag'},
+  {id:'tempo', cat:'rua', n:'Mais tempo na rua', d:'+5 segundos em cada saída (começa com 25 s). As saídas continuam curtas: o ganho maior vem da capacidade.', cost:20, g:1.08, ph:1, max:3, ic:'clock'},
   {id:'carroca_propria', cat:'rua', n:'Carroça própria', d:'Você troca o carrinho por uma carroça: 70 kg por saída.', cost:60, ph:2, uniq:1, req:['carrinho2'], ic:'cart'},
   {id:'rota_feira', cat:'rua', n:'Rota: Feira livre', d:'Muita latinha e papelão, mas também muito resto de comida.', cost:50, ph:2, uniq:1, ic:'route'},
-  {id:'conhecimento', cat:'rua', n:'Conhecimento das rotas', d:'+15% de material em cada saída.', cost:60, ph:2, max:5, ic:'map'},
-  {id:'ajudante', cat:'rua', n:'Ajudante na rua', d:'Um ajudante com o próprio carrinho recolhe material junto com você: +25 kg de capacidade em cada saída.', cost:80, g:1.35, ph:2, max:6, ic:'person'},
-  {id:'carrinho_ajud', cat:'rua', n:'Carrinhos maiores para os ajudantes', d:'+15 kg no carrinho de cada ajudante.', cost:600, ph:3, max:3, req:['ajudante'], ic:'cart'},
+  {id:'conhecimento', cat:'rua', n:'Conhecimento das rotas', d:'+15% de material em cada saída.', cost:60, g:1.08, ph:2, max:5, ic:'map'},
+  {id:'ajudante', cat:'rua', n:'Ajudante na rua', d:'Um ajudante com o próprio carrinho recolhe material junto com você: +25 kg de capacidade em cada saída.', cost:80, g:1.08, ph:2, max:6, ic:'person'},
+  {id:'carrinho_ajud', cat:'rua', n:'Carrinhos maiores para os ajudantes', d:'+15 kg no carrinho de cada ajudante.', cost:600, g:1.08, ph:3, max:3, req:['ajudante'], ic:'cart'},
   {id:'parc_padaria', cat:'rua', n:'Parceria: padaria do bairro', d:'A padaria guarda caixas e garrafas separadas. Em cada saída, aparece um volume grande e limpo, sem rejeito.', cost:250, ph:3, uniq:1, ic:'doc'},
   {id:'parc_mercado', cat:'rua', n:'Parceria: mercado', d:'O mercado junta papelão, PET e latas organizados em fardinhos. Volumes grandes em cada saída.', cost:1200, ph:4, uniq:1, ic:'doc'},
   {id:'kombi', cat:'rua', n:'Kombi da cooperativa', d:'Você passa a sair de kombi: 260 kg por saída.', cost:1800, ph:4, uniq:1, req:['triciclo_proprio'], ic:'truck'},
@@ -464,6 +464,7 @@ const ITEMS = [
   {id:'triciclo_proprio', cat:'rua', n:'Triciclo próprio', d:'Você passa a sair de triciclo: 120 kg por saída.', cost:600, ph:3, uniq:1, req:['carroca_propria'], ic:'bike'},
   {id:'triciclo', cat:'rua', n:'Triciclo para coletor', d:'1 vaga de coleta. Carrega o dobro de uma carroça.', cost:1500, ph:4, lim:L(0,0,0,2,5,8,12,15,18,22), ic:'bike'},
   {id:'rota_cond', cat:'rua', n:'Rota: Condomínios parceiros', d:'Moradores que separam o lixo: material limpo e quase sem rejeito.', cost:6000, ph:5, uniq:1, ic:'route'},
+  {id:'pev', cat:'rua', n:'Contêiner de entrega voluntária', d:'Um contêiner num ponto movimentado do bairro: a população deixa material reciclável e a cooperativa recolhe todo dia. Traz material misturado o tempo todo.', cost:5000, ph:5, lim:L(0,0,0,0,4,8,12,18,26,36), ic:'bay'},
   {id:'caminhao', cat:'rua', n:'Caminhão de coleta', d:'2 vagas de coleta e muita carga. Nas suas saídas, você também usa o caminhão (800 kg).', cost:90000, ph:6, lim:L(0,0,0,0,0,2,3,5,6,9), ic:'truck'},
   // ---------- ESTRUTURA
   {id:'lona', cat:'estrutura', n:'Lona de cobertura', d:'Protege o material da chuva. +60 kg de espaço para material misturado.', cost:30, ph:2, uniq:1, ic:'tarp'},
@@ -473,20 +474,20 @@ const ITEMS = [
   {id:'banheiro', cat:'estrutura', n:'Banheiro', d:'Dignidade básica para quem trabalha. +5% de produtividade.', cost:500, ph:4, uniq:1, ic:'house'},
   {id:'mesa', cat:'estrutura', n:'Mesa de triagem', d:'4 vagas de triagem, com o material na altura certa.', cost:700, ph:4, lim:L(0,0,0,3,5,6,9,12,15,21), ic:'table'},
   {id:'baia', cat:'estrutura', n:'Baia', d:'+300 kg de espaço para separado e +150 kg para misturado.', cost:900, ph:4, lim:L(0,0,0,6,12,18,24,30,45,60), ic:'bay'},
-  {id:'galpao', cat:'estrutura', n:'Ampliação do galpão', d:'+3 t de espaço para separado e +1,5 t para misturado.', cost:15000, ph:5, lim:L(0,0,0,0,1,2,3,4,6,8), ic:'house'},
+  {id:'galpao', cat:'estrutura', n:'Ampliação do galpão', d:'+3 t de espaço para separado e +2,5 t para misturado.', cost:15000, ph:5, lim:L(0,0,0,0,2,3,5,7,9,12), ic:'house'},
   {id:'prensa', cat:'estrutura', n:'Prensa enfardadeira', d:'1 vaga de Prensa. Fardos valem 30% a mais e ocupam metade do espaço.', cost:120000, ph:7, lim:L(0,0,0,0,0,0,3,5,6,9), ic:'press'},
   {id:'esteira', cat:'estrutura', n:'Esteira de triagem', d:'8 vagas de triagem, bem mais rápidas que a mesa.', cost:150000, ph:7, lim:L(0,0,0,0,0,0,2,3,5,6), ic:'belt'},
   {id:'empilhadeira', cat:'estrutura', n:'Empilhadeira', d:'+20% na velocidade de venda e da prensa.', cost:90000, ph:7, lim:L(0,0,0,0,0,0,2,3,4,6), ic:'fork'},
-  {id:'separador', cat:'estrutura', n:'Separador automático', d:'Faz a triagem sozinho, sem ocupar vagas.', cost:1500000, ph:9, lim:L(0,0,0,0,0,0,0,0,2,4), ic:'machine'},
-  {id:'painel', cat:'estrutura', n:'Painel solar', d:'Energia limpa e conta de luz menor: +3% de produtividade.', cost:200000, ph:8, lim:L(0,0,0,0,0,0,0,4,10,20), ic:'sun'},
-  {id:'cisterna', cat:'estrutura', n:'Cisterna de água da chuva', d:'Reaproveita a chuva para lavar o plástico: +20% na linha de grãos.', cost:800000, ph:9, uniq:1, ic:'drop'},
-  {id:'terreno', cat:'estrutura', n:'Terreno vizinho', d:'Compra o terreno ao lado: +20 t de espaço para separado e +10 t para misturado.', cost:2500000, ph:9, uniq:1, ic:'map'},
+  {id:'separador', cat:'estrutura', n:'Separador automático', d:'Faz a triagem sozinho, sem ocupar vagas.', cost:700000, ph:9, lim:L(0,0,0,0,0,0,0,0,2,4), ic:'machine'},
+  {id:'painel', cat:'estrutura', n:'Painel solar', d:'Energia limpa e conta de luz menor: +3% de produtividade.', cost:120000, ph:8, lim:L(0,0,0,0,0,0,0,4,10,20), ic:'sun'},
+  {id:'cisterna', cat:'estrutura', n:'Cisterna de água da chuva', d:'Reaproveita a chuva para lavar o plástico: +20% na linha de grãos.', cost:400000, ph:9, uniq:1, ic:'drop'},
+  {id:'terreno', cat:'estrutura', n:'Terreno vizinho', d:'Compra o terreno ao lado: +20 t de espaço para separado e +10 t para misturado.', cost:1000000, ph:9, uniq:1, ic:'map'},
   // ---------- SEGURANÇA E BEM-ESTAR
   {id:'luvas_epi', cat:'seguranca', n:'EPI: Luvas', d:'Luvas para todos na triagem. +5% de produtividade. Entra no kit de cada novo cooperado.', cost:120, ph:3, uniq:1, kit:8, ic:'glove'},
   {id:'botas', cat:'seguranca', n:'EPI: Botas', d:'Botas com biqueira contra cortes e pancadas. +5% de produtividade.', cost:500, ph:4, uniq:1, kit:25, ic:'boot'},
   {id:'uniforme', cat:'seguranca', n:'EPI: Uniforme', d:'Uniforme resistente e com faixa refletiva. +5% de produtividade.', cost:800, ph:4, uniq:1, kit:30, ic:'shirt'},
   {id:'oculos', cat:'seguranca', n:'EPI: Óculos de proteção', d:'Protege os olhos de poeira e estilhaços. +5% de produtividade.', cost:1000, ph:4, uniq:1, kit:12, ic:'goggle'},
-  {id:'capacitacao', cat:'seguranca', n:'Capacitação', d:'Cursos de triagem, segurança e gestão. +2% de produtividade por nível. Cada nível custa 35% a mais que o anterior.', cost:300, g:1.35, ph:3, max:40, ic:'book'},
+  {id:'capacitacao', cat:'seguranca', n:'Capacitação', d:'Cursos de triagem, segurança e gestão. +2% de produtividade por nível. Todos os cursos da fase têm o mesmo preço, e cada fase libera 4 cursos novos.', cost:300, ph:3, lim:L(0,0,4,8,12,16,20,24,28,32), ic:'book'},
   {id:'protetor', cat:'seguranca', n:'EPI: Protetor auricular', d:'A prensa e a esteira fazem barulho. +5% de produtividade.', cost:10000, ph:7, uniq:1, kit:15, ic:'ear'},
   {id:'vestiario', cat:'seguranca', n:'Vestiário', d:'Lugar para tomar banho e trocar de roupa. +8% de produtividade.', cost:30000, ph:7, uniq:1, ic:'house'},
   {id:'refeitorio', cat:'seguranca', n:'Refeitório', d:'Comida boa e um lugar digno para comer. +10% de produtividade.', cost:45000, ph:7, uniq:1, ic:'food'},
@@ -499,9 +500,10 @@ const ITEMS = [
   {id:'mat_oleo', cat:'materiais', n:'Bombonas para óleo', d:'Óleo usado precisa de bombonas fechadas para não vazar. Depois vira sabão e biodiesel.', cost:15000, ph:6, uniq:1, mat:'oleo', ic:'drop'},
   {id:'mat_eletro', cat:'materiais', n:'Parceria com recicladora de eletrônicos', d:'Eletrônicos têm peças tóxicas e precisam ir para um destino autorizado, que aproveita metais e placas.', cost:60000, ph:7, uniq:1, mat:'eletro', ic:'chip'},
   // ---------- NEGÓCIOS
+  {id:'mutirao_com', cat:'negocios', n:'Mutirão comunitário', d:'Chama a vizinhança para um mutirão: coleta e triagem 50% mais rápidas por 2 minutos. Pode repetir: o tempo se acumula (até 10 minutos).', cost:60, ph:2, uniq:1, consumable:1, ic:'person'},
   {id:'mural', cat:'negocios', n:'Educação ambiental na comunidade', d:'Oficinas e mutirões no bairro: +10% na coleta e menos rejeito.', cost:25000, ph:6, uniq:1, ic:'book'},
   {id:'linha_graos', cat:'negocios', n:'Linha de grãos (moedor, lavadora e extrusora)', d:'2 vagas de Prensa e beneficiamento. Transforma PET e plástico duro em grãos, que valem 3x mais.', cost:300000, ph:8, lim:L(0,0,0,0,0,0,0,3,5,8), ic:'machine'},
-  {id:'logistica', cat:'negocios', n:'Contrato de logística reversa', d:'Uma grande empresa paga para a cooperativa recolher suas embalagens: renda fixa e muito material.', cost:1200000, ph:8, lim:L(0,0,0,0,0,0,0,2,3,3), ic:'doc'},
+  {id:'logistica', cat:'negocios', n:'Contrato de logística reversa', d:'Uma grande empresa paga para a cooperativa recolher suas embalagens: renda fixa e muito material.', cost:400000, ph:8, lim:L(0,0,0,0,0,0,0,2,3,3), ic:'doc'},
   {id:'rede', cat:'negocios', n:'Rede de cooperativas', d:'Vender em conjunto com outras cooperativas: +25% em todas as vendas.', cost:15000000, ph:10, uniq:1, ic:'net'},
   {id:'centro_edu', cat:'negocios', n:'Centro de educação ambiental', d:'Escolas visitam a cooperativa: +10% de produtividade e menos rejeito.', cost:10000000, ph:10, uniq:1, ic:'house'},
 ];
@@ -692,7 +694,7 @@ function evOn(id){ return S.ev.some(e => e.id === id); }
 function formal(){ return S.phase >= 5; }
 function routeOn(r){ return r.item ? has(r.item) : S.phase >= r.ph; }
 function kitCost(){ return ITEMS.filter(it => it.kit && has(it.id)).reduce((a, it) => a + it.kit, 0); }
-function hireCost(){ return Math.ceil(40 * Math.pow(1.055, coopCount()) * (shareOn() ? 1 - (S.repasse - 0.5) * 0.6 : 1)) + kitCost(); }
+function hireCost(){ return Math.ceil(40 * Math.pow(1.04, coopCount()) * (shareOn() ? 1 - (S.repasse - 0.5) * 0.6 : 1)) + kitCost(); }
 // ---- caixa do grupo e repasse aos cooperados
 function shareOn(){ return S.phase >= 3; }
 function cashLabel(){ return S.phase >= 5 ? 'Caixa da cooperativa' : S.phase >= 3 ? 'Caixa do grupo' : 'Seu dinheiro'; }
@@ -764,18 +766,33 @@ const RETIRED = {
 };
 function retiredMsg(it){ const f = RETIRED[it.id]; return (f && f()) || ''; }
 function itemMaxEver(it){ return it.uniq ? 1 : it.max ? it.max : it.lim ? Math.max(...it.lim) : Infinity; }
-function itemCost(it, k){ return Math.ceil(it.cost * Math.pow(it.g || 1.15, k == null ? nI(it.id) : k)); }
-function costFor(it, q){ let c = 0; const k = nI(it.id); for (let i = 0; i < q; i++) c += itemCost(it, k + i); return c; }
+// preço de cada curso de capacitação na fase atual (sobe pouco de uma fase para a outra)
+const CAP_PRICE = [0, 0, 300, 600, 1200, 2500, 5000, 10000, 20000, 40000];
+const MUT_PRICE = [0, 60, 200, 700, 3000, 10000, 30000, 100000, 300000, 800000]; // mutirão comunitário (preço fixo na fase)
+function mutLeft(){ return Math.max(0, (S.mutUntil || 0) - S.t); }
+// aumento a cada compra: 6% nos repetíveis (o limite por fase já controla o crescimento); upgrades únicos têm preço fixo
+function itemCost(it, k){
+  if (it.id === 'capacitacao') return CAP_PRICE[S.phase - 1];
+  if (it.id === 'mutirao_com') return MUT_PRICE[S.phase - 1];
+  return Math.ceil(it.cost * Math.pow(it.g || 1.06, k == null ? nI(it.id) : k));
+}
+function fundShare(it){ return it.id === 'capacitacao' && S.phase >= 5 ? 0.5 : 0; } // o fundo de formação paga até metade de cada curso
+function costFor(it, q){ // quanto sai do caixa (já descontando o fundo de formação, quando houver)
+  let c = 0, f = S.fundForm || 0; const k = nI(it.id);
+  for (let i = 0; i < q; i++) { const p = itemCost(it, k + i), d = Math.min(f, p * fundShare(it)); f -= d; c += p - d; }
+  return c;
+}
 function remainingQty(it){ return Math.max(0, itemLimit(it) - nI(it.id)); }
 function maxAffordable(it){
   const rem = remainingQty(it); let c = 0, q = 0; const k = nI(it.id);
-  while (q < rem) { const nc = itemCost(it, k + q); if (c + nc > S.money) break; c += nc; q++; }
+  while (q < rem) { const nc = costFor(it, q + 1); if (nc > S.money) break; c = nc; q++; }
   return q;
 }
 function reqMissing(it){ return (it.req || []).filter(r => !has(r)); }
 // status: done | limit | avail | locked | hidden
 function itemStatus(it){
   const k = nI(it.id);
+  if (it.consumable) return it.ph > S.phase + 1 ? 'hidden' : it.ph > S.phase ? 'locked' : mutLeft() > 480 ? 'limit' : 'avail';
   if (k >= itemMaxEver(it) || retiredMsg(it)) return 'done';
   if (it.ph > S.phase + 1) return 'hidden';
   if (it.ph > S.phase || reqMissing(it).length) return 'locked';
@@ -789,14 +806,16 @@ function rates(){
   const a1 = Math.min(c, 2 * nI('caminhao')); col += a1 * 3; c -= a1;
   const a2 = Math.min(c, nI('triciclo')); col += a2 * 0.9; c -= a2;
   const a3 = Math.min(c, nI('carroca')); if (!evOn('pneu')) col += a3 * 0.4;
-  col *= p * I * (has('mural') ? 1.1 : 1);
-  const extra = (S.phase >= 6 ? 3 * I : 0) + nI('logistica') * 25 * I;
+  const mut = mutLeft() > 0 ? 1.5 : 1;
+  col *= p * I * (has('mural') ? 1.1 : 1) * mut;
+  const extra = (S.phase >= 6 ? 3 * I : 0) + nI('logistica') * 25 * I + nI('pev') * 0.3 * I;
   let t = S.roles.triagem, tri = 0;
   const b1 = Math.min(t, 8 * nI('esteira')); tri += b1 * 1.5; t -= b1;
   const b2 = Math.min(t, 4 * nI('mesa')); tri += b2 * 0.6; t -= b2;
   const b3 = Math.min(t, 2 * nI('lona_triagem')); tri += b3 * 0.3;
   tri = tri * p * I + nI('separador') * 20 * I;
   if (evOn('mutirao')) tri *= 2;
+  tri *= mut;
   const emp = 1 + 0.2 * nI('empilhadeira');
   const ven = S.autoSell ? Math.min(S.roles.venda, nI('balanca')) * 3 * p * I * emp : 0;
   let pr = S.phase >= 7 ? S.roles.prensa : 0;
@@ -981,9 +1000,11 @@ function buy(id, q){
   q = Math.min(q, remainingQty(it));
   let bought = 0;
   while (bought < q) {
-    const c = itemCost(it), fund = id === 'capacitacao' ? Math.min(S.fundForm, c * 0.5) : 0;
+    const c = itemCost(it), fund = Math.min(S.fundForm, c * fundShare(it));
     if (S.money < c - fund) break;
-    S.fundForm -= fund; S.money -= c - fund; S.items[id] = nI(id) + 1; bought++;
+    S.fundForm -= fund; S.money -= c - fund; bought++;
+    if (it.consumable) { S.mutUntil = Math.min(S.t + 600, Math.max(S.t, S.mutUntil || 0) + 120); break; }
+    S.items[id] = nI(id) + 1;
   }
   return bought;
 }
@@ -4018,7 +4039,8 @@ function renderCoop(){
     if (bott.length) h += `<div class="muted" style="margin-top:4px">⚠ Atenção: ${bott.join(' e ')}.</div>`;
   }
   h += `</div>`;
-  if (S.ev.length) h += `<div class="card"><h3>Eventos ativos</h3>${S.ev.map(e => `<div class="req"><span>${e.t}</span><span class="v">${Math.ceil(e.until - S.t)} s</span></div>`).join('')}</div>`;
+  const evs = S.ev.map(e => [e.t, e.until - S.t]); if (mutLeft() > 0) evs.push(['Mutirão comunitário (coleta e triagem +50%)', mutLeft()]);
+  if (evs.length) h += `<div class="card"><h3>Eventos ativos</h3>${evs.map(([t, l]) => `<div class="req"><span>${t}</span><span class="v">${Math.ceil(l)} s</span></div>`).join('')}</div>`;
   h += `<div class="card"><h3>Preços por kg</h3><div class="muted">Comprador: <b>${formal() ? 'Indústria (venda direta)' : 'Atravessador'}</b>${formal() ? '' : ' · Na fase 5 vocês vendem direto à indústria.'}</div>
     <table class="prices"><tr><th>Material</th><th>Separado</th>${S.phase >= 7 ? '<th>Fardo</th>' : ''}${S.phase >= 8 ? '<th>Grão</th>' : ''}</tr>` +
     MAT_IDS.filter(matOn).map(m => `<tr><td>${MATS[m].n}</td><td>${fmtMoney(price(m, 'sep'))}</td>${S.phase >= 7 ? `<td>${MATS[m].bale ? fmtMoney(price(m, 'bale')) : '–'}</td>` : ''}${S.phase >= 8 ? `<td>${MATS[m].pellet ? fmtMoney(price(m, 'pellet')) : '–'}</td>` : ''}</tr>`).join('') +
@@ -4036,21 +4058,24 @@ function itemCard(it){
   const cnt = it.uniq ? '' : `<span class="cnt">${k}${isFinite(lim) && st !== 'locked' ? ' / ' + lim : ''}</span>`;
   let act = '';
   if (st === 'locked') act = `<div class="lockMsg">${lockText(it)}</div>`;
+  else if (st === 'limit' && it.consumable) act = `<div class="limitMsg">Mutirão já marcado para os próximos ${Math.ceil(mutLeft() / 60)} minutos. Dá para chamar outro quando faltar menos de 8.</div>`;
   else if (st === 'limit') act = `<div class="limitMsg">Limite da fase atingido (${k}/${lim}). A próxima fase libera mais espaço no terreno.</div>`;
-  else if (it.uniq) { const c = itemCost(it); act = `<div class="buyRow"><button class="btn" data-buy="${it.id}" data-q="1" ${S.money >= c ? '' : 'disabled'}>Comprar<small>${fmtMoney(c)}</small></button></div>`; }
+  else if (it.uniq) { const c = itemCost(it); act = `<div class="buyRow"><button class="btn" data-buy="${it.id}" data-q="1" ${S.money >= c ? '' : 'disabled'}>${it.consumable ? 'Chamar mutirão' : 'Comprar'}<small>${fmtMoney(c)}</small></button></div>`;
+    if (it.consumable && mutLeft() > 0) act = `<div class="muted">Mutirão em andamento: faltam ${Math.floor(mutLeft() / 60)}:${String(Math.floor(mutLeft() % 60)).padStart(2, '0')}.</div>` + act; }
   else {
     // só mostra as quantidades que ainda cabem no limite; Máx = quanto o dinheiro permite
     const rem = remainingQty(it), mx = maxAffordable(it);
     const opts = [1, 5, 10].filter(q => q <= rem).map(q => { const c = costFor(it, q); return `<button class="btn" data-buy="${it.id}" data-q="${q}" ${S.money >= c ? '' : 'disabled'}>${q}x<small>${fmtMoney(c)}</small></button>`; });
     if (rem > 1 && !(mx > 0 && [1, 5, 10].includes(mx) && mx <= rem)) opts.push(`<button class="btn blue" data-buy="${it.id}" data-q="${mx}" ${mx > 0 ? '' : 'disabled'}>Máx (${mx})<small>${mx > 0 ? fmtMoney(costFor(it, mx)) : 'sem dinheiro'}</small></button>`);
     act = `<div class="buyRow">${opts.join('')}</div>`;
+    if (it.id === 'capacitacao') act = `<div class="muted" style="margin:2px 0 4px">Cada curso nesta fase: <b>${fmtMoney(itemCost(it))}</b>${fundShare(it) ? ` · o fundo de formação paga até metade (disponível: ${fmtMoney(S.fundForm)})` : S.phase < 5 ? ' · a partir da fase 5, o fundo de formação paga até metade' : ''}.</div>` + act;
   }
   return `<div class="card item ${st === 'locked' ? 'locked' : ''}"><div class="ic">${IC[it.ic] || '📦'}</div>
     <div class="info"><div class="nm">${it.n}${cnt}</div><div class="ds">${it.d}</div>${act}</div></div>`;
 }
 function catHasBuyable(cat){
   if (cat === 'pessoas') return canHire() && S.money >= hireCost() && ROLE_IDS.some(r => roleOpen(r) && freeVaga(r) > 0);
-  return ITEMS.some(it => it.cat === cat && itemStatus(it) === 'avail' && S.money >= itemCost(it));
+  return ITEMS.some(it => it.cat === cat && itemStatus(it) === 'avail' && S.money >= costFor(it, 1));
 }
 function renderPeople(){
   const v = vagas();
@@ -4141,11 +4166,11 @@ function renderMore(){
     <div class="card"><button class="btn red wide" data-act="reset">Reiniciar do zero</button></div>`;
 }
 function panelSig(){
-  if (curTab === 'coop') return 'c' + Math.round(S.money * 100) + '|' + Math.round(sum(S.mixed) * 10) + '|' + Math.round(sepUsed() * 10) + '|' + S.phase + '|' + coopCount() + '|' + S.ev.map(e => Math.ceil(e.until - S.t)).join() + '|' + S._blkCol + S._blkTri + '|' + Math.round(S.st.recycled) + '|' + JSON.stringify(S.items);
+  if (curTab === 'coop') return 'c' + Math.round(S.money * 100) + '|' + Math.round(sum(S.mixed) * 10) + '|' + Math.round(sepUsed() * 10) + '|' + S.phase + '|' + coopCount() + '|' + S.ev.map(e => Math.ceil(e.until - S.t)).join() + Math.ceil(mutLeft()) + '|' + S._blkCol + S._blkTri + '|' + Math.round(S.st.recycled) + '|' + JSON.stringify(S.items);
   if (curTab === 'loja') {
     let s = 'l' + curCat + S.phase + JSON.stringify(S.items) + JSON.stringify(S.roles) + hireCost();
     if (curCat === 'pessoas') s += S.money >= hireCost();
-    else ITEMS.forEach(it => { if (it.cat === curCat) s += maxAffordable(it) + ',' + (S.money >= itemCost(it) ? 1 : 0) + ';'; });
+    else ITEMS.forEach(it => { if (it.cat === curCat) s += maxAffordable(it) + ',' + (S.money >= costFor(it, 1) ? 1 : 0) + ';'; }); if (curCat === 'negocios') s += '|' + Math.ceil(mutLeft() / 5); if (curCat === 'seguranca') s += Math.floor((S.fundForm || 0) / Math.max(1, itemCost(ITEM.capacitacao) * 0.05));
     return s;
   }
   if (curTab === 'equipe') return 'e' + teamFilter + JSON.stringify(S.roles) + S.members.map(m => m.id + m.role[0]).join() + JSON.stringify(vagas()) + S.phase
@@ -4231,6 +4256,8 @@ function onBought(it, q){
     parc_mercado:['Parceria com o mercado', 'O mercado deixa fardinhos de papelão, PET e latas em cada saída.'],
     parc_loja:['Parceria com as lojas', 'Caixas e plástico de embalagem das lojas do centro, organizados para a cooperativa.'],
     parc_industria:['Parceria com a indústria', 'Grandes fardos de aparas e embalagens em cada saída.'],
+    mutirao_com:['Mutirão comunitário', 'Durante o mutirão, a coleta e a triagem ficam 50% mais rápidas. O tempo aparece em Eventos ativos, na aba Cooperativa.'],
+    pev:['Contêiner de entrega voluntária', 'Cada contêiner traz material misturado para a base o tempo todo, sem ocupar vagas. Fique de olho no espaço do estoque!'],
     kombi:['Kombi da cooperativa', 'Agora você sai de kombi: 260 kg por saída, mais os carrinhos dos ajudantes. O tempo da saída continua o mesmo.'],
     reboque:['Reboque', 'Com o reboque, a kombi leva 420 kg por saída.'],
     prensa:['Prensa enfardadeira', 'A prensa transforma material separado em fardos de 100 kg: valem 30% a mais e ocupam metade do espaço. Ela precisa de 1 pessoa na função Prensa e beneficiamento.'],
