@@ -615,7 +615,7 @@ const FACTS = [
 // =====================================================================
 // ESTADO
 // =====================================================================
-const HOOK = {toast(){}, sfx(){}, ach(){}, event(){}, tip(){}};
+const HOOK = {toast(){}, sfx(){}, ach(){}, event(){}, tip(){}, canEvent(){ return true; }};
 let S = null;
 function newState(){
   return {
@@ -623,7 +623,7 @@ function newState(){
     mixed:{}, sep:{}, bale:{}, pellet:{},
     st:{trips:0, streetKg:0, rejStreet:0, autoKg:0, sorted:0, rejOut:0, recycled:0, earned:0, baleKg:0, pelletKg:0, sales:0, hires:0, sortRounds:0, sortLost:0, sortOk:0, sortErr:0,
         cleanTrips:0, perfect:0, streak:0, bestStreak:0, packOk:0, rejOkN:0, buys:0, recM:{}, repassado:0, fairTime:0},
-    ach:{}, flags:{}, ev:[], nextEv:200, nextFact:70, factIdx:0,
+    ach:{}, flags:{}, ev:[], nextEv:90, nextFact:70, factIdx:0,
     tut:{step:0, done:false}, tips:{}, set:{music:true, sfx:true}, coop:{name:'', logo:null}, vols:[], repasse:0.5, autoSell:true, fundRes:0, fundForm:0,
     t:0, lastSave:Date.now(), route:'bairro',
   };
@@ -930,9 +930,13 @@ function tick(dt, offline){
   if (rendaMes() >= SAL_MIN && (S._repWin || []).length >= 30) S.flags.salMin = 1;
   if (!offline) {
     checkAch();
-    if (S.tut.done && S.phase >= 2) {
+    // eventos: o relógio corre desde a fase 2; se for hora durante o tutorial, a triagem ou uma janela aberta, espera um pouco
+    if (S.phase >= 2) {
       S.nextEv -= dt;
-      if (S.nextEv <= 0) { S.nextEv = 120 + Math.random() * 120; fireEvent(); }
+      if (S.nextEv <= 0) {
+        if (S.tut.done && HOOK.canEvent()) { S.nextEv = 90 + Math.random() * 90; fireEvent(); }
+        else S.nextEv = 15;
+      }
     }
   }
 }
@@ -2992,7 +2996,7 @@ const TQ = []; let tCur = null; const toastKeys = {};
 function toast(title, txt, cls, ms, key){
   if (key) { const now = Date.now(); if (toastKeys[key] && now - toastKeys[key] < 8000) return; toastKeys[key] = now; }
   TQ.push({title, txt, cls, ms:ms || 4000});
-  while (TQ.length > 10) { const i = TQ.findIndex(q => q.cls !== 'ach'); TQ.splice(i >= 0 ? i : 0, 1); }
+  while (TQ.length > 10) { const i = TQ.findIndex(q => q.cls !== 'ach' && !q.ev); TQ.splice(i >= 0 ? i : 0, 1); } // eventos e conquistas nunca se perdem
 }
 function pumpToasts(dt){
   if (tCur) {
@@ -4461,9 +4465,11 @@ HOOK.ach = a => {
   toast(tier + (a.secret ? 'Conquista secreta: ' : 'Conquista: ') + a.n, a.d + ' <b>+1% de produtividade.</b>', 'ach', 5000);
   tipOnce('ach', 'Conquistas', 'São mais de 60 conquistas, e cada uma dá +1% de produtividade para todo mundo. Veja todas na aba Conquistas.');
 };
+HOOK.canEvent = () => G_mode !== 'sort' && !modalOpen() && !busy;
 HOOK.event = ev => {
   AU.sfx(ev.good ? 'event' : 'bad');
   toast((ev.good ? '📣 ' : '⚠ ') + ev.t, ev.d, ev.good ? 'good' : 'bad', 6000);
+  const q = TQ.pop(); q.ev = 1; TQ.unshift(q); // o evento aparece logo em seguida, na frente das outras mensagens
   if (ev.id === 'chuva') rainUntil = performance.now() + 8000;
   tipOnce('events', 'Eventos', 'De vez em quando acontece algo na cidade. Os eventos ruins são raros e dá para evitá-los com melhorias, como a lona contra a chuva.');
   lastSig = '';
