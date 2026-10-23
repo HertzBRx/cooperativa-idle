@@ -409,35 +409,35 @@ const ROUTES = [
 const PHASES = [
   {name:'Catador(a) sozinho(a)', max:1, cost:0, reqs:[],
    msg:''},
-  {name:'Ponto de acúmulo', max:4, cost:100, costName:'Limpar o terreno', goal:'limpar o terreno', reqs:[['trips',3]],
+  {name:'Ponto de acúmulo', max:4, cost:50, costName:'Limpar o terreno', goal:'limpar o terreno', reqs:[['trips',2]],
    msg:'Você limpou o terreno! Agora dá para cobrir o material com uma lona, guardar em bags, ter uma balança e chamar os primeiros colegas.',
    libera:['Lona, bags e balança','Primeiros colegas (até 3)','Rota da feira livre','Plástico duro e papel branco/jornal']},
-  {name:'Grupo informal', max:12, cost:170, costName:'Construir o barracão de madeira', goal:'construir o barracão de madeira', reqs:[['working',3],['recycled',200]],
+  {name:'Grupo informal', max:12, cost:120, costName:'Construir o barracão de madeira', goal:'construir o barracão de madeira', reqs:[['working',3],['recycled',150]],
    msg:'O grupo levantou um barracão de madeira. Agora vocês trabalham juntos e fazem a triagem no chão, sobre lonas.',
    libera:['Barracão de madeira','Triagem no chão (lonas)','Primeiros EPIs: luvas','Capacitação do grupo','Rota do centro comercial','Vidro']},
-  {name:'Associação', max:23, cost:1690, costName:'Organizar a associação', goal:'organizar a associação', reqs:[['working',9],['item','luvas_epi'],['recycled',1200]],
+  {name:'Associação', max:23, cost:300, costName:'Organizar a associação', goal:'organizar a associação', reqs:[['working',7],['item','luvas_epi'],['recycled',800]],
    msg:'O grupo virou uma associação! Tem mesa de triagem, banheiro, baias para separar os materiais e mais equipamentos de proteção.',
    libera:['Mesas de triagem','Baias','Banheiro','Botas, uniforme e óculos','Triciclos']},
-  {name:'Cooperativa formalizada', max:33, cost:8620, costName:'Formalização (CNPJ, estatuto e assembleia)', goal:'pagar a formalização (CNPJ, estatuto e assembleia)', reqs:[['coop',15],['epiFull']],
+  {name:'Cooperativa formalizada', max:33, cost:1800, costName:'Formalização (CNPJ, estatuto e assembleia)', goal:'pagar a formalização (CNPJ, estatuto e assembleia)', reqs:[['coop',12],['epiFull']],
    msg:'Com CNPJ, estatuto e assembleia, a cooperativa é oficial! O galpão de alvenaria está de pé e agora vocês vendem direto para a indústria, sem atravessador.',
    libera:['Venda direta à indústria','Galpão de alvenaria','Condomínios parceiros','Sucata de metal']},
-  {name:'Parceria com a prefeitura', max:44, cost:166000, costName:'Contrato de coleta seletiva', goal:'fechar o contrato de coleta seletiva', reqs:[['coop',25],['recycled',7500]],
+  {name:'Parceria com a prefeitura', max:44, cost:34000, costName:'Contrato de coleta seletiva', goal:'fechar o contrato de coleta seletiva', reqs:[['coop',25],['recycled',7500]],
    msg:'A prefeitura contratou a cooperativa para a coleta seletiva! Ela paga pelo serviço, e os Pontos de Entrega Voluntária trazem material todos os dias.',
    libera:['Pagamento da prefeitura','Caminhão de coleta','Pontos de Entrega Voluntária','Educação ambiental','Óleo de cozinha']},
-  {name:'Estrutura profissional', max:72, cost:312000, costName:'Obra da estrutura profissional', goal:'fazer a obra da estrutura profissional', reqs:[['coop',40],['recycled',22000]],
+  {name:'Estrutura profissional', max:72, cost:150000, costName:'Obra da estrutura profissional', goal:'fazer a obra da estrutura profissional', reqs:[['coop',40],['recycled',22000]],
    msg:'Chegaram a prensa, a esteira e a empilhadeira. E também vestiário, refeitório e creche para os filhos dos cooperados.',
    libera:['Prensa enfardadeira','Função Prensa e beneficiamento','Esteira e empilhadeira','Vestiário, refeitório e creche','Eletrônicos']},
-  {name:'Beneficiamento', max:99, cost:787000, costName:'Licença de beneficiamento', goal:'tirar a licença de beneficiamento', reqs:[['coop',65],['item','refeitorio'],['item','creche'],['recycled',60000],['bales',75]],
+  {name:'Beneficiamento', max:99, cost:280000, costName:'Licença de beneficiamento', goal:'tirar a licença de beneficiamento', reqs:[['coop',65],['item','refeitorio'],['item','creche'],['recycled',60000],['bales',75]],
    msg:'A cooperativa agora beneficia o plástico: moedor, lavadora e extrusora transformam PET e plástico duro em grãos, que valem muito mais.',
    libera:['Linha de grãos de plástico','Contratos de logística reversa','Painéis solares']},
-  {name:'Indústria sustentável', max:124, cost:11800000, costName:'Projeto de indústria sustentável', goal:'tocar o projeto de indústria sustentável', reqs:[['coop',90],['pellets',7500]],
+  {name:'Indústria sustentável', max:124, cost:7500000, costName:'Projeto de indústria sustentável', goal:'tocar o projeto de indústria sustentável', reqs:[['coop',90],['pellets',7500]],
    msg:'A cooperativa virou uma indústria sustentável: separador automático, painéis solares, cisterna e espaço para crescer no terreno vizinho.',
    libera:['Separador automático','Mais painéis solares','Cisterna','Terreno vizinho']},
-  {name:'Referência regional', max:161, cost:32900000, costName:'Rede regional de cooperativas', goal:'formar a rede regional de cooperativas', reqs:[['coop',120],['recycled',450000],['logistica',3]],
+  {name:'Referência regional', max:161, cost:25000000, costName:'Rede regional de cooperativas', goal:'formar a rede regional de cooperativas', reqs:[['coop',120],['recycled',450000],['logistica',3]],
    msg:'Vocês são referência na região! A cooperativa lidera uma rede, tem grandes contratos e um centro de educação ambiental. Da carrocinha à central de reciclagem: que caminhada!',
    libera:['Rede de cooperativas','Centro de educação ambiental']},
 ];
-const INFRA = [1, 3, 9, 16, 24, 32, 42, 55, 72, 95];
+const INFRA = [1, 4, 11, 18, 26, 34, 44, 56, 72, 95];
 
 const CATS = [
   {id:'rua', n:'Rua e coleta'},
@@ -492,10 +492,10 @@ const ITEMS = [
   {id:'cisterna', cat:'estrutura', n:'Cisterna de água da chuva', d:'Reaproveita a chuva para lavar o plástico: +20% na linha de grãos.', cost:400000, ph:9, uniq:1, ic:'drop'},
   {id:'terreno', cat:'estrutura', n:'Terreno vizinho', d:'Compra o terreno ao lado: +20 t de espaço para separado e +10 t para misturado.', cost:1000000, ph:9, uniq:1, ic:'map'},
   // ---------- SEGURANÇA E BEM-ESTAR
-  {id:'luvas_epi', cat:'seguranca', n:'EPI: Luvas', d:'Luvas para todos na triagem. +5% de produtividade. Entra no kit de cada novo cooperado.', cost:120, ph:3, uniq:1, kit:8, ic:'glove'},
-  {id:'botas', cat:'seguranca', n:'EPI: Botas', d:'Botas com biqueira contra cortes e pancadas. +5% de produtividade.', cost:500, ph:4, uniq:1, kit:25, ic:'boot'},
-  {id:'uniforme', cat:'seguranca', n:'EPI: Uniforme', d:'Uniforme resistente e com faixa refletiva. +5% de produtividade.', cost:800, ph:4, uniq:1, kit:30, ic:'shirt'},
-  {id:'oculos', cat:'seguranca', n:'EPI: Óculos de proteção', d:'Protege os olhos de poeira e estilhaços. +5% de produtividade.', cost:1000, ph:4, uniq:1, kit:12, ic:'goggle'},
+  {id:'luvas_epi', cat:'seguranca', n:'EPI: Luvas', d:'Luvas para todos na triagem. +5% de produtividade. Entra no kit de cada novo cooperado.', cost:80, ph:3, uniq:1, kit:8, ic:'glove'},
+  {id:'botas', cat:'seguranca', n:'EPI: Botas', d:'Botas com biqueira contra cortes e pancadas. +5% de produtividade.', cost:300, ph:4, uniq:1, kit:25, ic:'boot'},
+  {id:'uniforme', cat:'seguranca', n:'EPI: Uniforme', d:'Uniforme resistente e com faixa refletiva. +5% de produtividade.', cost:500, ph:4, uniq:1, kit:30, ic:'shirt'},
+  {id:'oculos', cat:'seguranca', n:'EPI: Óculos de proteção', d:'Protege os olhos de poeira e estilhaços. +5% de produtividade.', cost:600, ph:4, uniq:1, kit:12, ic:'goggle'},
   {id:'capacitacao', cat:'seguranca', n:'Capacitação', d:'Cursos de triagem, segurança e gestão. +2% de produtividade por nível. Todos os cursos da fase têm o mesmo preço, e cada fase libera 4 cursos novos.', cost:300, ph:3, lim:L(0,0,4,8,12,16,20,24,28,32), ic:'book'},
   {id:'protetor', cat:'seguranca', n:'EPI: Protetor auricular', d:'A prensa e a esteira fazem barulho. +5% de produtividade.', cost:10000, ph:7, uniq:1, kit:15, ic:'ear'},
   {id:'vestiario', cat:'seguranca', n:'Vestiário', d:'Lugar para tomar banho e trocar de roupa. +8% de produtividade.', cost:30000, ph:7, uniq:1, ic:'house'},
@@ -4562,7 +4562,7 @@ const TUT = [
      if (S.money < c) return earnGuide(`Você tem <b>${fmtMoney(S.money)}</b> e o item <b>${it.n}</b> custa <b>${fmtMoney(c)}</b>. Vamos juntar mais! `);
      return shopGuide(it.cat, `[data-buy="${it.id}"]:not(:disabled)`, `Compre <b>${it.n}</b> por ${fmtMoney(c)}.${it.id === 'carrinho2' ? ' Ele leva mais material em cada saída.' : ''}`);
    }, done:() => tc('buys') > 0},
-  {id:'goal', ok:1, view:() => G_mode === 'base' ? {txt:S.phase === 1 ? 'Este é o <b>Próximo objetivo</b>: ele mostra o que falta para avançar de fase. Agora faça 3 saídas e <b>junte R$ 60 para limpar o terreno</b>. Quando tudo estiver pronto, o botão de avançar aparece aqui.' : 'Este é o <b>Próximo objetivo</b>: ele mostra o que falta para avançar de fase.', el:$('goalBox')} : null,
+  {id:'goal', ok:1, view:() => G_mode === 'base' ? {txt:S.phase === 1 ? 'Este é o <b>Próximo objetivo</b>: ele mostra o que falta para avançar de fase. Agora faça ${PHASES[1].reqs[0][1]} saídas e <b>junte ${fmtMoney(PHASES[1].cost)} para limpar o terreno</b>. Quando tudo estiver pronto, o botão de avançar aparece aqui.' : 'Este é o <b>Próximo objetivo</b>: ele mostra o que falta para avançar de fase.', el:$('goalBox')} : null,
    done:() => false},
   {id:'phase2', view:() => {
      if (S.phase !== 1 || G_mode !== 'base') return null;
